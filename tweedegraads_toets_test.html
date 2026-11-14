@@ -1,0 +1,1191 @@
+
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onvolledige Tweedegraadsvergelijkingen Oefenen & Testen</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --success: #16a34a;
+            --success-bg: #f0fdf4;
+            --error: #dc2626;
+            --error-bg: #fef2f2;
+            --partial: #d97706;
+            --hint-bg: #fef9c3;
+            --hint-border: #facc15;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 10px 16px;
+            border: 2px solid var(--border-color);
+            background: #fff;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+        .theory-card, .practice-card {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .formula {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 15px 0;
+            background: #e0e7ff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            text-decoration: none;
+        }
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+        .btn-secondary {
+            background: #64748b;
+        }
+        .btn-secondary:hover {
+            background: #475569;
+        }
+        .btn-warning {
+            background: #ca8a04;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-right: 5px;
+            margin-bottom: 6px;
+        }
+        .btn-warning:hover {
+            background: #a16207;
+        }
+        .hints-container {
+            margin-top: 20px;
+            background: #fffbeb;
+            border: 1px solid var(--hint-border);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .hint-step {
+            background: var(--hint-bg);
+            border-left: 4px solid #eab308;
+            padding: 10px 12px;
+            margin: 8px 0;
+            border-radius: 0 6px 6px 0;
+            display: none;
+            font-size: 0.95rem;
+        }
+        .specific-walkthrough {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #eab308;
+            color: #713f12;
+            font-weight: 600;
+        }
+        input[type="text"], select {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            width: 320px;
+            margin-right: 10px;
+            margin-bottom: 8px;
+        }
+        select {
+            background: white;
+        }
+        .feedback {
+            margin-top: 10px;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .feedback.correct { color: var(--success); }
+        .feedback.incorrect { color: var(--error); }
+        .feedback.partial { color: var(--partial); }
+        .score-box {
+            page-break-inside: avoid;
+            break-inside: avoid;
+            text-align: center;
+            padding: 20px;
+            background: #f0fdf4;
+            border: 2px solid var(--success);
+            border-radius: 8px;
+            margin-top: 20px;
+            margin-bottom: 25px;
+        }
+        .review-card {
+            page-break-inside: avoid;
+            break-inside: avoid;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+        }
+        .review-card.correct {
+            background-color: var(--success-bg);
+            border-color: var(--success);
+        }
+        .review-card.incorrect {
+            background-color: var(--error-bg);
+            border-color: var(--error);
+        }
+    
+        .fout-box {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+</style>
+    <!-- CryptoJS voor AES Encryptie -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <!-- HTML2PDF Script voor PDF generatie -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <h1>Onvolledige Tweedegraadsvergelijkingen</h1>
+    <div class="subtitle">Oefenen per type én interactieve testmodus met gerichte hints</div>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('theorie')">📖 Theorie</button>
+        <button class="tab-btn" onclick="switchTab('type1')">Type 1: ax² = 0</button>
+        <button class="tab-btn" onclick="switchTab('type2')">Type 2: ax² + bx = 0</button>
+        <button class="tab-btn" onclick="switchTab('type3')">Type 3: ax² + c = 0</button>
+        <button class="tab-btn" onclick="switchTab('type4')">Type 4: a(x - p)² + k = 0</button>
+        <button class="tab-btn" onclick="switchTab('test')">📝 Test / Toets</button>
+    </div>
+
+    <!-- THEORIE -->
+    <div id="theorie" class="section active">
+        <h2>Overzicht van de vier typen</h2>
+        <p>Een volledige tweedegraadsvergelijking heeft de vorm <em>ax² + bx + c = 0</em>. Bij een <strong>onvolledige</strong> vergelijking ontbreekt één of meer termen.</p>
+        
+        <div class="theory-card">
+            <h3>Type 1: ax² = 0</h3>
+            <div class="formula">x² = 0</div>
+            <p><strong>Aanpak:</strong> Deel eventueel door <em>a</em>. De oplossing is direct <em>x = 0</em>.</p>
+        </div>
+
+        <div class="theory-card">
+            <h3>Type 2: ax² + bx = 0</h3>
+            <div class="formula">3x² - 2x = 0</div>
+            <p><strong>Aanpak:</strong> Breng de gemeenschappelijke factor x buiten haakjes en stel elk deel gelijk aan 0.</p>
+        </div>
+
+        <div class="theory-card">
+            <h3>Type 3: ax² + c = 0</h3>
+            <div class="formula">x² - 9 = 0</div>
+            <p><strong>Aanpak:</strong> Breng de constante term naar rechts, deel eventueel door <em>a</em> en neem de wortel (plus en min!). Als er na verhuizing een negatief getal overblijft aan de rechterkant, zijn er <em>geen reële oplossingen</em>.</p>
+        </div>
+
+        <div class="theory-card">
+            <h3>Type 4: a(x - p)² + k = 0</h3>
+            <div class="formula">(x - 3)² - 4 = 0</div>
+            <p><strong>Aanpak:</strong> Breng het getal buiten het kwadraat naar rechts, neem de wortel en los op voor <em>x</em>.</p>
+        </div>
+    </div>
+
+    <!-- TYPE 1 -->
+    <div id="type1" class="section">
+        <h2>Oefeningen: Type 1 (ax² = 0)</h2>
+        <div class="practice-card">
+            <p>Los de vergelijking op en noteer je antwoord:</p>
+            <div id="t1-eq" class="formula">x² = 0</div>
+            <br>
+            <input type="text" id="t1-input" placeholder="Bijv. x = 1 of x = 2/3 of geen oplossingen">
+            <button class="btn" onclick="checkT1()">Controleer</button>
+            <div id="t1-fb" class="feedback"></div>
+
+            <div class="hints-container">
+                <strong>💡 Stappenplan & Tips (klik per stap om te openen):</strong><br><br>
+                <button class="btn-warning" id="t1-btn-div" onclick="toggleEl('t1-h1')" style="display:none;">Stap: Delen door a</button>
+                <button class="btn-warning" onclick="toggleEl('t1-h2')">Stap: Eindantwoord</button>
+                
+                <div id="t1-h1" class="hint-step">
+                    <strong>Tip:</strong> Deel beide leden door de coëfficiënt van x².
+                    <div id="t1-spec-1" class="specific-walkthrough"></div>
+                </div>
+                <div id="t1-h2" class="hint-step">
+                    <strong>Tip:</strong> Het kwadraat van welk getal is 0?
+                    <div id="t1-spec-2" class="specific-walkthrough"></div>
+                </div>
+            </div>
+            <br>
+            <button class="btn btn-secondary" onclick="loadT1()">Nieuwe oefening</button>
+        </div>
+    </div>
+
+    <!-- TYPE 2 -->
+    <div id="type2" class="section">
+        <h2>Oefeningen: Type 2 (ax² + bx = 0)</h2>
+        <div class="practice-card">
+            <p>Los de vergelijking op en noteer je antwoord:</p>
+            <div id="t2-eq" class="formula">3x² - 2x = 0</div>
+            <br>
+            <input type="text" id="t2-input" placeholder="Bijv. x = 1 of x = 2/3 of geen oplossingen">
+            <button class="btn" onclick="checkT2()">Controleer</button>
+            <div id="t2-fb" class="feedback"></div>
+
+            <div class="hints-container">
+                <strong>💡 Stappenplan & Tips (klik per stap om te openen):</strong><br><br>
+                <button class="btn-warning" onclick="toggleEl('t2-h1')">Stap 1: Buiten haakjes brengen</button>
+                <button class="btn-warning" onclick="toggleEl('t2-h2')">Stap 2: Gelijkstellen aan 0</button>
+                <button class="btn-warning" onclick="toggleEl('t2-h3')">Stap 3: Eindoplossingen</button>
+                
+                <div id="t2-h1" class="hint-step">
+                    <strong>Tip 1:</strong> Breng de gemeenschappelijke factor x buiten haakjes.
+                    <div id="t2-spec-1" class="specific-walkthrough"></div>
+                </div>
+                <div id="t2-h2" class="hint-step">
+                    <strong>Tip 2:</strong> Stel beide factoren afzonderlijk gelijk aan 0.
+                    <div id="t2-spec-2" class="specific-walkthrough"></div>
+                </div>
+                <div id="t2-h3" class="hint-step">
+                    <strong>Tip 3:</strong> Reken de tweede vergelijking uit voor x (noteer als breuk indien nodig).
+                    <div id="t2-spec-3" class="specific-walkthrough"></div>
+                </div>
+            </div>
+            <br>
+            <button class="btn btn-secondary" onclick="loadT2()">Nieuwe oefening</button>
+        </div>
+    </div>
+
+    <!-- TYPE 3 -->
+    <div id="type3" class="section">
+        <h2>Oefeningen: Type 3 (ax² + c = 0)</h2>
+        <div class="practice-card">
+            <p>Los de vergelijking op en noteer je antwoord:</p>
+            <div id="t3-eq" class="formula">x² - 16 = 0</div>
+            <br>
+            <input type="text" id="t3-input" placeholder="Bijv. x = 1 of x = 2/3 of geen oplossingen">
+            <button class="btn" onclick="checkT3()">Controleer</button>
+            <div id="t3-fb" class="feedback"></div>
+
+            <div class="hints-container">
+                <strong>💡 Stappenplan & Tips (klik per stap om te openen):</strong><br><br>
+                <button class="btn-warning" onclick="toggleEl('t3-h1')">Stap 1: Constante naar rechts</button>
+                <button class="btn-warning" id="t3-btn-div" onclick="toggleEl('t3-h2')" style="display:none;">Stap 2: Delen door a</button>
+                <button class="btn-warning" id="t3-btn-sqrt" onclick="toggleEl('t3-h3')">Stap 2: Worteltrekken</button>
+                
+                <div id="t3-h1" class="hint-step">
+                    <strong>Stap:</strong> Breng de constante naar rechts.
+                    <div id="t3-spec-1" class="specific-walkthrough"></div>
+                </div>
+                <div id="t3-h2" class="hint-step">
+                    <strong>Stap:</strong> Deel door de coëfficiënt van x².
+                    <div id="t3-spec-2" class="specific-walkthrough"></div>
+                </div>
+                <div id="t3-h3" class="hint-step">
+                    <strong>Stap:</strong> Neem de wortel (zowel plus als min) of concludeer dat er geen reële oplossingen zijn.
+                    <div id="t3-spec-3" class="specific-walkthrough"></div>
+                </div>
+            </div>
+            <br>
+            <button class="btn btn-secondary" onclick="loadT3()">Nieuwe oefening</button>
+        </div>
+    </div>
+
+    <!-- TYPE 4 -->
+    <div id="type4" class="section">
+        <h2>Oefeningen: Type 4 a(x - p)² + k = 0</h2>
+        <div class="practice-card">
+            <p>Los de vergelijking op en noteer je antwoord:</p>
+            <div id="t4-eq" class="formula">(x - 3)² - 4 = 0</div>
+            <br>
+            <input type="text" id="t4-input" placeholder="Bijv. x = 1 of x = 2/3 of geen oplossingen">
+            <button class="btn" onclick="checkT4()">Controleer</button>
+            <div id="t4-fb" class="feedback"></div>
+
+            <div class="hints-container">
+                <strong>💡 Stappenplan & Tips (klik per stap om te openen):</strong><br><br>
+                <button class="btn-warning" onclick="toggleEl('t4-h1')">Stap 1: Constante naar rechts</button>
+                <button class="btn-warning" id="t4-btn-div" onclick="toggleEl('t4-h2')" style="display:none;">Stap 2: Delen door a</button>
+                <button class="btn-warning" id="t4-btn-sqrt" onclick="toggleEl('t4-h3')">Stap 2: Wortel nemen</button>
+                <button class="btn-warning" id="t4-btn-solve" onclick="toggleEl('t4-h4')">Stap 3: Oplossen voor x</button>
+                
+                <div id="t4-h1" class="hint-step">
+                    <strong>Stap:</strong> Breng de constante term naar rechts.
+                    <div id="t4-spec-1" class="specific-walkthrough"></div>
+                </div>
+                <div id="t4-h2" class="hint-step">
+                    <span id="t4-div-title"><strong>Stap:</strong> Deel beide leden door a.</span>
+                    <div id="t4-spec-2" class="specific-walkthrough"></div>
+                </div>
+                <div id="t4-h3" class="hint-step">
+                    <span id="t4-sqrt-title"><strong>Stap:</strong> Neem de wortel (plus en min).</span>
+                    <div id="t4-spec-3" class="specific-walkthrough"></div>
+                </div>
+                <div id="t4-h4" class="hint-step">
+                    <span id="t4-solve-title"><strong>Stap:</strong> Bereken de waarden voor x.</span>
+                    <div id="t4-spec-4" class="specific-walkthrough"></div>
+                </div>
+            </div>
+            <br>
+            <button class="btn btn-secondary" onclick="loadT4()">Nieuwe oefening</button>
+        </div>
+    </div>
+
+    <!-- TEST / TOETS MODUS -->
+    <div id="test" class="section">
+        <h2>📝 Test / Toets modus</h2>
+        <div id="test-setup" class="practice-card">
+            <p>Kies je instellingen voor de test:</p>
+            <label><strong>Jouw voornaam en naam:</strong></label><br>
+            <input type="text" id="student-naam" placeholder="bijv. Jan Peeters" style="width: 100%; max-width: 320px; margin-bottom: 15px;">
+            <br>
+            <div style="background: #f0fdf4; border: 1px solid #16a34a; padding: 10px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 0.95rem; color: #166534;">
+                🔒 <strong>Privacy & GDPR:</strong> Je naam wordt bij het afronden automatisch versleuteld. Enkel de leerkracht kan deze ontcijferen met het beveiligde sleutelwoord.
+            </div>
+            <label><strong>Kies het type:</strong></label><br>
+            <select id="test-type-select">
+                <option value="gemengd">🔄 Gemengd</option>
+                <option value="1">Type 1: ax² = 0</option>
+                <option value="2">Type 2: ax² + bx = 0</option>
+                <option value="3">Type 3: ax² + c = 0</option>
+                <option value="4">Type 4: a(x - p)² + k = 0</option>
+            </select>
+            <br><br>
+            <label><strong>Aantal oefeningen:</strong></label><br>
+            <select id="test-count-select">
+                <option value="5">5 oefeningen</option>
+                <option value="10">10 oefeningen</option>
+            </select>
+            <br><br>
+            <button class="btn" onclick="startTest()">Start Test 🚀</button>
+        </div>
+
+        <div id="test-active" class="practice-card" style="display:none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <span id="test-progress" style="font-weight: bold; color: #64748b;">Oefening 1 van 5</span>
+                <span id="test-score-live" style="font-weight: bold; color: var(--primary);">Score: 0</span>
+            </div>
+            <div id="test-eq" class="formula">x² = 0</div>
+            <br>
+            <input type="text" id="test-input" placeholder="Bijv. x = 1 of x = 2/3 of geen oplossingen" onkeydown="if(event.key==='Enter') submitTestAnswer()">
+            <button id="test-submit-btn" class="btn" onclick="submitTestAnswer()">Volgende ➔</button>
+            <button class="btn btn-secondary" onclick="toggleEl('test-hints')">💡 Hulp / Tip</button>
+            <div id="test-fb" class="feedback"></div>
+
+            <div id="test-hints" class="hint-step" style="margin-top: 15px;">
+                <strong>💡 Methode-hint voor deze oefening:</strong>
+                <div id="test-hint-text" class="specific-walkthrough"></div>
+            </div>
+        </div>
+
+        <div id="test-result" class="section" style="display:none;"></div>
+    </div>
+
+</div>
+
+<script>
+    function switchTab(tabId) {
+        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        if (window.event && window.event.target) {
+            window.event.target.classList.add('active');
+        }
+    }
+
+    function toggleEl(id) {
+        const el = document.getElementById(id);
+        el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function formatA(val) {
+        return val === 1 ? '' : val;
+    }
+
+    function isNoSolutions(val) {
+        let clean = val.replace(/\s+/g, '').toLowerCase();
+        return clean.includes('geen') || clean.includes('geenopl') || clean.includes('geenoplossing');
+    }
+
+    // --- VERBETERDE DIAGNOSE FUNCTIE ---
+    function genereerDiagnose(testList) {
+        let fouten = [];
+        let type1Fout = 0;
+        let vergatNegatieveWortel = 0;
+        let vergatNulOplossing = 0;
+        let wortelUitNegatief = 0;
+
+        testList.forEach(item => {
+            if (item.isCorrect) return;
+            let ans = item.userAnswer ? item.userAnswer.toLowerCase() : "";
+            
+            if (item.type === '1') {
+                type1Fout++;
+            }
+
+            if ((item.type === '3' || item.type === '4') && !item.isNoSol) {
+                let parts = parseUserParts(ans);
+                // Heeft wel 1 van de antwoorden, maar niet allebei
+                if (parts.length === 1 && (matchToken(parts[0], item.target1) || matchToken(parts[0], item.target2))) {
+                    vergatNegatieveWortel++;
+                }
+            }
+
+            if (item.type === '2') {
+                let parts = parseUserParts(ans);
+                // Vond wel de wortel, maar vergat x=0
+                if (parts.length === 1 && matchToken(parts[0], item.target2) && !matchToken(parts[0], item.target1)) {
+                    vergatNulOplossing++;
+                }
+            }
+
+            if (item.isNoSol && !isNoSolutions(ans) && ans !== '(geen antwoord)') {
+                wortelUitNegatief++;
+            }
+        });
+
+        if (type1Fout > 0) fouten.push("🔹 <strong>Type 1 (ax² = 0):</strong> Je maakte een fout bij het eenvoudigste type. Onthoud goed: als een getal maal x² gelijk is aan nul, dan is x áltijd gewoon 0.");
+        if (vergatNulOplossing > 0) fouten.push("🔹 <strong>Type 2 (ax² + bx = 0):</strong> Bij het buiten haakjes brengen vergeet je soms dat x = 0 ook een volwaardige oplossing is. Schrijf je stappen altijd voluit op!");
+        if (vergatNegatieveWortel > 0) fouten.push("🔹 <strong>Type 3 & 4 (Worteltrekken):</strong> Je vergeet vaak de tweede (negatieve) oplossing te noteren. Vergeet de ± niet wanneer je de wortel neemt van een getal (bv. x² = 9 geeft x = 3 én x = -3).");
+        if (wortelUitNegatief > 0) fouten.push("🔹 <strong>Geen reële oplossingen:</strong> Let goed op de tekens! Als een kwadraat (x² of een veelterm in het kwadraat) gelijkgesteld wordt aan een negatief getal, kan je onmogelijk een reële wortel trekken. Het antwoord is dan direct 'geen oplossingen'.");
+
+        if (fouten.length === 0 && testScore < testTotalCount) {
+            return "Je hebt geen typische 'patroonfouten' gemaakt, maar wel enkele reken- of slordigheidsfoutjes. Kijk goed je mintekens na bij het overbrengen naar het andere lid!";
+        } else if (fouten.length === 0) {
+            return "Perfect gewerkt! Je hebt de leerstof rond onvolledige vierkantsvergelijkingen helemaal onder de knie.";
+        }
+        
+        return "<strong>Hier is een analyse van jouw werkpunten:</strong><br><br>" + fouten.join("<br><br>");
+    }
+
+    // --- TYPE 1 ---
+    let t1_a = 5;
+    function loadT1() {
+        t1_a = Math.floor(Math.random() * 6) + 1;
+        document.getElementById('t1-eq').innerText = `${formatA(t1_a)}x² = 0`;
+        document.getElementById('t1-input').value = '';
+        document.getElementById('t1-fb').innerText = '';
+        document.querySelectorAll('#type1 .hint-step').forEach(el => el.style.display = 'none');
+
+        if (t1_a !== 1) {
+            document.getElementById('t1-btn-div').style.display = 'inline-block';
+            document.getElementById('t1-spec-1').innerText = `👉 Uitwerking: Deel ${t1_a}x² door ${t1_a} $
+ightarrow$ x² = 0`;
+        } else {
+            document.getElementById('t1-btn-div').style.display = 'none';
+        }
+        document.getElementById('t1-spec-2').innerText = `👉 Uitwerking: x = 0`;
+    }
+    function checkT1() {
+        const val = document.getElementById('t1-input').value.replace(/\s+/g, '').toLowerCase();
+        const fb = document.getElementById('t1-fb');
+        if (val === 'x=0' || val === '0') {
+            fb.innerText = 'Super gedaan! Correct.';
+            fb.className = 'feedback correct';
+        } else {
+            fb.innerText = 'Niet helemaal juist. Bekijk gerust de tips hieronder!';
+            fb.className = 'feedback incorrect';
+        }
+    }
+
+    // --- TYPE 2 ---
+    let t2_a = 1, t2_b = -2, t2_rootStr = "2";
+    function loadT2() {
+        const pairs = [
+            {a: 1, b: -2, rootStr: "2"},
+            {a: 1, b: -4, rootStr: "4"},
+            {a: 2, b: -4, rootStr: "2"},
+            {a: 3, b: -2, rootStr: "2/3"},
+            {a: 2, b: -6, rootStr: "3"},
+            {a: 3, b: -6, rootStr: "2"},
+            {a: 4, b: -2, rootStr: "1/2"},
+            {a: 3, b: -4, rootStr: "4/3"}
+        ];
+        let p = pairs[Math.floor(Math.random() * pairs.length)];
+        t2_a = p.a;
+        t2_b = p.b;
+        t2_rootStr = p.rootStr;
+
+        const aStr = formatA(t2_a);
+        document.getElementById('t2-eq').innerText = `${aStr}x² - ${Math.abs(t2_b)}x = 0`;
+        document.getElementById('t2-input').value = '';
+        document.getElementById('t2-fb').innerText = '';
+        document.querySelectorAll('#type2 .hint-step').forEach(el => el.style.display = 'none');
+
+        document.getElementById('t2-spec-1').innerText = `👉 Uitwerking: Zet x buiten haakjes: x(${aStr}x - ${Math.abs(t2_b)}) = 0`;
+        document.getElementById('t2-spec-2').innerText = `👉 Uitwerking: x = 0  of  ${aStr}x - ${Math.abs(t2_b)} = 0`;
+        document.getElementById('t2-spec-3').innerText = `👉 Uitwerking: ${aStr}x = ${Math.abs(t2_b)} dus x = ${t2_rootStr}. Oplossingen: x = 0 of x = ${t2_rootStr}`;
+    }
+    function checkT2() {
+        const val = document.getElementById('t2-input').value.replace(/\s+/g, '').toLowerCase();
+        const fb = document.getElementById('t2-fb');
+        let cleanRoot = t2_rootStr.replace(/\s+/g, '');
+        let userParts = val.replace(/x=/g, '').split('of');
+        let hasZero = userParts.some(p => p.trim() === '0');
+        let hasRoot = userParts.some(p => p.trim() === cleanRoot);
+
+        if (hasZero && hasRoot) {
+            fb.innerText = 'Geweldig! Volledig juist opgelost.';
+            fb.className = 'feedback correct';
+        } else {
+            fb.innerText = `Niet helemaal. De oplossingen zijn x = 0 en x = ${t2_rootStr}.`;
+            fb.className = 'feedback incorrect';
+        }
+    }
+
+    // --- TYPE 3 ---
+    let t3_a = 1, t3_c = -16, t3_root = "4", t3_hasSolutions = true;
+    function loadT3() {
+        const options = [
+            {a: 1, c: -4, root: "2", sol: true},
+            {a: 1, c: -9, root: "3", sol: true},
+            {a: 1, c: -16, root: "4", sol: true},
+            {a: 2, c: -8, root: "2", sol: true},
+            {a: 3, c: -27, root: "3", sol: true},
+            {a: 9, c: -4, root: "2/3", sol: true},
+            {a: 1, c: 4, root: "", sol: false},
+            {a: 1, c: 9, root: "", sol: false},
+            {a: 2, c: 8, root: "", sol: false}
+        ];
+        let opt = options[Math.floor(Math.random() * options.length)];
+        t3_a = opt.a;
+        t3_c = opt.c;
+        t3_root = opt.root;
+        t3_hasSolutions = opt.sol;
+
+        const aStr = formatA(t3_a);
+        const sign = t3_c < 0 ? '-' : '+';
+        document.getElementById('t3-eq').innerText = `${aStr}x² ${sign} ${Math.abs(t3_c)} = 0`;
+        document.getElementById('t3-input').value = '';
+        document.getElementById('t3-fb').innerText = '';
+        document.querySelectorAll('#type3 .hint-step').forEach(el => el.style.display = 'none');
+
+        const rightSideVal = -t3_c;
+        const dividedVal = rightSideVal / t3_a;
+
+        if (t3_a !== 1) {
+            document.getElementById('t3-btn-div').style.display = 'inline-block';
+            document.getElementById('t3-btn-sqrt').innerText = 'Stap 3: Worteltrekken';
+            document.getElementById('t3-spec-2').innerText = `👉 Uitwerking: Deel door ${t3_a}: x² = ${dividedVal}`;
+        } else {
+            document.getElementById('t3-btn-div').style.display = 'none';
+            document.getElementById('t3-btn-sqrt').innerText = 'Stap 2: Worteltrekken';
+        }
+
+        document.getElementById('t3-spec-1').innerText = `👉 Uitwerking: Breng ${t3_c < 0 ? t3_c : '+' + t3_c} naar rechts: ${aStr !== '' ? t3_a + 'x²' : 'x²'} = ${rightSideVal}`;
+        
+        if (t3_hasSolutions) {
+            document.getElementById('t3-spec-3').innerText = `👉 Uitwerking: x = ${t3_root}  of  x = -${t3_root}`;
+        } else {
+            document.getElementById('t3-spec-3').innerText = `👉 Uitwerking: Een kwadraat kan niet gelijk zijn aan een negatief getal (${dividedVal}), dus geen reële oplossingen!`;
+        }
+    }
+    function checkT3() {
+        const val = document.getElementById('t3-input').value.replace(/\s+/g, '').toLowerCase();
+        const fb = document.getElementById('t3-fb');
+        
+        if (!t3_hasSolutions) {
+            if (isNoSolutions(val)) {
+                fb.innerText = 'Uitstekend! Correct gezien dat er geen reële oplossingen zijn.';
+                fb.className = 'feedback correct';
+                return;
+            } else {
+                fb.innerText = 'Niet juist. Dit kwadraat wordt gelijk aan een negatief getal, dus zijn er geen reële oplossingen.';
+                fb.className = 'feedback incorrect';
+                return;
+            }
+        }
+
+        let cleanRoot = t3_root.replace(/\s+/g, '');
+        if (val.includes(cleanRoot) && val.includes(`-${cleanRoot}`)) {
+            fb.innerText = 'Fantastisch! Beide oplossingen zijn juist.';
+            fb.className = 'feedback correct';
+        } else {
+            fb.innerText = `Vergeet de min-oplossing niet! De antwoorden zijn x = ${t3_root} en x = -${t3_root}.`;
+            fb.className = 'feedback incorrect';
+        }
+    }
+
+    // --- TYPE 4 ---
+    let t4_a = 1, t4_p = 3, t4_k = -4, t4_hasSolutions = true, t4_ans1 = 5, t4_ans2 = 1;
+    function loadT4() {
+        t4_a = Math.random() < 0.5 ? 1 : 2;
+        t4_p = Math.floor(Math.random() * 3) + 1;
+        t4_hasSolutions = Math.random() > 0.3;
+
+        let absK, rightSideVal, dividedK, root;
+        if (t4_hasSolutions) {
+            const rootSq = Math.floor(Math.random() * 3) + 2;
+            t4_k = -(t4_a * rootSq * rootSq);
+            absK = Math.abs(t4_k);
+            rightSideVal = absK;
+            dividedK = rightSideVal / t4_a;
+            root = Math.sqrt(dividedK);
+            t4_ans1 = t4_p + root;
+            t4_ans2 = t4_p - root;
+        } else {
+            const posSq = Math.floor(Math.random() * 3) + 1;
+            t4_k = t4_a * posSq * posSq;
+            absK = Math.abs(t4_k);
+            rightSideVal = -absK;
+            dividedK = rightSideVal / t4_a;
+        }
+
+        const aStr = formatA(t4_a);
+        const sign = t4_k < 0 ? '-' : '+';
+        document.getElementById('t4-eq').innerText = `${aStr}(x - ${t4_p})² ${sign} ${absK} = 0`;
+        document.getElementById('t4-input').value = '';
+        document.getElementById('t4-fb').innerText = '';
+        document.querySelectorAll('#type4 .hint-step').forEach(el => el.style.display = 'none');
+
+        if (t4_a !== 1) {
+            document.getElementById('t4-btn-div').style.display = 'inline-block';
+            document.getElementById('t4-btn-sqrt').innerText = 'Stap 3: Wortel nemen';
+            document.getElementById('t4-btn-solve').innerText = 'Stap 4: Oplossen voor x';
+            document.getElementById('t4-div-title').innerHTML = `<strong>Stap 2:</strong> Deel beide leden door ${t4_a}.`;
+            document.getElementById('t4-spec-2').innerText = `👉 Uitwerking: Deel door ${t4_a}: (x - ${t4_p})² = ${dividedK}`;
+        } else {
+            document.getElementById('t4-btn-div').style.display = 'none';
+            document.getElementById('t4-btn-sqrt').innerText = 'Stap 2: Wortel nemen';
+            document.getElementById('t4-btn-solve').innerText = 'Stap 3: Oplossen voor x';
+        }
+
+        document.getElementById('t4-spec-1').innerText = `👉 Uitwerking: Breng ${t4_k} naar rechts: ${aStr !== '' ? t4_a : ''}(x - ${t4_p})² = ${rightSideVal}`;
+        
+        if (t4_hasSolutions) {
+            document.getElementById('t4-sqrt-title').innerHTML = `<strong>Stap ${t4_a !== 1 ? '3' : '2'}:</strong> Neem de wortel (plus en min).`;
+            document.getElementById('t4-spec-3').innerText = `👉 Uitwerking: x - ${t4_p} = ${root}  of  x - ${t4_p} = -${root}`;
+            document.getElementById('t4-solve-title').innerHTML = `<strong>Stap ${t4_a !== 1 ? '4' : '3'}:</strong> Bereken de waarden voor x.`;
+            document.getElementById('t4-spec-4').innerText = `👉 Uitwerking: x = ${t4_p} + ${root} = ${t4_ans1}  of  x = ${t4_p} - ${root} = ${t4_ans2}`;
+        } else {
+            document.getElementById('t4-sqrt-title').innerHTML = `<strong>Stap ${t4_a !== 1 ? '3' : '2'}:</strong> Wortel nemen.`;
+            document.getElementById('t4-spec-3').innerText = `👉 Uitwerking: Een kwadraat kan niet gelijk zijn aan een negatief getal (${dividedK}).`;
+            document.getElementById('t4-solve-title').innerHTML = `<strong>Stap ${t4_a !== 1 ? '4' : '3'}:</strong> Conclusie.`;
+            document.getElementById('t4-spec-4').innerText = `👉 Uitwerking: Geen reële oplossingen.`;
+        }
+    }
+    function checkT4() {
+        const val = document.getElementById('t4-input').value.replace(/\s+/g, '').toLowerCase();
+        const fb = document.getElementById('t4-fb');
+        
+        if (!t4_hasSolutions) {
+            if (isNoSolutions(val)) {
+                fb.innerText = 'Geweldig! Correct gezien dat er geen reële oplossingen zijn.';
+                fb.className = 'feedback correct';
+                return;
+            } else {
+                fb.innerText = 'Niet helemaal. Het kwadraat is gelijk aan een negatief getal, dus zijn er geen oplossingen.';
+                fb.className = 'feedback incorrect';
+                return;
+            }
+        }
+
+        if (val.includes(String(t4_ans1)) && val.includes(String(t4_ans2))) {
+            fb.innerText = 'Geweldig! Je hebt deze vergelijking helemaal juist opgelost.';
+            fb.className = 'feedback correct';
+        } else {
+            fb.innerText = `Niet helemaal. De juiste antwoorden zijn x = ${t4_ans1} en x = ${t4_ans2}.`;
+            fb.className = 'feedback incorrect';
+        }
+    }
+
+    // --- TEST / TOETS MODUS ---
+    let testList = [];
+    let testIndex = 0;
+    let testScore = 0;
+    let testTotalCount = 5;
+    let isSubmitting = false;
+    let currentRetry = false;
+
+    function startTest() {
+        const naamVeld = document.getElementById('student-naam').value.trim();
+        if (!naamVeld) {
+            alert("Vul alsjeblieft eerst je voornaam en naam in voordat je de test start!");
+            return;
+        }
+        // Universeel verborgen leerkracht wachtwoord voor encryptie (enkel jij kent dit)
+        window.currentTeacherPassword = "Bernardus_Math_Secure_Key_2026!";
+
+        const typeChoice = document.getElementById('test-type-select').value;
+        testTotalCount = parseInt(document.getElementById('test-count-select').value);
+        testList = [];
+        testIndex = 0;
+        testScore = 0;
+        isSubmitting = false;
+        currentRetry = false;
+
+        for (let i = 0; i < testTotalCount; i++) {
+            let chosenType = typeChoice;
+            if (chosenType === 'gemengd') {
+                chosenType = String(Math.floor(Math.random() * 4) + 1);
+            }
+            testList.push(generateTestExercise(chosenType));
+        }
+
+        document.getElementById('test-setup').style.display = 'none';
+        document.getElementById('test-active').style.display = 'block';
+        document.getElementById('test-result').style.display = 'none';
+        loadTestExercise();
+    }
+
+    function generateTestExercise(type) {
+        if (type === '1') {
+            const a = Math.floor(Math.random() * 6) + 1;
+            return { 
+                type: '1', 
+                eqStr: `${formatA(a)}x² = 0`, 
+                correctAnswerText: 'x = 0',
+                hint: 'Deel beide leden door de coëfficiënt van x². Een kwadraat is alleen 0 als het getal zelf 0 is.',
+                steps: [
+                    `1. Deel beide leden door ${a !== 1 ? a : '1'}: x² = 0`,
+                    `2. Eindoplossing: x = 0`
+                ]
+            };
+        } else if (type === '2') {
+            const pairs = [
+                {a: 1, b: -2, rootStr: "2"},
+                {a: 1, b: -4, rootStr: "4"},
+                {a: 2, b: -4, rootStr: "2"},
+                {a: 3, b: -2, rootStr: "2/3"},
+                {a: 2, b: -6, rootStr: "3"},
+                {a: 3, b: -6, rootStr: "2"},
+                {a: 4, b: -2, rootStr: "1/2"},
+                {a: 3, b: -4, rootStr: "4/3"}
+            ];
+            let p = pairs[Math.floor(Math.random() * pairs.length)];
+            const aStr = formatA(p.a);
+            return { 
+                type: '2', 
+                eqStr: `${aStr}x² - ${Math.abs(p.b)}x = 0`, 
+                target1: '0',
+                target2: p.rootStr,
+                correctAnswerText: `x = 0 of x = ${p.rootStr}`,
+                hint: `Zet de gemeenschappelijke factor x buiten haakjes en stel elk deel apart gelijk aan 0.`,
+                steps: [
+                    `1. Zet x buiten haakjes: x(${aStr}x - ${Math.abs(p.b)}) = 0`,
+                    `2. Stel elk deel gelijk aan 0: x = 0  of  ${aStr}x - ${Math.abs(p.b)} = 0`,
+                    `3. Werk verder uit: ${aStr}x = ${Math.abs(p.b)}`,
+                    `4. Oplossingen: x = 0  of  x = ${p.rootStr}`
+                ]
+            };
+        } else if (type === '3') {
+            const options = [
+                {a: 1, c: -4, root: "2", sol: true},
+                {a: 1, c: -9, root: "3", sol: true},
+                {a: 1, c: -16, root: "4", sol: true},
+                {a: 2, c: -8, root: "2", sol: true},
+                {a: 3, c: -27, root: "3", sol: true},
+                {a: 9, c: -4, root: "2/3", sol: true},
+                {a: 1, c: 4, root: "", sol: false},
+                {a: 1, c: 9, root: "", sol: false},
+                {a: 2, c: 8, root: "", sol: false}
+            ];
+            let opt = options[Math.floor(Math.random() * options.length)];
+            const aStr = formatA(opt.a);
+            const sign = opt.c < 0 ? '-' : '+';
+            const rightVal = Math.abs(opt.c);
+            const rightSide = opt.c < 0 ? rightVal : -rightVal;
+            const divided = rightSide / opt.a;
+            const constTermFormatted = opt.c;
+
+            if (opt.sol) {
+                return { 
+                    type: '3', 
+                    eqStr: `${aStr}x² ${sign} ${rightVal} = 0`, 
+                    target1: opt.root,
+                    target2: '-' + opt.root,
+                    correctAnswerText: `x = ${opt.root} of x = -${opt.root}`,
+                    hint: `Breng ${constTermFormatted} naar rechts, deel eventueel door de coëfficiënt van x², en neem de wortel (plus en min).`,
+                    steps: [
+                        `1. Breng ${constTermFormatted} naar rechts: ${aStr !== '' ? opt.a + 'x²' : 'x²'} = ${rightSide}`,
+                        ...(opt.a !== 1 ? [`2. Deel beide leden door ${opt.a}: x² = ${divided}`] : []),
+                        `${opt.a !== 1 ? '3' : '2'}. Neem de vierkantswortel (plus en min): x = ${opt.root}  of  x = -${opt.root}`
+                    ]
+                };
+            } else {
+                return { 
+                    type: '3', 
+                    eqStr: `${aStr}x² ${sign} ${rightVal} = 0`, 
+                    isNoSol: true,
+                    correctAnswerText: 'geen oplossingen',
+                    hint: `Breng ${constTermFormatted} naar rechts. Wat merk je op over het teken aan de rechterkant?`,
+                    steps: [
+                        `1. Breng ${constTermFormatted} naar rechts: ${aStr !== '' ? opt.a + 'x²' : 'x²'} = ${rightSide}`,
+                        ...(opt.a !== 1 ? [`2. Deel beide leden door ${opt.a}: x² = ${divided}`] : []),
+                        `${opt.a !== 1 ? '3' : '2'}. Een kwadraat kan niet gelijk zijn aan een negatief getal, dus geen reële oplossingen.`
+                    ]
+                };
+            }
+        } else {
+            const a = Math.random() < 0.5 ? 1 : 2;
+            const p = Math.floor(Math.random() * 3) + 1;
+            const hasSol = Math.random() > 0.3;
+            const aStr = formatA(a);
+
+            if (hasSol) {
+                const rootSq = Math.floor(Math.random() * 3) + 2;
+                const k = -(a * rootSq * rootSq);
+                const absK = Math.abs(k);
+                const dividedK = absK / a;
+                const root = Math.sqrt(dividedK);
+                const ans1 = p + root;
+                const ans2 = p - root;
+                return { 
+                    type: '4', 
+                    eqStr: `${aStr}(x - ${p})² - ${absK} = 0`, 
+                    target1: String(ans1),
+                    target2: String(ans2),
+                    correctAnswerText: `x = ${ans1} of x = ${ans2}`,
+                    hint: `Breng ${k} naar rechts, neem de wortel (plus en min) en los op voor x.`,
+                    steps: [
+                        `1. Breng ${k} naar rechts: ${aStr !== '' ? a : ''}(x - ${p})² = ${absK}`,
+                        ...(a !== 1 ? [`2. Deel beide leden door ${a}: (x - ${p})² = ${dividedK}`] : []),
+                        `${a !== 1 ? '3' : '2'}. Neem de wortel: x - ${p} = ${root}  of  x - ${p} = -${root}`,
+                        `${a !== 1 ? '4' : '3'}. Reken uit voor x: x = ${ans1}  of  x = ${ans2}`
+                    ]
+                };
+            } else {
+                const posK = a * (Math.floor(Math.random() * 3) + 1) * (Math.floor(Math.random() * 3) + 1);
+                const negVal = -posK;
+                const dividedNeg = negVal / a;
+                return { 
+                    type: '4', 
+                    eqStr: `${aStr}(x - ${p})² + ${posK} = 0`, 
+                    isNoSol: true,
+                    correctAnswerText: 'geen oplossingen',
+                    hint: `Breng +${posK} naar rechts. Wat concludeer je als een kwadraat gelijk is aan een negatief getal?`,
+                    steps: [
+                        `1. Breng +${posK} naar rechts: ${aStr !== '' ? a : ''}(x - ${p})² = ${negVal}`,
+                        ...(a !== 1 ? [`2. Deel beide leden door ${a}: (x - ${p})² = ${dividedNeg}`] : []),
+                        `${a !== 1 ? '3' : '2'}. Een kwadraat kan niet negatief zijn, dus geen reële oplossingen.`
+                    ]
+                };
+            }
+        }
+    }
+
+    function parseUserParts(val) {
+        let cleaned = val.replace(/x\s*=\s*/g, '');
+        let parts = cleaned.split(/of|,|en|;/).map(p => p.trim()).filter(p => p.length > 0);
+        return parts;
+    }
+
+    function evalFraction(str) {
+        if (!str) return null;
+        if (str.includes('/')) {
+            let parts = str.split('/');
+            return parseFloat(parts[0]) / parseFloat(parts[1]);
+        }
+        let num = parseFloat(str);
+        return isNaN(num) ? null : num;
+    }
+
+    function matchToken(userToken, targetToken) {
+        if (userToken === targetToken) return true;
+        let uVal = evalFraction(userToken);
+        let tVal = evalFraction(targetToken);
+        if (uVal !== null && tVal !== null && Math.abs(uVal - tVal) < 0.001) return true;
+        return false;
+    }
+
+    function evaluateAnswer(current, rawVal) {
+        if (current.type === '1') {
+            return (rawVal === 'x=0' || rawVal === '0') ? 'correct' : 'incorrect';
+        }
+        if (current.isNoSol) {
+            return isNoSolutions(rawVal) ? 'correct' : 'incorrect';
+        }
+
+        let userParts = parseUserParts(rawVal);
+        let t1 = current.target1;
+        let t2 = current.target2;
+
+        let matchedCount = 0;
+        let used = [false, false];
+
+        for (let up of userParts) {
+            let found = false;
+            if (!used[0] && matchToken(up, t1)) {
+                used[0] = true;
+                found = true;
+            } else if (!used[1] && matchToken(up, t2)) {
+                used[1] = true;
+                found = true;
+            }
+            if (found) matchedCount++;
+        }
+
+        if (matchedCount === 2 && userParts.length === 2) {
+            return 'correct';
+        } else if (matchedCount === 1) {
+            return 'partial';
+        } else {
+            return 'incorrect';
+        }
+    }
+
+    function loadTestExercise() {
+        if (testIndex >= testList.length) {
+            showTestResult();
+            return;
+        }
+        isSubmitting = false;
+        currentRetry = false;
+        const current = testList[testIndex];
+        current.alreadyAttemptedPartial = false;
+        document.getElementById('test-progress').innerText = `Oefening ${testIndex + 1} van ${testTotalCount}`;
+        document.getElementById('test-score-live').innerText = `Score: ${testScore}`;
+        document.getElementById('test-eq').innerText = current.eqStr;
+        
+        const inputField = document.getElementById('test-input');
+        inputField.value = '';
+        inputField.placeholder = "Bijv. x = 1 of x = 2/3 of geen oplossingen";
+
+        document.getElementById('test-fb').innerText = '';
+        document.getElementById('test-hint-text').innerText = current.hint;
+        document.getElementById('test-hints').style.display = 'none';
+    }
+
+    function submitTestAnswer() {
+        if (isSubmitting) return;
+
+        const rawVal = document.getElementById('test-input').value.replace(/\s+/g, '').toLowerCase();
+        const current = testList[testIndex];
+        const fb = document.getElementById('test-fb');
+
+        let evalRes = evaluateAnswer(current, rawVal);
+
+        if (evalRes === 'correct') {
+            isSubmitting = true;
+            if (!current.alreadyAttemptedPartial) {
+                testScore++;
+            }
+            current.userAnswer = document.getElementById('test-input').value.trim() || '(geen antwoord)';
+            current.isCorrect = true;
+            fb.innerText = 'Juist! 👍';
+            fb.className = 'feedback correct';
+            testIndex++;
+            setTimeout(loadTestExercise, 1200);
+        } else if (evalRes === 'partial') {
+            if (!currentRetry && current.target1) {
+                currentRetry = true;
+                current.alreadyAttemptedPartial = true;
+                fb.innerText = '⚠️ Je hebt 1 van de 2 oplossingen juist! Probeer het nog eens (je krijgt 1 extra kans).';
+                fb.className = 'feedback partial';
+            } else {
+                isSubmitting = true;
+                current.userAnswer = document.getElementById('test-input').value.trim() || '(geen antwoord)';
+                current.isCorrect = false;
+                fb.innerText = `Niet juist. Het juiste antwoord was: ${current.correctAnswerText}.`;
+                fb.className = 'feedback incorrect';
+                testIndex++;
+                setTimeout(loadTestExercise, 1500);
+            }
+        } else {
+            isSubmitting = true;
+            current.userAnswer = document.getElementById('test-input').value.trim() || '(geen antwoord)';
+            current.isCorrect = false;
+            fb.innerText = `Niet juist. Het juiste antwoord was: ${current.correctAnswerText}.`;
+            fb.className = 'feedback incorrect';
+            testIndex++;
+            setTimeout(loadTestExercise, 1500);
+        }
+    }
+
+    function showTestResult() {
+        document.getElementById('test-active').style.display = 'none';
+        const resBox = document.getElementById('test-result');
+        resBox.style.display = 'block';
+        
+        const studentNaam = document.getElementById('student-naam').value.trim() || 'Leerling';
+        const teacherPass = window.currentTeacherPassword || 'Bernardus2026';
+        
+        // Encrypt student name with CryptoJS AES
+        const encryptedName = CryptoJS.AES.encrypt(studentNaam, teacherPass).toString();
+
+        let percentage = Math.round((testScore / testTotalCount) * 100);
+        let message = percentage >= 80 ? '🌟 Uitstekend gedaan!' : (percentage >= 50 ? '👍 Goed geprobeerd, blijf nog wat oefenen!' : '💪 Blijven oefenen, je komt er wel!');
+
+        let diagnoseText = genereerDiagnose(testList);
+
+        let html = `
+            <div class="score-box">
+                <h2>Test Afgerond! 🎉</h2>
+                <div style="margin-bottom: 15px; font-size: 1.1rem; background: #fff; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); display: inline-block;">
+                    <strong>Leerling:</strong> <span style="background: black; color: black; padding: 2px 8px; border-radius: 4px; user-select: none;">██████████</span>
+                    <br><small style="color: #64748b; font-family: monospace; word-break: break-all;" title="Geëncrypteerd (gebruik je lokale tool met paswoord om te ontsleutelen)">🔒 ENC: ${encryptedName}</small>
+                </div>
+                <p style="font-size: 1.3rem;">Jouw score: <strong>${testScore} / ${testTotalCount}</strong> (${percentage}%)</p>
+                <p style="font-size: 1.1rem; font-weight: bold; color: var(--primary);">${message}</p>
+            </div>
+
+            <div class="fout-box" style="background-color: #fffbeb; border: 2px solid #facc15; padding: 20px; border-radius: 8px; margin-bottom: 25px; page-break-inside: avoid; break-inside: avoid;">
+                <h3 style="margin-top: 0; color: #b45309;">🧠 Jouw Persoonlijke Foutenanalyse</h3>
+                <p style="font-size: 1.05rem;">${diagnoseText}</p>
+            </div>
+
+            <div id="action-buttons" style="text-align: center; margin: 35px 0; background: white; padding: 20px; border-radius: 12px; border: 2px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <h3 style="margin-top: 0;">Bewaar je resultaten:</h3>
+                <p>Klik op de knop hieronder om je volledige rapport op te slaan. Je leerkracht kan hierom vragen.</p>
+                
+                <button class="btn" style="font-size: 1.2rem; padding: 15px 30px; background-color: #dc2626; border-radius: 8px; width: 100%; max-width: 450px; margin-top: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="downloadPDF()" onmouseover="this.style.backgroundColor='#b91c1c'" onmouseout="this.style.backgroundColor='#dc2626'">
+                    <span style="font-size: 1.5rem;">📥</span> KLIK HIER OM EEN RAPPORT IN PDF TE DOWNLOADEN
+                </button>
+                
+                <br><br>
+                <button class="btn btn-secondary" onclick="resetTest()">Nieuwe Test Maken 🔄</button>
+            </div>
+
+            <h2>📋 Uitgebreid Overzicht & Uitwerkingen</h2>
+            <p>Hieronder zie je per oefening of je antwoord juist (groen) of fout (rood) was, inclusief alle stappen:</p>
+            <br>
+        `;
+
+        testList.forEach((item, index) => {
+            let cardClass = item.isCorrect ? 'correct' : 'incorrect';
+            let icon = item.isCorrect ? '✅ Juist' : '❌ Fout';
+            let colorStyle = item.isCorrect ? 'color: var(--success);' : 'color: var(--error);';
+
+            html += `
+                <div class="review-card ${cardClass}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <strong>Oefening ${index + 1}</strong>
+                        <span style="font-weight: bold; ${colorStyle}">${icon}</span>
+                    </div>
+                    <div style="font-size: 1.2rem; font-weight: bold; color: var(--primary); margin-bottom: 8px;">${item.eqStr}</div>
+                    <p><strong>Jouw antwoord:</strong> ${item.userAnswer}</p>
+                    <p><strong>Juiste antwoord:</strong> ${item.correctAnswerText}</p>
+                    <div style="margin-top: 10px; background: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+                        <strong>Uitgewerkte stappen:</strong><br>
+                        ${item.steps.join('<br>')}
+                    </div>
+                </div>
+            `;
+        });
+
+        resBox.innerHTML = html;
+    }
+
+    function resetTest() {
+        document.getElementById('test-setup').style.display = 'block';
+        document.getElementById('test-result').style.display = 'none';
+    }
+
+    // Aangepaste PDF functie waarbij we de downloadknop tijdelijk verbergen
+    function downloadPDF() {
+        const element = document.getElementById('test-result');
+        const studentNaam = document.getElementById('student-naam').value.trim() || 'Leerling';
+        const actionButtons = document.getElementById('action-buttons');
+        
+        // Verberg de actieknoppen voor een propere PDF
+        if(actionButtons) actionButtons.style.display = 'none';
+
+        const opt = {
+            margin:       [10, 10, 15, 10],
+            filename:     `Toetsresultaat_Rapport.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak:    { mode: ['css', 'legacy'], avoid: ['.review-card', '.score-box', '.fout-box'] }
+        };
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            // Laat de knoppen weer zien na het genereren
+            if(actionButtons) actionButtons.style.display = 'block';
+        });
+    }
+
+    window.onload = function() {
+        loadT1();
+        loadT2();
+        loadT3();
+        loadT4();
+    };
+</script>
+<script src="tracker.js"></script>
+<script>
+  // 5duOnvolledigeVKV (los van de bestandsnaam)
+  WiskundeTracker.init({
+    appId: "onvolledige-tweedegraadsvgl",
+    moduleId: "zuiver-kwadratisch"
+  });
+</script>
+
+// Voorbeeld wanneer een leerling een oefening verbetert:
+WiskundeTracker.logOpgave({
+  isCorrect: false,
+  foutCategorie: "negatieve_wortel_vergeten", // Jouw eigen foutlabel
+  details: {
+    opgave_id: "zk-04",
+    versie: "1.0",
+    opgave: "3x^2 - 12 = 0",
+    invoer: "x = 2"
+  }
+});
+
+
+</body>
+</html>
