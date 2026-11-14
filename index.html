@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wiskunde Apps — Leerlingenportaal</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-light: #eef2ff;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      line-height: 1.5;
+    }
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon {
+      background: var(--primary);
+      color: white;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.2rem;
+    }
+    .brand h1 { font-size: 1.2rem; margin: 0; color: var(--text); }
+    .brand span { display: block; font-size: 0.8rem; color: var(--muted); }
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+    }
+    .user-pill button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .user-pill button:hover { background: var(--primary-hover); }
+    main { max-width: 1040px; margin: 32px auto; padding: 0 20px; }
+    .section-title {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .klassen-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 36px;
+    }
+    .klas-btn {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 16px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .klas-btn:hover { border-color: #a5b4fc; transform: translateY(-2px); }
+    .klas-btn.active {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.12);
+    }
+    .klas-btn .klas-naam { display: block; font-size: 1.25rem; font-weight: 800; color: var(--text); }
+    .klas-btn.active .klas-naam { color: var(--primary); }
+    .klas-btn .klas-sub { display: block; font-size: 0.85rem; color: var(--muted); margin-top: 2px; }
+    .apps-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .apps-header h2 { margin: 0; font-size: 1.35rem; }
+    .search-box {
+      padding: 9px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.92rem;
+      width: 260px;
+      max-width: 100%;
+      background: var(--card);
+    }
+    .apps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 18px;
+    }
+    .app-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.18s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .app-card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+      transform: translateY(-2px);
+    }
+    .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+    .badge-version { background: #f1f5f9; color: #475569; font-family: monospace; }
+    .badge-new { background: var(--success-bg); color: var(--success); }
+    .app-card h3 { margin: 0 0 8px 0; font-size: 1.15rem; color: var(--text); }
+    .app-card p { margin: 0 0 20px 0; font-size: 0.92rem; color: var(--muted); }
+    .open-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 11px 16px;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border-radius: 8px;
+      transition: background 0.15s;
+    }
+    .open-btn:hover { background: var(--primary-hover); }
+    .empty-state {
+      background: var(--card);
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--muted);
+      grid-column: 1 / -1;
+    }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: white;
+      padding: 28px;
+      border-radius: 14px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+    .modal-box h2 { margin: 0 0 8px 0; font-size: 1.25rem; }
+    .modal-box p { margin: 0 0 18px 0; font-size: 0.9rem; color: var(--muted); }
+    .modal-box label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; }
+    .modal-box select, .modal-box input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 14px;
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+    .btn-cancel {
+      padding: 10px 16px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-save {
+      padding: 10px 18px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">∑</div>
+      <div>
+        <h1>Wiskunde Oefenportaal</h1>
+        <span>Kies je klas en start een interactieve module</span>
+      </div>
+    </div>
+    <div class="user-pill">
+      <span id="status-tekst">👤 Niet aangemeld</span>
+      <button onclick="openCodeModal(true)">Code / Klas</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="section-title">1. Kies jouw klas</div>
+  <div id="klassen-container" class="klassen-grid"></div>
+
+  <div class="apps-header">
+    <h2 id="apps-titel">Beschikbare apps</h2>
+    <input id="zoek-input" class="search-box" type="text" placeholder="Zoek op onderwerp of titel..." oninput="renderApps()" />
+  </div>
+
+  <div id="apps-container" class="apps-grid"></div>
+</main>
+
+<div id="code-modal" class="modal-overlay">
+  <div class="modal-box">
+    <h2>Aanmelden portaal</h2>
+    <p>Kies je klas en vul je persoonlijke leerlingcode in. Je browser onthoudt dit automatisch voor alle apps.</p>
+    <label for="modal-klas">Klas</label>
+    <select id="modal-klas"></select>
+    <label for="modal-code">Persoonlijke leerlingcode</label>
+    <input id="modal-code" type="text" placeholder="bv. WISK456" style="text-transform: uppercase;" />
+    <div class="modal-actions">
+      <button id="modal-annuleer" class="btn-cancel" onclick="sluitCodeModal()">Annuleren</button>
+      <button class="btn-save" onclick="bewaarLeerling()">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* START_CONFIG_DATA */
+const KLASSEN = [
+  {
+    "id": "5duHT",
+    "naam": "5duHT",
+    "subtitel": "5e jaar"
+  },
+  {
+    "id": "5doSW",
+    "naam": "5doSW",
+    "subtitel": "6e jaar"
+  },
+  {
+    "id": "6doSW",
+    "naam": "6doSW",
+    "subtitel": "6e jaar"
+  },
+  {
+    "id": "6doTW",
+    "naam": "6doTW",
+    "subtitel": "6e jaar"
+  }
+];
+
+const APPS = [
+  {
+    "titel": "Onvolledige tweedegraadsvergelijkingen",
+    "beschrijving": "Theorie, stapsgewijze oefeningen (Type 1 t.e.m. 4) met hints en zelftest.",
+    "bestand": "tweedegraads_toets_test.html",
+    "versie": "1.0",
+    "nieuw": true,
+    "onderdeel": "Vergelijkingen",
+    "klassen": [
+      "5duHT"
+    ]
+  }
+];
+/* END_CONFIG_DATA */
+
+let geselecteerdeKlas = localStorage.getItem("wisk_leerling_klas") || KLASSEN[0].id;
+if (!KLASSEN.some(k => k.id === geselecteerdeKlas)) {
+  geselecteerdeKlas = KLASSEN[0].id;
+}
+
+function updateHeaderStatus() {
+  const code = localStorage.getItem("wisk_leerling_code") || "";
+  const klas = localStorage.getItem("wisk_leerling_klas") || "";
+  const el = document.getElementById("status-tekst");
+  if (code) {
+    el.innerHTML = `👤 <strong>${code}</strong> (${klas || "-"})`;
+  } else {
+    el.textContent = "👤 Nog geen code ingesteld";
+  }
+}
+
+function renderKlassen() {
+  const container = document.getElementById("klassen-container");
+  container.innerHTML = KLASSEN.map(k => {
+    const isActief = k.id === geselecteerdeKlas;
+    return `
+      <button class="klas-btn ${isActief ? "active" : ""}" onclick="kiesKlas('${k.id}')">
+        <span class="klas-naam">${k.naam}</span>
+        <span class="klas-sub">${k.subtitel || ""}</span>
+      </button>
+    `;
+  }).join("");
+}
+
+function kiesKlas(klasId) {
+  geselecteerdeKlas = klasId;
+  localStorage.setItem("wisk_leerling_klas", klasId);
+  updateHeaderStatus();
+  renderKlassen();
+  renderApps();
+}
+
+function renderApps() {
+  const zoekterm = document.getElementById("zoek-input").value.trim().toLowerCase();
+  const klasObj = KLASSEN.find(k => k.id === geselecteerdeKlas);
+  document.getElementById("apps-titel").textContent = `Apps voor ${klasObj ? klasObj.naam : geselecteerdeKlas}`;
+
+  const gefilterd = APPS.filter(app => {
+    const hoortBijKlas = app.klassen.includes(geselecteerdeKlas);
+    const matchZoek = !zoekterm ||
+      app.titel.toLowerCase().includes(zoekterm) ||
+      app.beschrijving.toLowerCase().includes(zoekterm) ||
+      (app.onderdeel && app.onderdeel.toLowerCase().includes(zoekterm));
+    return hoortBijKlas && matchZoek;
+  });
+
+  const container = document.getElementById("apps-container");
+
+  if (gefilterd.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <strong>Geen apps gevonden</strong><br>
+        Er zijn momenteel nog geen apps beschikbaar voor deze selectie.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = gefilterd.map(app => {
+    const urlMetVersie = `${app.bestand}?v=${encodeURIComponent(app.versie || "1.0")}`;
+    return `
+      <div class="app-card">
+        <div>
+          <div class="badges">
+            ${app.onderdeel ? `<span class="badge">${app.onderdeel}</span>` : ""}
+            <span class="badge badge-version">v${app.versie || "1.0"}</span>
+            ${app.nieuw ? `<span class="badge badge-new">Nieuw</span>` : ""}
+          </div>
+          <h3>${app.titel}</h3>
+          <p>${app.beschrijving}</p>
+        </div>
+        <a class="open-btn" href="${urlMetVersie}">Start app →</a>
+      </div>
+    `;
+  }).join("");
+}
+
+function openCodeModal(kanSluiten = true) {
+  const sel = document.getElementById("modal-klas");
+  sel.innerHTML = KLASSEN.map(k =>
+    `<option value="${k.id}" ${k.id === geselecteerdeKlas ? "selected" : ""}>${k.naam}</option>`
+  ).join("");
+
+  document.getElementById("modal-code").value = localStorage.getItem("wisk_leerling_code") || "";
+  document.getElementById("modal-annuleer").style.display = kanSluiten ? "inline-block" : "none";
+  document.getElementById("code-modal").classList.add("open");
+}
+
+function sluitCodeModal() {
+  document.getElementById("code-modal").classList.remove("open");
+}
+
+function bewaarLeerling() {
+  const code = document.getElementById("modal-code").value.trim().toUpperCase();
+  const klas = document.getElementById("modal-klas").value;
+  if (code.length < 4) {
+    alert("Vul een geldige code van minstens 4 tekens in.");
+    return;
+  }
+  localStorage.setItem("wisk_leerling_code", code);
+  localStorage.setItem("wisk_leerling_klas", klas);
+  geselecteerdeKlas = klas;
+  updateHeaderStatus();
+  renderKlassen();
+  renderApps();
+  sluitCodeModal();
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  updateHeaderStatus();
+  renderKlassen();
+  renderApps();
+  if (!localStorage.getItem("wisk_leerling_code")) {
+    openCodeModal(false);
+  }
+});
+</script>
+
+</body>
+</html>
