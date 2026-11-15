@@ -292,64 +292,22 @@
       z-index: 90;
     }
   </style>
- <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#2563eb">
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js');
-      });
-    }
-
-    let deferredPrompt = null;
-
-    function toonInstallKnop() {
-      const installBtn = document.getElementById('install-btn');
-      if (installBtn && deferredPrompt) {
-        installBtn.style.display = 'inline-flex';
-      }
-    }
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      toonInstallKnop();
-    });
-
-    window.addEventListener('DOMContentLoaded', toonInstallKnop);
-
-    async function installeerApp() {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        const installBtn = document.getElementById('install-btn');
-        if (installBtn) installBtn.style.display = 'none';
-      }
-      deferredPrompt = null;
-    }
-  </script>
 </head>
 <body>
 
 <header>
   <div class="header-inner">
     <div class="brand">
-      <img src="logo.png" alt="Bernardustechnicum Wiskunde Logo" class="brand-icon" data-fallbacks="['Logo.png','logo.jpg','Logo.jpg','logo.jpeg','logo.svg','logo.webp']" onerror="const list=JSON.parse(this.dataset.fallbacks.replace(/'/g,'&quot;'));const i=Number(this.dataset.fbIdx||0);if(i<list.length){this.dataset.fbIdx=i+1;this.src=list[i];}else{this.style.display='none';document.getElementById('brand-fb').style.display='flex';}" />
+      <img src="logo.png" alt="Bernardustechnicum Wiskunde Logo" class="brand-icon" data-fallbacks="[&#39;Logo.png&#39;,&#39;logo.jpg&#39;,&#39;Logo.jpg&#39;,&#39;logo.jpeg&#39;,&#39;logo.svg&#39;,&#39;logo.webp&#39;,&#39;logo-192.png&#39;,&#39;logo-512.png&#39;]" onerror="const list=JSON.parse(this.dataset.fallbacks.replace(/'/g,'&quot;'));const i=Number(this.dataset.fbIdx||0);if(i<list.length){this.dataset.fbIdx=i+1;this.src=list[i];}else{this.style.display='none';document.getElementById('brand-fb').style.display='flex';}" />
       <div id="brand-fb" class="brand-fallback">∑</div>
       <div>
         <h1>Wiskunde Oefenportaal</h1>
         <span>Kies je klas en start een interactieve module</span>
       </div>
     </div>
-    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-      <button id="install-btn" style="display:none; align-items:center; gap:6px; background:#16a34a; color:white; border:none; padding:6px 14px; border-radius:999px; font-size:0.88rem; font-weight:600; cursor:pointer;" onclick="installeerApp()">
-        📱 Installeer App
-      </button>
-      <div class="user-pill">
-        <span id="status-tekst">👤 Niet aangemeld</span>
-        <button onclick="openCodeModal(true)">Code / Klas</button>
-      </div>
+    <div class="user-pill">
+      <span id="status-tekst">👤 Niet aangemeld</span>
+      <button onclick="openCodeModal(true)">Code / Klas</button>
     </div>
   </div>
 </header>
