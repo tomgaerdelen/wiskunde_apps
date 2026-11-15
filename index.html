@@ -298,7 +298,7 @@
 <header>
   <div class="header-inner">
     <div class="brand">
-      <img src="logo.png" alt="Bernardustechnicum Wiskunde Logo" class="brand-icon" onerror="if(!this.dataset.triedCap){this.dataset.triedCap='1';this.src='Logo.png';}else{this.style.display='none';document.getElementById('brand-fb').style.display='flex';}" />
+      <img src="logo.png" alt="Bernardustechnicum Wiskunde Logo" class="brand-icon" data-fallbacks="[&#39;Logo.png&#39;,&#39;logo.jpg&#39;,&#39;Logo.jpg&#39;,&#39;logo.jpeg&#39;,&#39;logo.svg&#39;,&#39;logo.webp&#39;]" onerror="const list=JSON.parse(this.dataset.fallbacks.replace(/'/g,'&quot;'));const i=Number(this.dataset.fbIdx||0);if(i<list.length){this.dataset.fbIdx=i+1;this.src=list[i];}else{this.style.display='none';document.getElementById('brand-fb').style.display='flex';}" />
       <div id="brand-fb" class="brand-fallback">∑</div>
       <div>
         <h1>Wiskunde Oefenportaal</h1>
