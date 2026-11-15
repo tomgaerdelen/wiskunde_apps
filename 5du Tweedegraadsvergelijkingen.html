@@ -1,0 +1,3360 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tweedegraadsvergelijkingen Oefenen & Testen</title>
+    <script>
+        // MathJax: ook $...$ als inline wiskunde herkennen (standaard enkel \( ... \))
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+    <!-- HTML2PDF Script voor PDF generatie (onderdeel onvolledige vergelijkingen) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- html2canvas + jsPDF (onderdeel volledige vergelijkingen en gemengde toets) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js"></script>
+    <style>
+        /* =====================================================================
+           GEDEELD: pagina, startscherm en navigatie
+           ===================================================================== */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f9; color: #333; margin: 0; padding: 20px; }
+
+        .topbar { max-width: 860px; margin: 0 auto 14px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+        .topbar.smal { max-width: 860px; }
+        #app-onv .topbar { max-width: 960px; }
+        .terug-knop { background: white; border: 1px solid #c7d2fe; color: #4f46e5; padding: 8px 16px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-family: inherit; }
+        .terug-knop:hover { background: #e0e7ff; }
+        .topbar-titel { color: #64748b; font-weight: 600; }
+        .stop-knop { display: block; margin: 18px auto 0; background: none; border: none; color: #64748b; font-size: 15px; font-weight: 600; cursor: pointer; text-decoration: underline; font-family: inherit; }
+        .stop-knop:hover { color: #4f46e5; }
+
+        .home { max-width: 980px; margin: 0 auto; }
+        .home-kop { text-align: center; margin: 10px 0 30px; }
+        .home-kop .home-badge { background-color: #e2e8f0; border-radius: 50%; width: 220px; height: 70px; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; font-size: 22px; color: #4a5568; }
+        .home-kop h1 { color: #4f46e5; margin: 0 0 6px; font-size: 32px; }
+        .home-kop p { color: #64748b; margin: 0; font-size: 17px; }
+        .keuze-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 22px; }
+        .keuze-kaart { background: white; border-radius: 14px; padding: 26px 24px 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); display: flex; flex-direction: column; border-top: 6px solid #4f46e5; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+        .keuze-kaart:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(79,70,229,0.15); }
+        .keuze-kaart.onv { border-top-color: #6366f1; }
+        .keuze-kaart.vol { border-top-color: #4f46e5; }
+        .keuze-kaart.mix { border-top-color: #059669; }
+        .keuze-icoon { width: 52px; height: 52px; border-radius: 50%; background: #e0e7ff; display: flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 14px; }
+        .keuze-kaart.mix .keuze-icoon { background: #d1fae5; }
+        .keuze-kaart h2 { color: #2d3748; font-size: 21px; margin: 0 0 10px; }
+        .keuze-formules { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; margin-bottom: 12px; color: #4f46e5; font-size: 15px; line-height: 1.9; }
+        .keuze-kaart p { color: #4a5568; margin: 0 0 18px; line-height: 1.5; }
+        .keuze-knop-groot { margin-top: auto; background: #4f46e5; color: white; border: none; border-radius: 8px; padding: 12px 18px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-family: inherit; }
+        .keuze-knop-groot:hover { background: #4338ca; }
+        .keuze-kaart.mix .keuze-knop-groot { background: #059669; }
+        .keuze-kaart.mix .keuze-knop-groot:hover { background: #047857; }
+        .home-voet { text-align: center; color: #94a3b8; font-size: 13px; margin-top: 30px; }
+
+        /* =====================================================================
+           ONDERDEEL VOLLEDIGE VERGELIJKINGEN (ook gebruikt door de gemengde toets)
+           ===================================================================== */
+        :is(#app-vol, #app-mix) .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        :is(#app-vol, #app-mix) .header-badge { background-color: #e2e8f0; border-radius: 50%; width: 220px; height: 70px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 24px; color: #4a5568; }
+        :is(#app-vol, #app-mix) :is(h1, h2, h3, h4) { color: #2d3748; text-align: center; }
+        :is(#app-vol, #app-mix) .settings-bar { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 30px; }
+        :is(#app-vol, #app-mix) .settings-bar select { padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e0; font-size: 16px; }
+        :is(#app-vol, #app-mix) .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 600; transition: background 0.2s; }
+        :is(#app-vol, #app-mix) .btn-primary { background-color: #4f46e5; color: white; width: 100%; margin-top: 10px; }
+        :is(#app-vol, #app-mix) .btn-primary:hover { background-color: #4338ca; }
+        :is(#app-vol, #app-mix) .btn-outline { background-color: transparent; border: 1px solid #4f46e5; color: #4f46e5; width: 100%; margin-bottom: 15px; }
+        :is(#app-vol, #app-mix) .btn-outline:hover { background-color: #e0e7ff; }
+        :is(#app-vol, #app-mix) .step-box { background: #fafafa; border: 1px solid #eaeaea; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        :is(#app-vol, #app-mix) .step-badge { background-color: #4f46e5; color: white; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; margin-right: 10px; }
+        :is(#app-vol, #app-mix) .input-group { margin-bottom: 15px; }
+        :is(#app-vol, #app-mix) .input-group label { display: block; margin-bottom: 8px; font-weight: 600; }
+        :is(#app-vol, #app-mix) .input-group input { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
+        :is(#app-vol, #app-mix) .feedback { margin-top: 10px; padding: 10px; border-radius: 6px; display: none; }
+        :is(#app-vol, #app-mix) .feedback.error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        :is(#app-vol, #app-mix) .feedback.success { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        :is(#app-vol, #app-mix) .kladblok { background: #f8fafc; border: 1px dashed #cbd5e0; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: none; text-align: center; overflow-x: auto; }
+        :is(#app-vol, #app-mix) .kladblok input { width: 60px; text-align: center; padding: 5px; margin: 0 2px; border: 1px solid #cbd5e0; border-radius: 4px; }
+        :is(#app-vol, #app-mix) .kladblok-formula { display: inline-flex; align-items: center; font-size: 18px; }
+        :is(#app-vol, #app-mix) .kladblok-fraction { display: inline-flex; flex-direction: column; align-items: center; margin: 0 10px; vertical-align: middle; }
+        :is(#app-vol, #app-mix) .kladblok-numerator { border-bottom: 2px solid #333; padding-bottom: 2px; display: flex; align-items: center; }
+        :is(#app-vol, #app-mix) .kladblok-denominator { padding-top: 2px; }
+        :is(#app-vol, #app-mix) .sqrt-symbol { font-size: 24px; margin-right: 2px; }
+        :is(#app-vol, #app-mix) .sqrt-content { border-top: 2px solid #333; padding-top: 2px; display: inline-block; }
+
+        /* ===== Rapport: wordt buiten beeld opgebouwd en als PDF opgeslagen ===== */
+        #rapport-bron, .pdf-pagina { position: fixed; left: -10000px; top: 0; width: 700px; background: white; }
+        .rapport { line-height: 1.5; font-size: 15px; color: #333; }
+        .rapport h1 { color: #4f46e5; text-align: left; margin: 0; font-size: 26px; }
+        .rapport h2 { text-align: left; font-size: 19px; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; margin: 0; }
+        .rapport h3 { text-align: left; font-size: 16px; margin: 0; }
+        .rapport p { margin: 4px 0; }
+        .rapport ul { margin: 6px 0; padding-left: 22px; }
+        .rapport .meta { color: #718096; }
+        .u { padding-bottom: 8px; }
+        .u > * { margin-top: 0 !important; margin-bottom: 0 !important; }
+        .u.kop, .u.start { padding-top: 14px; }
+        .oef-start { border-top: 2px solid #e2e8f0; padding-top: 10px; }
+        .score-rij { display: flex; gap: 12px; }
+        .score-kaart { flex: 1; background: #f8fafc; border: 1px solid #cbd5e0; border-radius: 8px; padding: 10px 14px; text-align: center; }
+        .score-kaart .groot { font-size: 24px; font-weight: 700; color: #4f46e5; }
+        .score-kaart .klein { font-size: 12px; color: #4a5568; }
+        .docent-box { background: #f0f4ff; border-left: 4px solid #4f46e5; padding: 10px 16px; border-radius: 0 8px 8px 0; }
+        .sterk-box { background: #ecfdf5; border-left: 4px solid #10b981; padding: 10px 16px; border-radius: 0 8px 8px 0; }
+        .fout-kaart { background: #fff7f7; border: 1px solid #fecaca; border-left: 4px solid #ef4444; border-radius: 0 8px 8px 0; padding: 10px 16px; }
+        .fout-kaart .fout-titel { font-weight: 700; color: #991b1b; }
+        .fout-kaart .aantal { color: #718096; font-size: 13px; font-weight: 400; }
+        .fout-kaart .tip { background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 6px 10px; margin-top: 8px; }
+        table.overzicht { width: 100%; border-collapse: collapse; font-size: 14px; }
+        table.overzicht th { background: #f8fafc; border: 1px solid #cbd5e0; padding: 6px 8px; text-align: center; }
+        table.overzicht td { border: 1px solid #cbd5e0; padding: 5px 8px; text-align: center; }
+        .t-ok { color: #047857; font-weight: 600; }
+        .t-warn { color: #b45309; font-weight: 600; }
+        .t-bad { color: #b91c1c; font-weight: 600; }
+        .oef-kop { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .badge { border-radius: 12px; padding: 2px 10px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+        .badge-ok { background: #d1fae5; color: #065f46; }
+        .badge-warn { background: #fef3c7; color: #92400e; }
+        .badge-bad { background: #fee2e2; color: #991b1b; }
+        .stap-titel { font-weight: 700; color: #4f46e5; margin-top: 6px; }
+        .fouten-blok { background: #fff7f7; border: 1px solid #fecaca; border-radius: 6px; padding: 4px 14px; margin: 8px 0; }
+        .fouten-blok ul { margin: 4px 0; }
+        .nb { white-space: nowrap; }
+        .antwoord-box { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; padding: 4px 10px; text-align: center; }
+        .rapport mjx-container[display="true"] { margin: 0.3em 0 !important; }
+        .rapport mjx-assistive-mml, .pdf-pagina mjx-assistive-mml { display: none !important; }
+        /* extra voor het rapport van de gemengde toets */
+        .rapport .soort-label { font-weight: 400; color: #718096; font-size: 14px; }
+        table.overzicht td.links { text-align: left; }
+
+        /* =====================================================================
+           ONDERDEEL ONVOLLEDIGE VERGELIJKINGEN
+           ===================================================================== */
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --success: #16a34a;
+            --success-bg: #f0fdf4;
+            --error: #dc2626;
+            --error-bg: #fef2f2;
+            --partial: #d97706;
+            --hint-bg: #fef9c3;
+            --hint-border: #facc15;
+        }
+        #app-onv, #test-result {
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        #app-onv .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        #app-onv h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 10px 16px;
+            border: 2px solid var(--border-color);
+            background: #fff;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+        .theory-card, .practice-card {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .formula {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 15px 0;
+            background: #e0e7ff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        #app-onv .btn, #test-result .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            text-decoration: none;
+        }
+        #app-onv .btn:hover {
+            background: var(--primary-hover);
+        }
+        #app-onv .btn-secondary {
+            background: #64748b;
+        }
+        #app-onv .btn-secondary:hover {
+            background: #475569;
+        }
+        .btn-warning {
+            background: #ca8a04;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-right: 5px;
+            margin-bottom: 6px;
+        }
+        .btn-warning:hover {
+            background: #a16207;
+        }
+        .hints-container {
+            margin-top: 20px;
+            background: #fffbeb;
+            border: 1px solid var(--hint-border);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .hint-step {
+            background: var(--hint-bg);
+            border-left: 4px solid #eab308;
+            padding: 10px 12px;
+            margin: 8px 0;
+            border-radius: 0 6px 6px 0;
+            display: none;
+            font-size: 0.95rem;
+        }
+        .specific-walkthrough {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #eab308;
+            color: #713f12;
+            font-weight: 600;
+        }
+        #app-onv input[type="text"], #app-onv select {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            width: 320px;
+            margin-right: 10px;
+            margin-bottom: 8px;
+        }
+        #app-onv select {
+            background: white;
+        }
+        #app-onv .feedback {
+            margin-top: 10px;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        #app-onv .feedback.correct { color: var(--success); }
+        #app-onv .feedback.incorrect { color: var(--error); }
+        #app-onv .feedback.partial { color: var(--partial); }
+        .score-box {
+            page-break-inside: avoid;
+            break-inside: avoid;
+            text-align: center;
+            padding: 20px;
+            background: #f0fdf4;
+            border: 2px solid var(--success);
+            border-radius: 8px;
+            margin-top: 20px;
+            margin-bottom: 25px;
+        }
+        .review-card {
+            page-break-inside: avoid;
+            break-inside: avoid;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+        }
+        .review-card.correct {
+            background-color: var(--success-bg);
+            border-color: var(--success);
+        }
+        .review-card.incorrect {
+            background-color: var(--error-bg);
+            border-color: var(--error);
+        }
+        #test-result.pdf-export {
+            box-sizing: border-box;
+            padding: 0 12px 0 2px;
+        }
+        /* De foutenanalyse mag over twee pagina's lopen, maar nooit midden in een werkpunt breken */
+        .diag-item {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        /* =====================================================================
+           GEMENGDE TOETS (bouwt verder op de stijl van de volledige vergelijkingen)
+           ===================================================================== */
+        #app-mix .mix-intro { text-align: center; color: #4a5568; margin-bottom: 30px; }
+        #app-mix .keuze-rij { display: flex; gap: 12px; flex-wrap: wrap; }
+        #app-mix .keuze-knop { flex: 1; min-width: 140px; padding: 12px; border: 2px solid #cbd5e0; background: white; border-radius: 8px; font-size: 16px; font-weight: 600; color: #4a5568; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+        #app-mix .keuze-knop:hover { border-color: #a5b4fc; }
+        #app-mix .keuze-knop.actief { border-color: #4f46e5; background: #4f46e5; color: white; }
+        #app-mix .mix-uitleg { background: #f0f4ff; border-left: 4px solid #4f46e5; border-radius: 0 8px 8px 0; padding: 12px 16px 12px 34px; margin: 5px 0 15px; color: #2d3748; line-height: 1.6; }
+        #app-mix .mix-kop { display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: #64748b; }
+        #app-mix .mix-kop #mix-score { color: #4f46e5; }
+        #app-mix .mix-vergelijking { font-size: 24px; text-align: center; margin: 15px 0 20px; padding: 20px; background: #e0e7ff; border-radius: 8px; }
+        #app-mix .mix-hulptekst { color: #4a5568; font-size: 14px; }
+        #app-mix .feedback.partial { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        #app-mix .mix-hint { display: none; background: #fef9c3; border-left: 4px solid #eab308; padding: 10px 12px; border-radius: 0 6px 6px 0; color: #713f12; margin-bottom: 5px; }
+        #app-mix .mix-hint div { margin-top: 6px; padding-top: 6px; border-top: 1px dashed #eab308; font-weight: 600; }
+        #app-mix .mix-eind-detail { color: #4a5568; }
+
+        @media (max-width: 600px) {
+            body { padding: 12px; }
+            :is(#app-vol, #app-mix) .container, #app-onv .container { padding: 18px; }
+            :is(#app-vol, #app-mix) .settings-bar { flex-wrap: wrap; }
+            #app-onv input[type="text"], #app-onv select { width: 100%; box-sizing: border-box; }
+        }
+        body { padding-bottom: 50px; }
+        .maker-credit { position: fixed; right: 14px; bottom: 10px; font-size: 12px; color: #94a3b8; background: rgba(255,255,255,0.85); padding: 2px 8px; border-radius: 6px; pointer-events: none; z-index: 9999; }
+        .pdf-credit { text-align: right; font-size: 12px; color: #94a3b8; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<!-- =====================================================================
+     STARTSCHERM
+     ===================================================================== -->
+<div id="app-home" class="scherm home">
+    <div class="home-kop">
+        <div class="home-badge">$$ax^2+bx+c=0$$</div>
+        <h1>Tweedegraadsvergelijkingen</h1>
+        <p>Oefenen &amp; testen. Kies hieronder waarmee je aan de slag wilt.</p>
+    </div>
+
+    <div class="keuze-grid">
+        <div class="keuze-kaart onv" onclick="openOnderdeel('onvolledig')">
+            <div class="keuze-icoon">🧩</div>
+            <h2>Onvolledige tweedegraadsvergelijkingen</h2>
+            <div class="keuze-formules">$ax^2=0$ &nbsp;·&nbsp; $ax^2+c=0$<br>$ax^2+bx=0$ &nbsp;·&nbsp; $a(x-p)^2+k=0$</div>
+            <p>Theorie, oefenen per type met stappenplan en tips, en een test met PDF-rapport.</p>
+            <button class="keuze-knop-groot" onclick="event.stopPropagation(); openOnderdeel('onvolledig')">Start ➔</button>
+        </div>
+
+        <div class="keuze-kaart vol" onclick="openOnderdeel('volledig')">
+            <div class="keuze-icoon">🧮</div>
+            <h2>Volledige tweedegraadsvergelijkingen</h2>
+            <div class="keuze-formules">$ax^2+bx+c=0$<br>$D=b^2-4ac$</div>
+            <p>Oefen de discriminant en de nulwaarden stap voor stap, met kladblok en PDF-rapport.</p>
+            <button class="keuze-knop-groot" onclick="event.stopPropagation(); openOnderdeel('volledig')">Start ➔</button>
+        </div>
+
+        <div class="keuze-kaart mix" onclick="openOnderdeel('gemengd')">
+            <div class="keuze-icoon">📝</div>
+            <h2>Gemengde toets</h2>
+            <div class="keuze-formules">volledige én onvolledige<br>vergelijkingen door elkaar</div>
+            <p>Kies 5 of 10 oefeningen en download na afloop je rapport met foutenanalyse als PDF.</p>
+            <button class="keuze-knop-groot" onclick="event.stopPropagation(); openOnderdeel('gemengd')">Start toets ➔</button>
+        </div>
+    </div>
+    <p class="home-voet">Tip: met de knop ← Startscherm bovenaan kom je altijd terug naar dit scherm.</p>
+</div>
+
+<!-- =====================================================================
+     ONDERDEEL 1: ONVOLLEDIGE TWEEDEGRAADSVERGELIJKINGEN
+     ===================================================================== -->
+<div id="app-onv" class="scherm" style="display: none;">
+<div class="topbar">
+    <button class="terug-knop" onclick="naarStart()">← Startscherm</button>
+    <span class="topbar-titel">Onvolledige tweedegraadsvergelijkingen</span>
+</div>
+<div class="container">
+    <h1>Onvolledige Tweedegraadsvergelijkingen</h1>
+    <div class="subtitle">Oefenen per type én interactieve testmodus met gerichte hints</div>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('theorie')">📖 Theorie</button>
+        <button class="tab-btn" onclick="switchTab('type1')">Type 1: ax² = 0</button>
+        <button class="tab-btn" onclick="switchTab('type3')">Type 2: ax² + c = 0</button>
+        <button class="tab-btn" onclick="switchTab('type2')">Type 3: ax² + bx = 0</button>
+        <button class="tab-btn" onclick="switchTab('type4')">Type 4: a(x - p)² + k = 0</button>
+        <button class="tab-btn" onclick="switchTab('test')">📝 Test / Toets</button>
+    </div>
+
+    <!-- THEORIE -->
+    <div id="theorie" class="section active">
+        <h2>Overzicht van de vier typen</h2>
+        <p>Een volledige tweedegraadsvergelijking heeft de vorm <em>ax² + bx + c = 0</em>. Bij een <strong>onvolledige</strong> vergelijking ontbreekt één of meer termen.</p>
+
+        <div class="theory-card">
+            <h3>Type 1: ax² = 0</h3>
+            <div class="formula">Vb. 5x² = 0</div>
+            <p><strong>Aanpak:</strong> Deel eventueel door <em>a</em>. De oplossing is direct <em>x = 0</em>.</p>
+        </div>
+
+        <div class="theory-card">
+            <h3>Type 2: ax² + c = 0</h3>
+            <div class="formula">Vb. x² - 9 = 0</div>
+            <p><strong>Aanpak:</strong> Breng de constante term naar rechts, deel eventueel door <em>a</em> en neem de wortel (plus en min!). Als er na verhuizing een negatief getal overblijft aan de rechterkant, zijn er <em>geen reële oplossingen</em>.</p>
+        </div>
+
+        <div class="theory-card">
+            <h3>Type 3: ax² + bx = 0</h3>
+            <div class="formula">Vb. 3x² - 2x = 0</div>
+            <p><strong>Aanpak:</strong> Breng de gemeenschappelijke factor x buiten haakjes en stel elk deel gelijk aan 0.</p>
+        </div>
+
+        <div class="theory-card">
+            <h3>Type 4: a(x - p)² + k = 0</h3>
+            <div class="formula">Vb. (x - 3)² - 4 = 0</div>
+            <p><strong>Aanpak:</strong> Breng het getal buiten het kwadraat naar rechts, neem de wortel en los op voor <em>x</em>.</p>
+        </div>
+    </div>
+
+    <!-- TYPE 1 -->
+    <div id="type1" class="section">
+        <h2>Oefeningen: Type 1 (ax² = 0)</h2>
+        <div class="practice-card">
+            <p>Los de vergelijking op en noteer je antwoord:</p>
+            <div id="t1-eq" class="formula">x² = 0</div>
+            <br>
+            <input type="text" id="t1-input" placeholder="Bijv. x = 1 of x = 2/3 of geen oplossingen">
+            <button class="btn" onclick="checkT1()">Controleer</button>
+            <div id="t1-fb" class="feedback"></div>
+
+            <div class="hints-container">
+                <strong>💡 Stappenplan & Tips (klik per stap om te openen):</strong><br><br>
+                <button class="btn-warning" id="t1-btn-div" onclick="toggleEl('t1-h1')" style="display:none;">Stap: Delen door a</button>
+                <button class="btn-warning" onclick="toggleEl('t1-h2')">Stap: Eindantwoord</button>
+
+                <div id="t1-h1" class="hint-step">
+                    <strong>Tip:</strong> Deel beide leden door de coëfficiënt van x².
+                    <div id="t1-spec-1" class="specific-walkthrough"></div>
+                </div>
+                <div id="t1-h2" class="hint-step">
+                    <strong>Tip:</strong> Het kwadraat van welk getal is 0?
+                    <div id="t1-spec-2" class="specific-walkthrough"></div>
+                </div>
+            </div>
+            <br>
+            <button class="btn btn-secondary" onclick="loadT1()">Nieuwe oefening</button>
+        </div>
+    </div>
+
+    <!-- TYPE 2 -->
+    <div id="type2" class="section">
+        <h2>Oefeningen: Type 3 (ax² + bx = 0)</h2>
+        <div class="practice-card">
+            <p>Los de vergelijking op en noteer je antwoord:</p>
+            <div id="t2-eq" class="formula">3x² - 2x = 0</div>
+            <br>
+            <input type="text" id="t2-input" placeholder="Bijv. x = 1 of x = 2/3 of geen oplossingen">
+            <button class="btn" onclick="checkT2()">Controleer</button>
+            <div id="t2-fb" class="feedback"></div>
+
+            <div class="hints-container">
+                <strong>💡 Stappenplan & Tips (klik per stap om te openen):</strong><br><br>
+                <button class="btn-warning" onclick="toggleEl('t2-h1')">Stap 1: Buiten haakjes brengen</button>
+                <button class="btn-warning" onclick="toggleEl('t2-h2')">Stap 2: Gelijkstellen aan 0</button>
+                <button class="btn-warning" onclick="toggleEl('t2-h3')">Stap 3: Eindoplossingen</button>
+
+                <div id="t2-h1" class="hint-step">
+                    <strong>Tip 1:</strong> Breng de gemeenschappelijke factor x buiten haakjes.
+                    <div id="t2-spec-1" class="specific-walkthrough"></div>
+                </div>
+                <div id="t2-h2" class="hint-step">
+                    <strong>Tip 2:</strong> Stel beide factoren afzonderlijk gelijk aan 0.
+                    <div id="t2-spec-2" class="specific-walkthrough"></div>
+                </div>
+                <div id="t2-h3" class="hint-step">
+                    <strong>Tip 3:</strong> Reken de tweede vergelijking uit voor x (noteer als breuk indien nodig).
+                    <div id="t2-spec-3" class="specific-walkthrough"></div>
+                </div>
+            </div>
+            <br>
+            <button class="btn btn-secondary" onclick="loadT2()">Nieuwe oefening</button>
+        </div>
+    </div>
+
+    <!-- TYPE 3 -->
+    <div id="type3" class="section">
+        <h2>Oefeningen: Type 2 (ax² + c = 0)</h2>
+        <div class="practice-card">
+            <p>Los de vergelijking op en noteer je antwoord:</p>
+            <div id="t3-eq" class="formula">x² - 16 = 0</div>
+            <br>
+            <input type="text" id="t3-input" placeholder="Bijv. x = 1 of x = 2/3 of geen oplossingen">
+            <button class="btn" onclick="checkT3()">Controleer</button>
+            <div id="t3-fb" class="feedback"></div>
+
+            <div class="hints-container">
+                <strong>💡 Stappenplan & Tips (klik per stap om te openen):</strong><br><br>
+                <button class="btn-warning" onclick="toggleEl('t3-h1')">Stap 1: Constante naar rechts</button>
+                <button class="btn-warning" id="t3-btn-div" onclick="toggleEl('t3-h2')" style="display:none;">Stap 2: Delen door a</button>
+                <button class="btn-warning" id="t3-btn-sqrt" onclick="toggleEl('t3-h3')">Stap 2: Worteltrekken</button>
+
+                <div id="t3-h1" class="hint-step">
+                    <strong>Stap:</strong> Breng de constante naar rechts.
+                    <div id="t3-spec-1" class="specific-walkthrough"></div>
+                </div>
+                <div id="t3-h2" class="hint-step">
+                    <strong>Stap:</strong> Deel door de coëfficiënt van x².
+                    <div id="t3-spec-2" class="specific-walkthrough"></div>
+                </div>
+                <div id="t3-h3" class="hint-step">
+                    <strong>Stap:</strong> Neem de wortel (zowel plus als min) of concludeer dat er geen reële oplossingen zijn.
+                    <div id="t3-spec-3" class="specific-walkthrough"></div>
+                </div>
+            </div>
+            <br>
+            <button class="btn btn-secondary" onclick="loadT3()">Nieuwe oefening</button>
+        </div>
+    </div>
+
+    <!-- TYPE 4 -->
+    <div id="type4" class="section">
+        <h2>Oefeningen: Type 4 a(x - p)² + k = 0</h2>
+        <div class="practice-card">
+            <p>Los de vergelijking op en noteer je antwoord:</p>
+            <div id="t4-eq" class="formula">(x - 3)² - 4 = 0</div>
+            <br>
+            <input type="text" id="t4-input" placeholder="Bijv. x = 1 of x = 2/3 of geen oplossingen">
+            <button class="btn" onclick="checkT4()">Controleer</button>
+            <div id="t4-fb" class="feedback"></div>
+
+            <div class="hints-container">
+                <strong>💡 Stappenplan & Tips (klik per stap om te openen):</strong><br><br>
+                <button class="btn-warning" onclick="toggleEl('t4-h1')">Stap 1: Constante naar rechts</button>
+                <button class="btn-warning" id="t4-btn-div" onclick="toggleEl('t4-h2')" style="display:none;">Stap 2: Delen door a</button>
+                <button class="btn-warning" id="t4-btn-sqrt" onclick="toggleEl('t4-h3')">Stap 2: Wortel nemen</button>
+                <button class="btn-warning" id="t4-btn-solve" onclick="toggleEl('t4-h4')">Stap 3: Oplossen voor x</button>
+
+                <div id="t4-h1" class="hint-step">
+                    <strong>Stap:</strong> Breng de constante term naar rechts.
+                    <div id="t4-spec-1" class="specific-walkthrough"></div>
+                </div>
+                <div id="t4-h2" class="hint-step">
+                    <span id="t4-div-title"><strong>Stap:</strong> Deel beide leden door a.</span>
+                    <div id="t4-spec-2" class="specific-walkthrough"></div>
+                </div>
+                <div id="t4-h3" class="hint-step">
+                    <span id="t4-sqrt-title"><strong>Stap:</strong> Neem de wortel (plus en min).</span>
+                    <div id="t4-spec-3" class="specific-walkthrough"></div>
+                </div>
+                <div id="t4-h4" class="hint-step">
+                    <span id="t4-solve-title"><strong>Stap:</strong> Bereken de waarden voor x.</span>
+                    <div id="t4-spec-4" class="specific-walkthrough"></div>
+                </div>
+            </div>
+            <br>
+            <button class="btn btn-secondary" onclick="loadT4()">Nieuwe oefening</button>
+        </div>
+    </div>
+
+    <!-- TEST / TOETS MODUS -->
+    <div id="test" class="section">
+        <h2>📝 Test / Toets modus</h2>
+        <div id="test-setup" class="practice-card">
+            <p>Kies je instellingen voor de test:</p>
+            <label><strong>Jouw voornaam en naam:</strong></label><br>
+            <input type="text" id="student-naam" placeholder="bijv. Jan Peeters" style="width: 100%; max-width: 320px; margin-bottom: 15px;">
+            <br>
+            <label><strong>Kies het type:</strong></label><br>
+            <select id="test-type-select">
+                <option value="gemengd">🔄 Gemengd</option>
+                <option value="1">Type 1: ax² = 0</option>
+                <option value="3">Type 2: ax² + c = 0</option>
+                <option value="2">Type 3: ax² + bx = 0</option>
+                <option value="4">Type 4: a(x - p)² + k = 0</option>
+            </select>
+            <br><br>
+            <label><strong>Aantal oefeningen:</strong></label><br>
+            <select id="test-count-select">
+                <option value="5">5 oefeningen</option>
+                <option value="10">10 oefeningen</option>
+            </select>
+            <br><br>
+            <button class="btn" onclick="startTest()">Start Test 🚀</button>
+        </div>
+
+        <div id="test-active" class="practice-card" style="display:none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <span id="test-progress" style="font-weight: bold; color: #64748b;">Oefening 1 van 5</span>
+                <span id="test-score-live" style="font-weight: bold; color: var(--primary);">Score: 0</span>
+            </div>
+            <div id="test-eq" class="formula">x² = 0</div>
+            <br>
+            <input type="text" id="test-input" placeholder="Bijv. x = 1 of x = 2/3 of geen oplossingen" onkeydown="if(event.key==='Enter') submitTestAnswer()">
+            <button id="test-submit-btn" class="btn" onclick="submitTestAnswer()">Volgende ➔</button>
+            <button class="btn btn-secondary" onclick="toggleEl('test-hints')">💡 Hulp / Tip</button>
+            <div id="test-fb" class="feedback"></div>
+
+            <div id="test-hints" class="hint-step" style="margin-top: 15px;">
+                <strong>💡 Methode-hint voor deze oefening:</strong>
+                <div id="test-hint-text" class="specific-walkthrough"></div>
+            </div>
+            <button class="stop-knop" onclick="stopTest()">← Test stoppen en terug naar de instellingen</button>
+        </div>
+
+        <div id="test-result" class="section" style="display:none;"></div>
+    </div>
+
+</div>
+</div>
+
+<!-- =====================================================================
+     ONDERDEEL 2: VOLLEDIGE TWEEDEGRAADSVERGELIJKINGEN
+     ===================================================================== -->
+<div id="app-vol" class="scherm" style="display: none;">
+    <div class="topbar">
+        <button class="terug-knop" onclick="naarStart()">← Startscherm</button>
+        <span class="topbar-titel">Volledige tweedegraadsvergelijkingen</span>
+    </div>
+    <div class="container" id="main-container">
+        <div class="header-badge">$$ax^2+bx+c=0$$</div>
+        <h1>Oefen de Discriminant & Nulwaarden</h1>
+        <p style="text-align: center; color: #4a5568; margin-bottom: 30px;">Test je kennis over het oplossen van volledige tweedegraadsvergelijkingen.</p>
+
+        <div class="settings-bar" id="settings-bar">
+            <label for="num-questions">Aantal oefeningen:</label>
+            <select id="num-questions">
+                <option value="1">1 Oefening</option>
+                <option value="2">2 Oefeningen</option>
+                <option value="3">3 Oefeningen</option>
+                <option value="5">5 Oefeningen</option>
+                <option value="10" selected>10 Oefeningen</option>
+            </select>
+            <button class="btn btn-primary" style="width: auto; margin-top: 0;" onclick="startSessie()">Start Oefeningen</button>
+        </div>
+
+        <div id="oefening-container" style="display: none;">
+            <h3 id="vraag-teller">Oefening 1 van 10</h3>
+            <div style="font-size: 24px; text-align: center; margin: 20px 0; padding: 20px; background: #e0e7ff; border-radius: 8px;" id="huidige-vergelijking"></div>
+
+            <div class="step-box" id="step1-container">
+                <h4><span class="step-badge">1</span> Bereken de discriminant ($D$)</h4>
+                <div class="input-group">
+                    <label>$D =$</label>
+                    <input type="number" id="d-input" placeholder="Vul je berekende D in">
+                </div>
+                <button class="btn btn-primary" onclick="checkD()">Controleer $D$</button>
+                <div id="d-feedback" class="feedback"></div>
+            </div>
+
+            <div class="step-box" id="step2-container" style="display: none;">
+                <h4><span class="step-badge">2</span> Bepaal de nulwaarde(n)</h4>
+                <button id="toggle-kladblok-btn" class="btn btn-outline" onclick="toggleKladblok()">📝 Formule invullen (Kladblok)</button>
+
+                <div id="kladblok" class="kladblok">
+                    <div style="margin-bottom: 10px; font-weight: bold; color: #4a5568;">Vul de breuk in om stapsgewijs te rekenen:</div>
+                    <div class="kladblok-formula">
+                        $x =$
+                        <div class="kladblok-fraction">
+                            <div class="kladblok-numerator">
+                                <input type="number" id="klad-b" placeholder="-b">
+                                $\pm$ <span class="sqrt-symbol">$\sqrt{}$</span><div class="sqrt-content"><input type="number" id="klad-d" placeholder="D"></div>
+                            </div>
+                            <div class="kladblok-denominator">
+                                <input type="number" id="klad-a" placeholder="2a">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aangepaste universele tekst -->
+                <p style="color: #4a5568; font-size: 14px;">Geef de nulwaarde(n) in als gehele getallen of breuken. Scheid meerdere antwoorden indien nodig met een komma of spatie. Typ <strong>leeg</strong> of <strong>geen</strong> als er geen reële nulwaarden zijn.</p>
+
+                <div class="input-group">
+                    <label>Nulwaardenverzameling $V =$</label>
+                    <input type="text" id="roots-input" placeholder="bijv. leeg of 5 of -2/3" autocomplete="off">
+                </div>
+                <button class="btn btn-primary" onclick="checkRoots()">Controleer Nulwaarden</button>
+                <div id="roots-feedback" class="feedback"></div>
+                <button id="volgende-btn" class="btn btn-primary" style="display: none; background-color: #059669; margin-top: 15px;" onclick="volgendeOefening()">Volgende Oefening ➔</button>
+            </div>
+            <button class="stop-knop" onclick="stopSessieVolledig()">← Stoppen en terug naar de instellingen</button>
+        </div>
+
+        <div id="rapport-container" style="display: none; text-align: center;">
+            <h2>Sessie Voltooid! 🎉</h2>
+            <h3 id="eindscore-tekst"></h3>
+            <p>Je hebt de reeks afgerond. Klik hieronder om je persoonlijk rapport inclusief foutenanalyse te downloaden.</p>
+            <button id="rapport-knop" class="btn btn-primary" style="background-color: #4f46e5; margin-top: 20px;" onclick="downloadRapport()">📥 Download Rapport (PDF)</button>
+            <p id="rapport-status" style="color: #991b1b; font-size: 14px; margin: 10px 0 0;"></p>
+            <button class="btn btn-outline" style="margin-top: 15px;" onclick="nieuweSessieVolledig()">Nieuwe sessie starten</button>
+            <button class="btn btn-outline" onclick="naarStart()">← Terug naar het startscherm</button>
+        </div>
+    </div>
+</div>
+
+<!-- =====================================================================
+     ONDERDEEL 3: GEMENGDE TOETS
+     ===================================================================== -->
+<div id="app-mix" class="scherm" style="display: none;">
+    <div class="topbar">
+        <button class="terug-knop" onclick="naarStart()">← Startscherm</button>
+        <span class="topbar-titel">Gemengde toets</span>
+    </div>
+    <div class="container">
+        <div class="header-badge">📝 Toets</div>
+        <h1>Gemengde toets</h1>
+        <p class="mix-intro">Volledige én onvolledige tweedegraadsvergelijkingen door elkaar.</p>
+
+        <!-- Instellingen -->
+        <div id="mix-setup">
+            <div class="step-box">
+                <div class="input-group">
+                    <label for="mix-naam">Jouw voornaam en naam:</label>
+                    <input type="text" id="mix-naam" placeholder="bijv. Jan Peeters" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label>Aantal oefeningen:</label>
+                    <div class="keuze-rij">
+                        <button type="button" class="keuze-knop actief" data-aantal="5" onclick="kiesMixAantal(5)">5 oefeningen</button>
+                        <button type="button" class="keuze-knop" data-aantal="10" onclick="kiesMixAantal(10)">10 oefeningen</button>
+                    </div>
+                </div>
+                <ul class="mix-uitleg">
+                    <li>Je krijgt volledige en onvolledige vergelijkingen door elkaar. Kijk dus eerst goed welk soort vergelijking je voor je hebt.</li>
+                    <li>Bij een <strong>volledige</strong> vergelijking bereken je eerst de discriminant en daarna de nulwaarden.</li>
+                    <li>Bij een <strong>onvolledige</strong> vergelijking geef je meteen de oplossing(en).</li>
+                    <li>Alleen oefeningen die je in één keer volledig juist hebt, tellen mee voor je score.</li>
+                </ul>
+                <button class="btn btn-primary" onclick="startGemengd()">Start Toets 🚀</button>
+            </div>
+        </div>
+
+        <!-- Toets bezig -->
+        <div id="mix-actief" style="display: none;">
+            <div class="mix-kop">
+                <span id="mix-teller">Oefening 1 van 5</span>
+                <span id="mix-score">Score: 0</span>
+            </div>
+            <div id="mix-vgl" class="mix-vergelijking"></div>
+
+            <!-- Volledige vergelijking: zelfde werkwijze als in het onderdeel 'volledige vergelijkingen' -->
+            <div id="mix-vol-blok">
+                <div class="step-box">
+                    <h4><span class="step-badge">1</span> Bereken de discriminant ($D$)</h4>
+                    <div class="input-group">
+                        <label>$D =$</label>
+                        <input type="number" id="mix-d-input" placeholder="Vul je berekende D in">
+                    </div>
+                    <button class="btn btn-primary" onclick="mixCheckD()">Controleer $D$</button>
+                    <div id="mix-d-feedback" class="feedback"></div>
+                </div>
+
+                <div class="step-box" id="mix-step2" style="display: none;">
+                    <h4><span class="step-badge">2</span> Bepaal de nulwaarde(n)</h4>
+                    <button class="btn btn-outline" onclick="mixToggleKladblok()">📝 Formule invullen (Kladblok)</button>
+                    <div id="mix-kladblok" class="kladblok">
+                        <div style="margin-bottom: 10px; font-weight: bold; color: #4a5568;">Vul de breuk in om stapsgewijs te rekenen:</div>
+                        <div class="kladblok-formula">
+                            $x =$
+                            <div class="kladblok-fraction">
+                                <div class="kladblok-numerator">
+                                    <input type="number" id="mix-klad-b" placeholder="-b">
+                                    $\pm$ <span class="sqrt-symbol">$\sqrt{}$</span><div class="sqrt-content"><input type="number" id="mix-klad-d" placeholder="D"></div>
+                                </div>
+                                <div class="kladblok-denominator">
+                                    <input type="number" id="mix-klad-a" placeholder="2a">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="mix-hulptekst">Geef de nulwaarde(n) in als gehele getallen of breuken. Scheid meerdere antwoorden indien nodig met een komma of spatie. Typ <strong>leeg</strong> of <strong>geen</strong> als er geen reële nulwaarden zijn.</p>
+                    <div class="input-group">
+                        <label>Nulwaardenverzameling $V =$</label>
+                        <input type="text" id="mix-v-input" placeholder="bijv. leeg of 5 of -2/3" autocomplete="off">
+                    </div>
+                    <button class="btn btn-primary" onclick="mixCheckRootsVol()">Controleer Nulwaarden</button>
+                    <div id="mix-v-feedback" class="feedback"></div>
+                </div>
+            </div>
+
+            <!-- Onvolledige vergelijking: zelfde werkwijze als in de test van het onderdeel 'onvolledige vergelijkingen' -->
+            <div id="mix-onv-blok" class="step-box" style="display: none;">
+                <h4><span class="step-badge">✎</span> Los de vergelijking op</h4>
+                <p class="mix-hulptekst">Geef de oplossing(en) in als gehele getallen of breuken, bijvoorbeeld <strong>x = 0 of x = 2/3</strong>. Typ <strong>geen</strong> als er geen reële oplossingen zijn.</p>
+                <div class="input-group">
+                    <label>Oplossing(en):</label>
+                    <input type="text" id="mix-onv-input" placeholder="Bijv. x = 1 of x = 2/3 of geen oplossingen" autocomplete="off">
+                </div>
+                <button class="btn btn-primary" style="margin-bottom: 10px;" onclick="mixCheckOnv()">Controleer</button>
+                <button class="btn btn-outline" style="margin-bottom: 5px;" onclick="mixToggleHint()">💡 Hulp / Tip</button>
+                <div id="mix-hint" class="mix-hint">
+                    <strong>💡 Methode-hint voor deze oefening:</strong>
+                    <div id="mix-hint-tekst"></div>
+                </div>
+                <div id="mix-onv-feedback" class="feedback"></div>
+            </div>
+
+            <button id="mix-volgende" class="btn btn-primary" style="display: none; background-color: #059669; margin-top: 5px;" onclick="mixVolgende()">Volgende Oefening ➔</button>
+            <button class="stop-knop" onclick="stopGemengd()">← Toets stoppen en terug naar de instellingen</button>
+        </div>
+
+        <!-- Einde toets -->
+        <div id="mix-einde" style="display: none; text-align: center;">
+            <h2>Toets Voltooid! 🎉</h2>
+            <h3 id="mix-eindscore"></h3>
+            <p id="mix-eindboodschap" style="font-weight: bold; color: #4f46e5; font-size: 18px;"></p>
+            <p id="mix-eind-detail" class="mix-eind-detail"></p>
+            <p>Klik hieronder om je persoonlijk rapport inclusief foutenanalyse te downloaden. Je leerkracht kan hierom vragen.</p>
+            <button id="mix-rapport-knop" class="btn btn-primary" style="margin-top: 20px;" onclick="downloadGemengdRapport()">📥 Download Rapport (PDF)</button>
+            <p id="mix-rapport-status" style="color: #991b1b; font-size: 14px; margin: 10px 0 0;"></p>
+            <button class="btn btn-outline" style="margin-top: 15px;" onclick="nieuweGemengdeToets()">Nieuwe toets maken 🔄</button>
+            <button class="btn btn-outline" onclick="naarStart()">← Terug naar het startscherm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Verborgen (buiten beeld): hier wordt het rapport opgebouwd voor de PDF -->
+<div id="rapport-bron" class="rapport"></div>
+
+<!-- =====================================================================
+     SCRIPT: VOLLEDIGE VERGELIJKINGEN
+     ===================================================================== -->
+<script>
+        let totalQuestions = 10;
+        let currentQuestion = 1;
+        let currentA, currentB, currentC, currentD;
+        let triesD = 0;
+        let triesRoots = 0;
+        let score = 0;
+        let rapportData = [];
+        let dFouten = [];       // foute pogingen voor D in de huidige oefening: {ingevuld, type}
+        let rootsFouten = [];   // foute pogingen voor de nulwaarden: {ingevuld, type}
+        let dOpgelost = false;  // true als de leerling D zelf correct vond
+        let volGezien = new Set(), volGezienAntw = new Set();   // vergelijkingen en antwoorden in deze reeks (nooit dubbel)
+
+        function startSessie() {
+            totalQuestions = parseInt(document.getElementById('num-questions').value);
+            volGezien = new Set();
+            volGezienAntw = new Set();
+            document.getElementById('settings-bar').style.display = 'none';
+            document.getElementById('oefening-container').style.display = 'block';
+            genereerOefening();
+        }
+
+        // Terug naar de instellingen (vervangt het herladen van de pagina, zodat je in dit onderdeel blijft)
+        function nieuweSessieVolledig() {
+            currentQuestion = 1;
+            score = 0;
+            rapportData = [];
+            document.getElementById('rapport-container').style.display = 'none';
+            document.getElementById('oefening-container').style.display = 'none';
+            document.getElementById('settings-bar').style.display = '';
+            document.getElementById('rapport-status').textContent = '';
+            window.scrollTo(0, 0);
+        }
+
+        function stopSessieVolledig() {
+            if (!confirm('Wil je stoppen met deze reeks? Je antwoorden van deze reeks gaan verloren.')) return;
+            nieuweSessieVolledig();
+        }
+
+        function formatTerm(coef, variable, isFirst) {
+            if (coef === 0) return "";
+            let sign = coef > 0 ? (isFirst ? "" : "+ ") : (isFirst ? "-" : "- ");
+            let absCoef = Math.abs(coef);
+            let coefStr = (absCoef === 1 && variable !== "") ? "" : absCoef;
+            return `${sign}${coefStr}${variable}`;
+        }
+
+        function safeTypeset() {
+            if (window.MathJax && MathJax.typesetPromise) {
+                MathJax.typesetPromise().catch((err) => console.log(err));
+            }
+        }
+
+        // Genereert een volledige vergelijking (a, b, c ≠ 0) waarbij D een perfect kwadraat, 0 of negatief is
+        function maakVolledigeVergelijking() {
+            let perfectSquares = [0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144];
+            let a, b, c, D;
+            let valid = false;
+
+            while (!valid) {
+                let type = Math.floor(Math.random() * 3); // 0, 1, 2 = D>0, D=0, D<0
+                if (type === 0) {
+                    D = perfectSquares[Math.floor(Math.random() * (perfectSquares.length - 1)) + 1];
+                } else if (type === 1) {
+                    D = 0;
+                } else {
+                    D = -1 * perfectSquares[Math.floor(Math.random() * (perfectSquares.length - 1)) + 1];
+                }
+
+                b = Math.floor(Math.random() * 19) - 9;
+                if (b === 0) continue;
+
+                let diff = (b * b) - D;
+                if (diff % 4 !== 0) continue;
+
+                let ac = diff / 4;
+                if (ac === 0) continue;
+
+                let divisors = [];
+                for (let i = 1; i <= Math.abs(ac); i++) {
+                    if (Math.abs(ac) % i === 0) divisors.push(i);
+                }
+                if (divisors.length === 0) continue;
+
+                let a_abs = divisors[Math.floor(Math.random() * divisors.length)];
+                let c_abs = Math.abs(ac) / a_abs;
+
+                if (ac > 0) {
+                    a = (Math.random() > 0.5) ? a_abs : -a_abs;
+                    c = (a > 0) ? c_abs : -c_abs;
+                } else {
+                    a = (Math.random() > 0.5) ? a_abs : -a_abs;
+                    c = (a > 0) ? -c_abs : c_abs;
+                }
+
+                if (a !== 0 && b !== 0 && c !== 0) {
+                    valid = true;
+                }
+            }
+            return { a: a, b: b, c: c, D: D };
+        }
+
+        function genereerOefening() {
+            document.getElementById('vraag-teller').innerText = `Oefening ${currentQuestion} van ${totalQuestions}`;
+
+            // nooit twee keer dezelfde vergelijking in één reeks (liefst ook geen zelfde oplossingen)
+            const v = kiesUniekeOpgave(maakVolledigeVergelijking,
+                x => vergelijkingTex(x.a, x.b, x.c),
+                x => (x.D < 0 ? null : verzamelingTex(x.a, x.b, x.D)),
+                volGezien, volGezienAntw);
+            currentA = v.a; currentB = v.b; currentC = v.c; currentD = v.D;
+
+            let eqStr = `$$${formatTerm(currentA, 'x^2', true)} ${formatTerm(currentB, 'x', false)} ${formatTerm(currentC, '', false)} = 0$$`;
+            document.getElementById('huidige-vergelijking').innerHTML = eqStr;
+
+            // Reset UI
+            document.getElementById('d-input').value = '';
+            document.getElementById('d-input').disabled = false;
+            document.getElementById('d-feedback').style.display = 'none';
+
+            document.getElementById('step2-container').style.display = 'none';
+            document.getElementById('roots-input').value = '';
+            document.getElementById('roots-input').disabled = false;
+            document.getElementById('roots-feedback').style.display = 'none';
+            document.getElementById('volgende-btn').style.display = 'none';
+
+            document.getElementById('kladblok').style.display = 'none';
+            document.getElementById('klad-b').value = '';
+            document.getElementById('klad-d').value = '';
+            document.getElementById('klad-a').value = '';
+
+            triesD = 0;
+            triesRoots = 0;
+            dFouten = [];
+            rootsFouten = [];
+            dOpgelost = false;
+
+            safeTypeset();
+        }
+
+        function checkD() {
+            if(document.getElementById('d-input').disabled) return;
+            let input = parseInt(document.getElementById('d-input').value);
+            let feedback = document.getElementById('d-feedback');
+            feedback.style.display = 'block';
+
+            if (isNaN(input)) {
+                feedback.className = 'feedback error';
+                feedback.innerHTML = 'Vul een getal in.';
+                return;
+            }
+
+            if (input === currentD) {
+                feedback.className = 'feedback success';
+                feedback.innerHTML = 'Correct! Bepaal nu de nulwaarde(n).';
+                dOpgelost = true;
+                document.getElementById('d-input').disabled = true;
+                document.getElementById('step2-container').style.display = 'block';
+                safeTypeset();
+            } else {
+                triesD++;
+                feedback.className = 'feedback error';
+                dFouten.push({ ingevuld: input, type: classifyD(input, currentA, currentB, currentC, currentD) });
+
+                if (triesD >= 2) {
+                    feedback.innerHTML = `Helaas, 2 foutieve pogingen.<br>De juiste formule is: $D = b^2 - 4ac = (${currentB})^2 - 4 \\cdot (${currentA}) \\cdot (${currentC}) = ${currentD}$.<br>We hebben de juiste $D$ gevonden, ga verder naar stap 2.`;
+                    document.getElementById('d-input').value = currentD;
+                    document.getElementById('d-input').disabled = true;
+                    document.getElementById('step2-container').style.display = 'block';
+                    safeTypeset();
+                } else {
+                    feedback.innerHTML = `Fout. Tip: $D = b^2 - 4ac$ (denk aan de haakjes rond negatieve getallen). Probeer opnieuw!`;
+                    safeTypeset();
+                }
+            }
+        }
+
+        function toggleKladblok() {
+            let k = document.getElementById('kladblok');
+            k.style.display = (k.style.display === 'none' || k.style.display === '') ? 'block' : 'none';
+        }
+
+        function checkRoots() {
+            if(document.getElementById('roots-input').disabled) return;
+
+            let inputStr = document.getElementById('roots-input').value.trim().toLowerCase();
+            let feedback = document.getElementById('roots-feedback');
+            feedback.style.display = 'block';
+
+            if (inputStr === '') {
+                feedback.className = 'feedback error';
+                feedback.innerHTML = 'Vul een antwoord in of typ "leeg".';
+                return;
+            }
+
+            // Slimme verwerking van input met komma's, spaties, 'en', of accolades
+            let s = inputStr.replace(/,/g, ' ').replace(/;/g, ' ').replace(/\ben\b/g, ' ').replace(/\{/g, ' ').replace(/\}/g, ' ');
+            let parts = s.split(/\s+/).filter(p => p.length > 0);
+
+            let studentRoots = [];
+            let isLeeg = false;
+
+            if (parts.length === 1 && (parts[0] === "leeg" || parts[0] === "geen" || parts[0] === "/" || parts[0] === "-" || parts[0] === "v")) {
+                isLeeg = true;
+            } else {
+                for (let p of parts) {
+                    if (p.includes('/')) {
+                        let numDen = p.split('/');
+                        if(numDen.length === 2 && !isNaN(parseFloat(numDen[0])) && !isNaN(parseFloat(numDen[1]))) {
+                            studentRoots.push(parseFloat(numDen[0]) / parseFloat(numDen[1]));
+                        } else {
+                            studentRoots.push(NaN); // activeert foutmelding
+                        }
+                    } else {
+                        studentRoots.push(parseFloat(p));
+                    }
+                }
+            }
+
+            if (!isLeeg && studentRoots.some(isNaN)) {
+                feedback.className = 'feedback error';
+                feedback.innerHTML = 'Ongeldige invoer. Typ getallen, breuken (bijv. -3/2) of "leeg".';
+                return;
+            }
+
+            // Verwachte Nulwaarden genereren
+            let expectedRoots = [];
+            if (currentD > 0) {
+                expectedRoots = [( -currentB + Math.sqrt(currentD) ) / (2 * currentA), ( -currentB - Math.sqrt(currentD) ) / (2 * currentA)];
+            } else if (currentD === 0) {
+                expectedRoots = [ -currentB / (2 * currentA) ];
+            }
+
+            // Controleren ongeacht volgorde
+            let isCorrect = false;
+            if (expectedRoots.length === 0 && isLeeg) {
+                isCorrect = true;
+            } else if (expectedRoots.length === 1 && studentRoots.length === 1) {
+                if (Math.abs(expectedRoots[0] - studentRoots[0]) < 0.001) isCorrect = true;
+            } else if (expectedRoots.length === 2 && studentRoots.length === 2) {
+                let match1 = Math.abs(expectedRoots[0] - studentRoots[0]) < 0.001 && Math.abs(expectedRoots[1] - studentRoots[1]) < 0.001;
+                let match2 = Math.abs(expectedRoots[0] - studentRoots[1]) < 0.001 && Math.abs(expectedRoots[1] - studentRoots[0]) < 0.001;
+                if (match1 || match2) isCorrect = true;
+            }
+
+            if (isCorrect) {
+                feedback.className = 'feedback success';
+                feedback.innerHTML = 'Helemaal juist! 🎉';
+                if (triesRoots === 0 && triesD === 0) score++;
+                rondOefeningAf(true);
+            } else {
+                triesRoots++;
+                rootsFouten.push({ ingevuld: inputStr, type: classifyRoots(studentRoots, isLeeg, currentA, currentB, currentD) });
+                feedback.className = 'feedback error';
+
+                if (triesRoots >= 2) {
+                    let correctStr = "";
+                    if (expectedRoots.length === 0) {
+                        correctStr = "Er waren <strong>geen reële nulwaarden</strong> omdat $D < 0$.";
+                    } else if (expectedRoots.length === 1) {
+                        correctStr = `De juiste nulwaarde was: $\\frac{${-currentB}}{2 \\cdot ${currentA}} = ${expectedRoots[0].toFixed(2).replace(/\.00$/,'')}$.`;
+                    } else {
+                        correctStr = `De juiste nulwaarden waren: $\\frac{${-currentB} \\pm \\sqrt{${currentD}}}{2 \\cdot ${currentA}}$. Dit geeft als resultaat ${expectedRoots[0].toFixed(2).replace(/\.00$/,'')} en ${expectedRoots[1].toFixed(2).replace(/\.00$/,'')}.`;
+                    }
+                    feedback.innerHTML = `Helaas, 2 foutieve pogingen.<br>${correctStr}`;
+                    rondOefeningAf(false);
+                    safeTypeset();
+                } else {
+                    if (expectedRoots.length === 0 && !isLeeg) {
+                        feedback.innerHTML = 'Fout. Kijk nog eens goed naar je berekende discriminant in stap 1... wat vertelt dit je over het aantal nulwaarden?';
+                    } else {
+                        feedback.innerHTML = 'Fout. Controleer of je $\\frac{-b \\pm \\sqrt{D}}{2a}$ goed hebt ingevuld (denk aan het minteken voor b en breukvereenvoudiging).';
+                    }
+                    safeTypeset();
+                }
+            }
+        }
+
+        function rondOefeningAf(rootsOpgelost) {
+            document.getElementById('roots-input').disabled = true;
+            document.getElementById('volgende-btn').style.display = 'block';
+
+            rapportData.push({
+                a: currentA, b: currentB, c: currentC, D: currentD,
+                dFouten: [...dFouten],
+                rootsFouten: [...rootsFouten],
+                dOpgelost: dOpgelost,
+                rootsOpgelost: rootsOpgelost
+            });
+        }
+
+        function volgendeOefening() {
+            if (currentQuestion < totalQuestions) {
+                currentQuestion++;
+                genereerOefening();
+            } else {
+                toonEindscherm();
+            }
+        }
+
+        function toonEindscherm() {
+            document.getElementById('oefening-container').style.display = 'none';
+            document.getElementById('rapport-container').style.display = 'block';
+            document.getElementById('eindscore-tekst').innerText = `Jouw score: ${score} / ${totalQuestions}`;
+        }
+
+        // =====================================================================
+        // RAPPORT: foutclassificatie, uitgewerkte oplossingen en leerkrachtfeedback
+        // =====================================================================
+
+        const gcd = (x, y) => { x = Math.abs(x); y = Math.abs(y); while (y) { [x, y] = [y, x % y]; } return x; };
+        const par = (n) => (n < 0 ? `(${n})` : `${n}`);
+        const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+        // Breuken als {n, d} met d > 0
+        function rat(n, d) {
+            let g = gcd(n, d) || 1;
+            n /= g; d /= g;
+            if (d < 0) { n = -n; d = -d; }
+            return { n: n, d: d };
+        }
+        function ratTex(r, haakjes) {
+            let t = r.d === 1 ? `${r.n}` : `${r.n < 0 ? '-' : ''}\\frac{${Math.abs(r.n)}}{${r.d}}`;
+            return (haakjes && r.n < 0) ? `\\left(${t}\\right)` : t;
+        }
+        const ratVal = (r) => r.n / r.d;
+
+        function vergelijkingTex(a, b, c) {
+            return `${formatTerm(a, 'x^2', true)} ${formatTerm(b, 'x', false)} ${formatTerm(c, '', false)} = 0`;
+        }
+
+        // Exacte nulwaarden (alle D in deze app zijn perfecte kwadraten)
+        function nulwaardenRat(a, b, D) {
+            if (D < 0) return [];
+            if (D === 0) return [rat(-b, 2 * a)];
+            const s = Math.round(Math.sqrt(D));
+            return [rat(-b + s, 2 * a), rat(-b - s, 2 * a)];
+        }
+        function verzamelingTex(a, b, D) {
+            const r = nulwaardenRat(a, b, D).sort((p, q) => ratVal(p) - ratVal(q));
+            if (r.length === 0) return '\\varnothing';
+            return `\\left\\{ ${r.map(x => ratTex(x)).join(',\\; ')} \\right\\}`;
+        }
+
+        // ---------- Foutclassificatie ----------
+        function uniekGesorteerd(arr) {
+            let s = [...arr].sort((p, q) => p - q);
+            return s.filter((v, i) => i === 0 || Math.abs(v - s[i - 1]) > 0.001);
+        }
+        function zelfdeVerzameling(x, y) {
+            let ux = uniekGesorteerd(x), uy = uniekGesorteerd(y);
+            return ux.length === uy.length && ux.every((v, i) => Math.abs(v - uy[i]) < 0.001);
+        }
+
+        function classifyD(v, a, b, c, D) {
+            const p = 4 * a * c;
+            if (v === -(b * b) - p) return 'D_B2_NEGATIEF';
+            if (v === b * b + p) return 'D_TEKEN_4AC';
+            if (v === 2 * b - p || v === b - p) return 'D_B2_FOUT';
+            if (v === b * b - 2 * a * c) return 'D_2AC';
+            if (D !== 0 && v === -D) return 'D_TEGENGESTELD';
+            return 'D_ANDERS';
+        }
+
+        function classifyRoots(st, isLeeg, a, b, D) {
+            if (isLeeg) return 'R_LEEG_TE_VROEG';          // enkel fout als D >= 0
+            if (D < 0) return 'R_LEEG_VERGETEN';
+            const s = Math.sqrt(D);
+            const verwacht = D === 0 ? [-b / (2 * a)] : [(-b + s) / (2 * a), (-b - s) / (2 * a)];
+            if (D === 0 && st.length > 1) return 'R_TWEE_BIJ_NUL';
+            if (D > 0 && st.length === 1 && verwacht.some(x => Math.abs(x - st[0]) < 0.001)) return 'R_EEN_WORTEL';
+            const kandidaat = (f) => (D === 0 ? [f(1)] : [f(1), f(-1)]);
+            if (zelfdeVerzameling(st, kandidaat(k => (b + k * s) / (2 * a)))) return 'R_TEKEN_B';
+            if (zelfdeVerzameling(st, kandidaat(k => (-b + k * s) / a))) return 'R_VERGETEN_2A';
+            if (D > 1 && zelfdeVerzameling(st, kandidaat(k => (-b + k * D) / (2 * a)))) return 'R_D_ZONDER_WORTEL';
+            if (zelfdeVerzameling(st, kandidaat(k => -b / (2 * a) + k * s))) return 'R_TELLER_NIET_GEDEELD';
+            return 'R_ANDERS';
+        }
+
+        // ---------- Commentaar per fouttype (leerkrachttoon) ----------
+        const FOUTEN = {
+            D_B2_NEGATIEF: {
+                groep: 'D',
+                titel: 'Het kwadraat van \\(b\\) kreeg een verkeerd teken',
+                kort: '\\(b^2\\) negatief genomen',
+                uitleg: 'Een kwadraat van een reëel getal is nooit negatief, ook niet als het getal zelf negatief is. Wie \\(-3^2\\) intikt of in het hoofd uitrekent, krijgt \\(-9\\); wie \\((-3)^2\\) schrijft, krijgt terecht \\(9\\). In de discriminant wordt het héle getal \\(b\\), mét zijn teken, gekwadrateerd.',
+                tip: 'Zet een negatieve \\(b\\) altijd tussen haakjes vóór je kwadrateert: \\((-3)^2 = 9\\).'
+            },
+            D_TEKEN_4AC: {
+                groep: 'D',
+                titel: 'Tekenfout bij \\(-4ac\\)',
+                kort: 'tekenfout bij \\(-4ac\\)',
+                uitleg: 'Het minteken in de formule hoort bij het volledige product \\(4ac\\). Zijn \\(a\\) en \\(c\\) tegengesteld van teken, dan is \\(4ac\\) negatief en wordt het aftrekken ervan een optelling: \\(-(-40) = +40\\). Dat is de klassieke valkuil van "min min".',
+                tip: 'Bereken eerst \\(4ac\\) apart, mét teken, en trek dat resultaat daarna af van \\(b^2\\). Schrijf het als \\(b^2 - (\\ldots)\\).'
+            },
+            D_B2_FOUT: {
+                groep: 'D',
+                titel: '\\(b^2\\) niet correct uitgerekend',
+                kort: '\\(b^2\\) verkeerd uitgerekend',
+                uitleg: 'Een kwadraat betekent "het getal met zichzelf vermenigvuldigen", niet "verdubbelen": \\(b^2 = b \\cdot b\\), terwijl \\(2b = b + b\\). Dat zijn twee heel verschillende bewerkingen.',
+                tip: 'Schrijf \\(b^2\\) eerst uit als \\(b \\cdot b\\) voor je rekent.'
+            },
+            D_2AC: {
+                groep: 'D',
+                titel: '\\(2ac\\) in plaats van \\(4ac\\)',
+                kort: '\\(2ac\\) i.p.v. \\(4ac\\)',
+                uitleg: 'De factor 4 in \\(b^2 - 4ac\\) wordt vaak verward met de 2 in de noemer \\(2a\\) van de formule voor de nulwaarden. In de discriminant staat een 4, in de noemer een 2.',
+                tip: 'Leer beide formules als één geheel: \\(D = b^2 - 4ac\\) en \\(x = \\dfrac{-b \\pm \\sqrt{D}}{2a}\\).'
+            },
+            D_TEGENGESTELD: {
+                groep: 'D',
+                titel: 'Tegengesteld teken bij het eindresultaat',
+                kort: 'tegengesteld teken',
+                uitleg: 'Je aanpak was waarschijnlijk juist, maar in de laatste stap ging het teken mis, vaak bij het aftrekken van een negatief getal.',
+                tip: 'Doe de laatste stap bewust traag: schrijf \\(b^2 - (\\ldots)\\) uit en noteer het tussenresultaat.'
+            },
+            D_ANDERS: {
+                groep: 'D',
+                titel: 'Rekenfout bij de discriminant',
+                kort: 'rekenfout',
+                uitleg: 'Er zit een rekenfout in je uitwerking die niet tot de klassieke valkuilen behoort. Meestal gebeurt dat wanneer er te veel in één stap in het hoofd gerekend wordt.',
+                tip: 'Werk in drie regels: eerst \\(b^2\\), dan \\(4ac\\), dan het verschil.'
+            },
+
+            R_LEEG_TE_VROEG: {
+                groep: 'R',
+                titel: 'Nulwaarden uitgesloten terwijl ze wel bestaan',
+                kort: 'er zijn wél nulwaarden',
+                uitleg: 'Er zijn alleen geen reële nulwaarden als \\(D &lt; 0\\), want dan bestaat \\(\\sqrt{D}\\) niet. Bij \\(D \\geq 0\\) kan je de formule gewoon toepassen.',
+                tip: 'Kijk na het berekenen van \\(D\\) eerst naar het teken ervan: negatief betekent \\(V = \\varnothing\\), anders ga je door met de formule.'
+            },
+            R_LEEG_VERGETEN: {
+                groep: 'R',
+                titel: 'Nulwaarden opgegeven bij een negatieve discriminant',
+                kort: 'bij \\(D &lt; 0\\) geen nulwaarden',
+                uitleg: 'Een negatieve discriminant betekent dat de parabool de x-as niet snijdt. Er valt dan niets uit te rekenen: je schrijft meteen \\(V = \\varnothing\\) en je bent klaar.',
+                tip: 'Zodra \\(D &lt; 0\\): stoppen met rekenen en \\(V = \\varnothing\\) noteren. De formule invullen heeft dan geen zin.'
+            },
+            R_EEN_WORTEL: {
+                groep: 'R',
+                titel: 'Slechts één van de twee nulwaarden gegeven',
+                kort: 'één van de twee nulwaarden vergeten',
+                uitleg: 'Het teken \\(\\pm\\) is een afkorting voor twee berekeningen: één met \\(+\\sqrt{D}\\) en één met \\(-\\sqrt{D}\\). Bij \\(D > 0\\) geven die twee verschillende uitkomsten.',
+                tip: 'Schrijf altijd \\(x_1\\) (met \\(+\\)) en \\(x_2\\) (met \\(-\\)) apart uit.'
+            },
+            R_TWEE_BIJ_NUL: {
+                groep: 'R',
+                titel: 'Twee nulwaarden opgegeven bij \\(D = 0\\)',
+                kort: 'bij \\(D = 0\\) maar één nulwaarde',
+                uitleg: 'Als \\(D = 0\\), raakt de parabool de x-as in precies één punt. Je noemt dat een dubbele nulwaarde en je noteert ze maar één keer in de verzameling.',
+                tip: 'Bij \\(D = 0\\) hoef je maar één breuk uit te rekenen: \\(x = \\dfrac{-b}{2a}\\).'
+            },
+            R_TEKEN_B: {
+                groep: 'R',
+                titel: 'Het teken van \\(b\\) niet omgekeerd',
+                kort: 'teken van \\(b\\) niet omgekeerd',
+                uitleg: 'De formule begint met \\(-b\\), het tegengestelde van \\(b\\). Bij \\(b = -3\\) wordt dat \\(-(-3) = +3\\), bij \\(b = 5\\) wordt het \\(-5\\). Wie dit vergeet, krijgt alle nulwaarden met omgekeerd teken.',
+                tip: 'Schrijf \\(-b\\) uit met haakjes, \\(-(\\ldots)\\), en reken het pas daarna uit.'
+            },
+            R_VERGETEN_2A: {
+                groep: 'R',
+                titel: 'Gedeeld door \\(a\\) in plaats van \\(2a\\)',
+                kort: 'gedeeld door \\(a\\) i.p.v. \\(2a\\)',
+                uitleg: 'In de noemer staat \\(2a\\), niet \\(a\\) alleen. Die ene factor 2 is snel vergeten, maar daardoor vallen al je nulwaarden dubbel zo groot uit.',
+                tip: 'Bereken de noemer \\(2a\\) eerst apart en omkader hem.'
+            },
+            R_D_ZONDER_WORTEL: {
+                groep: 'R',
+                titel: '\\(D\\) gebruikt in plaats van \\(\\sqrt{D}\\)',
+                kort: '\\(D\\) i.p.v. \\(\\sqrt{D}\\)',
+                uitleg: 'De discriminant \\(D\\) berekenen is maar de eerste stap. In de formule voor de nulwaarden komt de vierkantswortel van \\(D\\) voor, niet \\(D\\) zelf.',
+                tip: 'Voeg tussen de twee formules één extra regel in: \\(\\sqrt{D} = \\ldots\\).'
+            },
+            R_TELLER_NIET_GEDEELD: {
+                groep: 'R',
+                titel: 'Breukstreep slaat niet op de hele teller',
+                kort: 'breukstreep over de hele teller',
+                uitleg: 'De breukstreep geldt voor de héle teller \\(-b \\pm \\sqrt{D}\\). Je mag dus niet enkel \\(-b\\) delen door \\(2a\\): ook \\(\\sqrt{D}\\) moet gedeeld worden.',
+                tip: 'Bereken eerst de teller als één getal (\\(-b + \\sqrt{D}\\) en \\(-b - \\sqrt{D}\\)) en deel dan pas door \\(2a\\).'
+            },
+            R_ANDERS: {
+                groep: 'R',
+                titel: 'Rekenfout bij het uitwerken van de formule',
+                kort: 'rekenfout bij de formule',
+                uitleg: 'Je kent de formule, maar er sloop een fout in het uitrekenen van teller of noemer, of in het vereenvoudigen van de breuk.',
+                tip: 'Reken teller en noemer afzonderlijk uit en vereenvoudig pas op het einde.'
+            }
+        };
+
+        function telFouten() {
+            let tel = {};
+            rapportData.forEach((it, i) => {
+                [...it.dFouten, ...it.rootsFouten].forEach(f => {
+                    if (!tel[f.type]) tel[f.type] = { aantal: 0, oefeningen: [] };
+                    tel[f.type].aantal++;
+                    if (!tel[f.type].oefeningen.includes(i + 1)) tel[f.type].oefeningen.push(i + 1);
+                });
+            });
+            return tel;
+        }
+
+        // ---------- Leerkrachtfeedback ----------
+        function docentFeedbackHtml() {
+            const n = rapportData.length;
+            const pct = n ? Math.round(100 * score / n) : 0;
+            const dEerste = rapportData.filter(it => it.dFouten.length === 0).length;
+            const rootsEerste = rapportData.filter(it => it.rootsFouten.length === 0).length;
+            const getoond = rapportData.filter(it => !it.dOpgelost || !it.rootsOpgelost).length;
+            const tel = telFouten();
+            const types = Object.keys(tel).sort((p, q) => tel[q].aantal - tel[p].aantal);
+            const meervoud = (k) => (k === 1 ? 'oefening' : 'oefeningen');
+
+            const gevallen = [
+                { naam: 'twee nulwaarden', tex: 'D > 0', test: it => it.D > 0 },
+                { naam: 'één nulwaarde', tex: 'D = 0', test: it => it.D === 0 },
+                { naam: 'geen reële nulwaarden', tex: 'D &lt; 0', test: it => it.D < 0 }
+            ].map(g => {
+                const lijst = rapportData.filter(g.test);
+                return { naam: g.naam, tex: g.tex, totaal: lijst.length, mis: lijst.filter(it => it.dFouten.length + it.rootsFouten.length > 0).length };
+            });
+
+            let opening;
+            if (score === n) {
+                opening = `Een foutloze reeks: je loste alle ${n} oefeningen in één keer volledig juist op. Je beheerst de werkwijze: eerst de discriminant, dan de conclusie over het aantal nulwaarden en pas daarna de formule. Goed gedaan!`;
+            } else if (pct >= 80) {
+                opening = `Dit is een sterke reeks: ${score} van de ${n} oefeningen kreeg je in één keer volledig juist. Je beheerst de aanpak; wat er nog misliep zijn eerder slordigheden dan hiaten in je kennis. Met wat extra aandacht werk je die zo weg.`;
+            } else if (pct >= 50) {
+                opening = `Je kent de werkwijze, maar er sluipen nog te veel fouten in: ${score} van de ${n} oefeningen kreeg je in één keer volledig juist. Het goede nieuws is dat het meestal dezelfde fouten zijn die terugkomen, en die kan je gericht aanpakken. Lees hieronder rustig na waar het misliep.`;
+            } else {
+                opening = `Deze reeks was nog moeilijk: ${score} van de ${n} oefeningen kreeg je in één keer volledig juist. Dat is helemaal niet erg, want tweedegraadsvergelijkingen oplossen vraagt oefening. Ga eerst rustig door de uitgewerkte oplossingen achteraan, probeer elke stap te begrijpen en maak daarna een nieuwe reeks.`;
+            }
+            let h = `<div class="docent-box"><p>${opening}</p></div>`;
+
+            // Sterke punten
+            const sterk = [];
+            if (score !== n) {
+                if (dEerste === n) sterk.push('Je berekende de discriminant telkens meteen juist. Dat is de basis van de hele methode, en die zit goed.');
+                else if (dEerste >= 0.7 * n) sterk.push(`Bij de discriminant ging het in ${dEerste} van de ${n} oefeningen meteen goed.`);
+                if (rootsEerste === n) sterk.push('Je werkte de nulwaarden telkens meteen juist uit, inclusief tekens en breuken.');
+                else if (rootsEerste >= 0.7 * n) sterk.push(`Bij de nulwaarden ging het in ${rootsEerste} van de ${n} oefeningen meteen goed.`);
+                gevallen.forEach(g => {
+                    if (g.totaal > 0 && g.mis === 0) {
+                        sterk.push(`${g.totaal === 1 ? 'De oefening' : `Alle ${g.totaal} oefeningen`} met \\(${g.tex}\\) (${g.naam}) loste je foutloos op.`);
+                    }
+                });
+            }
+            if (sterk.length) {
+                h += `<div class="sterk-box"><p><strong>Wat goed ging</strong></p><ul>${sterk.map(s => `<li>${s}</li>`).join('')}</ul></div>`;
+            }
+
+            // Waar het misliep
+            if (types.length) {
+                h += '<p><strong>Waar het misliep</strong></p>';
+                const mis = gevallen.filter(g => g.mis > 0);
+                if (mis.length) {
+                    h += `<ul>${mis.map(g => `<li>Bij vergelijkingen met \\(${g.tex}\\) (${g.naam}) ${g.totaal === 1 ? 'ging het mis' : `ging het in ${g.mis} van de ${g.totaal} oefeningen mis`}.</li>`).join('')}</ul>`;
+                }
+                [['D', 'Bij het berekenen van de discriminant'], ['R', 'Bij het bepalen van de nulwaarden']].forEach(([groep, kop]) => {
+                    const lijst = types.filter(t => FOUTEN[t].groep === groep);
+                    if (!lijst.length) return;
+                    h += `<p><em>${kop}</em></p>`;
+                    lijst.forEach(t => {
+                        const f = FOUTEN[t];
+                        h += `<div class="fout-kaart"><div class="fout-titel">${f.titel} <span class="aantal">(${tel[t].aantal}× — ${meervoud(tel[t].oefeningen.length)} ${tel[t].oefeningen.join(', ')})</span></div><p>${f.uitleg}</p><div class="tip"><strong>Tip:</strong> ${f.tip}</div></div>`;
+                    });
+                });
+            }
+
+            // Advies
+            const advies = [];
+            advies.push('Werk steeds met dezelfde vaste stappen: coëfficiënten aflezen, \\(D\\) berekenen (met haakjes bij negatieve getallen), het teken van \\(D\\) bekijken en dan pas de formule invullen.');
+            if (types.length) advies.push(`Je belangrijkste werkpunt is: <em>${FOUTEN[types[0]].titel}</em>. ${FOUTEN[types[0]].tip}`);
+            if (getoond > 0) advies.push(`Bij ${getoond} ${meervoud(getoond)} moest de oplossing getoond worden. Probeer vergelijkingen van dat type nog eens zonder naar de uitwerking te kijken.`);
+            if (score === n) advies.push('Je bent klaar voor een stevigere uitdaging: vergelijkingen waarbij \\(D\\) geen perfect kwadraat is, zoals \\(x^2 - 2x - 1 = 0\\) met nulwaarden \\(1 \\pm \\sqrt{2}\\).');
+            else if (pct < 80) advies.push('Maak daarna meteen een nieuwe reeks van 5 oefeningen en sla geen enkele tussenstap over.');
+            h += `<p><strong>Mijn advies voor de volgende keer</strong></p><ul>${advies.map(a => `<li>${a}</li>`).join('')}</ul>`;
+            return h;
+        }
+
+        // ---------- Overzichtstabel ----------
+        function pogingTekst(aantal, opgelost) {
+            if (!opgelost) return '<span class="t-bad">niet gelukt</span>';
+            return aantal === 1 ? '<span class="t-ok">1e poging</span>' : `<span class="t-warn">${aantal} pogingen</span>`;
+        }
+        function overzichtHtml() {
+            let rijen = rapportData.map((it, i) => {
+                const pD = it.dFouten.length + (it.dOpgelost ? 1 : 0);
+                const pR = it.rootsFouten.length + (it.rootsOpgelost ? 1 : 0);
+                const foutloos = it.dFouten.length + it.rootsFouten.length === 0;
+                return `<tr><td>${i + 1}</td><td>\\(${vergelijkingTex(it.a, it.b, it.c)}\\)</td><td>\\(${it.D}\\)</td><td>\\(${verzamelingTex(it.a, it.b, it.D)}\\)</td><td>${pogingTekst(pD, it.dOpgelost)}</td><td>${pogingTekst(pR, it.rootsOpgelost)}</td><td>${foutloos ? '<span class="t-ok">foutloos</span>' : '<span class="t-warn">met fouten</span>'}</td></tr>`;
+            }).join('');
+            return `<table class="overzicht"><tr><th>Nr.</th><th>Vergelijking</th><th>\\(D\\)</th><th>\\(V\\)</th><th>Poging \\(D\\)</th><th>Poging nulwaarden</th><th>Resultaat</th></tr>${rijen}</table>`;
+        }
+
+        // ---------- Uitgewerkte oplossing ----------
+        function oplossingHtml(it) {
+            const { a, b, c, D } = it;
+            const p = 4 * a * c;
+            const stap = (titel, inhoud) => `<div class="stap"><div class="stap-titel">${titel}</div>${inhoud}</div>`;
+            const blok = (regels) => `\\[\\begin{aligned} ${regels.join(' \\\\ ')} \\end{aligned}\\]`;
+            const zonderDubbels = (reeks) => reeks.filter((t, i) => i === 0 || t !== reeks[i - 1]);
+            let h = '';
+
+            // Stap 1: coëfficiënten
+            h += stap('Stap 1 – Coëfficiënten aflezen',
+                `\\[ ax^2 + bx + c = 0 \\quad\\Longrightarrow\\quad a = ${a}, \\;\\; b = ${b}, \\;\\; c = ${c} \\]`);
+
+            // Stap 2: discriminant (formule, invullen, uitrekenen)
+            h += stap('Stap 2 – Discriminant berekenen', blok([
+                `D &= b^2 - 4ac = ${par(b)}^2 - 4 \\cdot ${par(a)} \\cdot ${par(c)}`,
+                p < 0
+                    ? `&= ${b * b} - ${par(p)} = ${b * b} + ${-p} = ${D}`
+                    : `&= ${b * b} - ${p} = ${D}`
+            ]));
+
+            // Stap 3: conclusie over het aantal nulwaarden
+            if (D > 0) {
+                h += stap('Stap 3 – Aantal nulwaarden bepalen', `<p>Omdat \\(D = ${D} > 0\\), heeft de vergelijking <strong>twee verschillende reële nulwaarden</strong>.</p>`);
+            } else if (D === 0) {
+                h += stap('Stap 3 – Aantal nulwaarden bepalen', '<p>Omdat \\(D = 0\\), heeft de vergelijking <strong>precies één (dubbele) nulwaarde</strong>.</p>');
+            } else {
+                h += stap('Stap 3 – Aantal nulwaarden bepalen', `<p>Omdat \\(D = ${D} &lt; 0\\), bestaat \\(\\sqrt{D}\\) niet in \\(\\mathbb{R}\\). De vergelijking heeft dus <strong>geen reële nulwaarden</strong> en we hoeven de formule niet meer toe te passen.</p>`);
+            }
+
+            if (D >= 0) {
+                const bn = -b, noemer = 2 * a;
+                // Stap 4: nulwaarden
+                if (D > 0) {
+                    const s = Math.round(Math.sqrt(D));
+                    const wortelRegel = (naam, teken) => {
+                        const teller = teken === '+' ? bn + s : bn - s;
+                        const reeks = zonderDubbels([`\\frac{${bn} ${teken} ${s}}{${noemer}}`, `\\frac{${teller}}{${noemer}}`, ratTex(rat(teller, noemer))]);
+                        return `${naam} &= ${reeks.join(' = ')}`;
+                    };
+                    h += stap('Stap 4 – Nulwaarden berekenen (eerst met \\(+\\), dan met \\(-\\))', blok([
+                        `x &= \\frac{-b \\pm \\sqrt{D}}{2a} = \\frac{-${par(b)} \\pm \\sqrt{${D}}}{2 \\cdot ${par(a)}} = \\frac{${bn} \\pm ${s}}{${noemer}}`,
+                        wortelRegel('x_1', '+'),
+                        wortelRegel('x_2', '-')
+                    ]));
+                } else {
+                    const reeks = zonderDubbels([`\\frac{${bn}}{${noemer}}`, ratTex(rat(bn, noemer))]);
+                    h += stap('Stap 4 – Nulwaarde berekenen met de formule',
+                        '<p>Omdat \\(\\sqrt{0} = 0\\), vallen de oplossingen met \\(+\\) en met \\(-\\) samen:</p>' +
+                        blok([`x &= \\frac{-b \\pm \\sqrt{D}}{2a} = \\frac{-b}{2a} = \\frac{-${par(b)}}{2 \\cdot ${par(a)}} = ${reeks.join(' = ')}`]));
+                }
+            }
+
+            h += `<div class="antwoord-box">\\[ V = ${verzamelingTex(a, b, D)} \\]</div>`;
+            return h;
+        }
+
+        function foutenBlokHtml(it) {
+            if (!it.dFouten.length && !it.rootsFouten.length) return '';
+            const uniek = (lijst) => [...new Set(lijst)];
+            const labels = (lijst) => uniek(lijst.map(f => FOUTEN[f.type].kort)).join(', ');
+            let li = '';
+            if (it.dFouten.length) {
+                li += `<li><strong>Discriminant:</strong> je vulde ${uniek(it.dFouten.map(f => `\\(D = ${f.ingevuld}\\)`)).join(' en ')} in (${labels(it.dFouten)}). <span class="nb">Juist: \\(D = ${it.D}\\).</span></li>`;
+            }
+            if (it.rootsFouten.length) {
+                li += `<li><strong>Nulwaarden:</strong> je vulde ${uniek(it.rootsFouten.map(f => `<code>${esc(f.ingevuld)}</code>`)).join(' en ')} in (${labels(it.rootsFouten)}). <span class="nb">Juist: \\(V = ${verzamelingTex(it.a, it.b, it.D)}\\).</span></li>`;
+            }
+            return `<div class="fouten-blok"><ul>${li}</ul></div>`;
+        }
+
+        function oefeningBlokHtml(it, i) {
+            const fouten = it.dFouten.length + it.rootsFouten.length;
+            const badge = fouten === 0
+                ? '<span class="badge badge-ok">foutloos</span>'
+                : ((!it.dOpgelost || !it.rootsOpgelost)
+                    ? '<span class="badge badge-bad">oplossing getoond</span>'
+                    : '<span class="badge badge-warn">met fouten</span>');
+            return `<div class="oef-blok"><div class="oef-start"><div class="oef-kop"><h3>Oefening ${i + 1}</h3>${badge}</div>\\[ ${vergelijkingTex(it.a, it.b, it.c)} \\]${foutenBlokHtml(it)}</div>${oplossingHtml(it)}</div>`;
+        }
+
+        // ---------- Rapport samenstellen en als PDF bewaren ----------
+        function bouwRapportHtml() {
+            const n = rapportData.length;
+            const pct = n ? Math.round(100 * score / n) : 0;
+            const dEerste = rapportData.filter(it => it.dFouten.length === 0).length;
+            const rootsEerste = rapportData.filter(it => it.rootsFouten.length === 0).length;
+            const datum = new Date().toLocaleDateString('nl-BE', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            let h = `<h1>Rapport tweedegraadsvergelijkingen</h1><p class="meta">Discriminant en nulwaarden · ${datum}</p>`;
+            h += `<div class="score-rij">
+                <div class="score-kaart"><div class="groot">${score} / ${n}</div><div class="klein">volledig juist in één keer</div></div>
+                <div class="score-kaart"><div class="groot">${pct}%</div><div class="klein">score</div></div>
+                <div class="score-kaart"><div class="groot">${dEerste} / ${n}</div><div class="klein">\\(D\\) meteen juist</div></div>
+                <div class="score-kaart"><div class="groot">${rootsEerste} / ${n}</div><div class="klein">nulwaarden meteen juist</div></div>
+            </div>`;
+            h += '<h2>Feedback van je leerkracht</h2>' + docentFeedbackHtml();
+            h += '<h2>Overzicht van de oefeningen</h2>' + overzichtHtml();
+            h += '<h2>Uitgewerkte oplossingen</h2><p>Hieronder vind je bij elke oefening de volledige uitwerking, met alle tussenstappen. Staat er een fout bij jouw antwoord, dan lees je meteen wat er misliep.</p>';
+            h += rapportData.map(oefeningBlokHtml).join('');
+            return h;
+        }
+
+        // ---------- Rapport als PDF downloaden (rechtstreeks, zonder afdrukvenster) ----------
+        const PDF_BREEDTE_PX = 700;      // breedte van de rapportinhoud in px (= 186 mm op A4)
+        const PDF_BREEDTE_MM = 186;
+        const PDF_MARGE_MM = 12;
+        const PDF_NUTTIG_MM = 269;       // bruikbare hoogte per pagina (laat ruimte voor het paginanummer)
+
+        async function typesetRapport(el) {
+            try {
+                if (window.MathJax && MathJax.typesetPromise) await MathJax.typesetPromise([el]);
+                if (document.fonts && document.fonts.ready) await document.fonts.ready;
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        // Oefeningblokken uitplatten tot losse stukken, zodat een pagina nooit midden in een stap breekt
+        function maakEenheden(bron) {
+            const stukken = [];
+            [...bron.children].forEach(el => {
+                if (el.classList.contains('oef-blok')) [...el.children].forEach(kind => stukken.push(kind));
+                else stukken.push(el);
+            });
+            return stukken.map(el => {
+                const w = document.createElement('div');
+                w.className = 'u';
+                const isKop = el.tagName === 'H2';
+                const isStart = el.classList.contains('oef-start');
+                const isLabel = el.tagName === 'P' && el.children.length === 1 &&
+                    /^(STRONG|EM)$/.test(el.firstElementChild.tagName) &&
+                    el.textContent.trim() === el.firstElementChild.textContent.trim();
+                if (isKop) w.classList.add('kop');
+                if (isStart) w.classList.add('start');
+                // titels en labels blijven samen met het stuk dat erop volgt
+                if (isKop || isStart || isLabel) w.dataset.vastMetVolgende = '1';
+                w.appendChild(el);
+                return w;
+            });
+        }
+
+        function verdeelOverPaginas(eenheden, maxPx) {
+            const brokken = [];
+            let huidig = [];
+            eenheden.forEach(u => {
+                huidig.push(u);
+                if (u.dataset.vastMetVolgende !== '1') { brokken.push(huidig); huidig = []; }
+            });
+            if (huidig.length) brokken.push(huidig);
+
+            const paginas = [];
+            let pagina = [], hoogte = 0;
+            brokken.forEach(b => {
+                const h = b.reduce((som, u) => som + u.getBoundingClientRect().height, 0);
+                if (pagina.length && hoogte + h > maxPx) { paginas.push(pagina); pagina = []; hoogte = 0; }
+                pagina.push(...b);
+                hoogte += h;
+            });
+            if (pagina.length) paginas.push(pagina);
+            return paginas;
+        }
+
+        async function downloadRapport() {
+            const knop = document.getElementById('rapport-knop');
+            const status = document.getElementById('rapport-status');
+            const bron = document.getElementById('rapport-bron');
+            const oudeKnop = knop.innerHTML;
+            status.textContent = '';
+            knop.disabled = true;
+            try {
+                if (!window.html2canvas || !window.jspdf) throw new Error('PDF-bibliotheek niet geladen');
+                knop.textContent = 'Rapport wordt gemaakt…';
+
+                bron.innerHTML = bouwRapportHtml();
+                await typesetRapport(bron);
+                const eenheden = maakEenheden(bron);
+                bron.innerHTML = '';
+                eenheden.forEach(u => bron.appendChild(u));
+
+                const mmPerPx = PDF_BREEDTE_MM / PDF_BREEDTE_PX;
+                const paginas = verdeelOverPaginas(eenheden, Math.floor(PDF_NUTTIG_MM / mmPerPx));
+                bron.innerHTML = '';   // de stukken blijven bewaard in 'paginas'; zo blijft het document klein en snel
+                bron.innerHTML = '';   // document klein houden: html2canvas kopieert het telkens volledig
+                const pdf =new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+
+                for (let i = 0; i < paginas.length; i++) {
+                    knop.textContent = `Rapport wordt gemaakt… (${i + 1}/${paginas.length})`;
+                    const pg = document.createElement('div');
+                    pg.className = 'rapport pdf-pagina';
+                    paginas[i].forEach(u => pg.appendChild(u.cloneNode(true)));
+                    document.body.appendChild(pg);
+                    let canvas;
+                    try {
+                        canvas = await window.html2canvas(pg, {
+                            scale: 2, backgroundColor: '#ffffff', logging: false,
+                            // de rest van de app hoeft niet mee gekopieerd te worden (dat maakt het veel sneller)
+                            ignoreElements: (n) => n.parentNode === document.body && n !== pg
+                        });
+                    } finally {
+                        document.body.removeChild(pg);
+                    }
+                    let b = PDF_BREEDTE_MM, h = canvas.height / canvas.width * b;
+                    if (h > PDF_NUTTIG_MM) { b *= PDF_NUTTIG_MM / h; h = PDF_NUTTIG_MM; }
+                    if (i > 0) pdf.addPage();
+                    pdf.addImage(canvas.toDataURL('image/jpeg', 0.85), 'JPEG', PDF_MARGE_MM, PDF_MARGE_MM, b, h);
+                    pdf.setFontSize(8);
+                    pdf.setTextColor(113, 128, 150);
+                    pdf.text(`Pagina ${i + 1} van ${paginas.length}`, 105, 291, { align: 'center' });
+                    pdf.text('© T. Gaerdelen', 198, 291, { align: 'right' });
+                }
+                pdf.save(`Rapport_Tweedegraadsvergelijkingen_${new Date().toISOString().slice(0, 10)}.pdf`);
+            } catch (err) {
+                console.log(err);
+                status.textContent = 'Het rapport kon niet gemaakt worden. Controleer je internetverbinding en probeer opnieuw.';
+            } finally {
+                bron.innerHTML = '';
+                knop.disabled = false;
+                knop.innerHTML = oudeKnop;
+            }
+        }
+</script>
+
+<!-- =====================================================================
+     SCRIPT: ONVOLLEDIGE VERGELIJKINGEN
+     ===================================================================== -->
+<script>
+    function switchTab(tabId) {
+        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        if (window.event && window.event.target) {
+            window.event.target.classList.add('active');
+        }
+    }
+
+    function toggleEl(id) {
+        const el = document.getElementById(id);
+        el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function formatA(val) {
+        return val === 1 ? '' : val;
+    }
+
+    // Deling als vereenvoudigde breuk tonen (bijv. 4/9 i.p.v. 0.4444...), of als geheel getal als dat kan
+    function breukTekst(teller, noemer) {
+        let x = Math.abs(teller), y = Math.abs(noemer);
+        while (y) { [x, y] = [y, x % y]; }
+        let t = teller / x, n = noemer / x;
+        if (n < 0) { t = -t; n = -n; }
+        return n === 1 ? String(t) : `${t}/${n}`;
+    }
+
+    function isNoSolutions(val) {
+        let clean = val.replace(/\s+/g, '').toLowerCase();
+        return clean.includes('geen') || clean.includes('geenopl') || clean.includes('geenoplossing');
+    }
+
+    // Wiskundige notatie uit de foutteksten omzetten naar gewone tekst (bv. x^2 → x², \pm → ±)
+    function texNaarTekst(s) {
+        return s.replace(/\\\(|\\\)/g, '')
+            .replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '$1/$2')
+            .replace(/\\sqrt\{([^{}]*)\}/g, '√$1')
+            .replace(/\\ldots/g, '…')
+            .replace(/\^2/g, '²')
+            .replace(/\\pm\s?/g, '±')
+            .replace(/\\cdot/g, '·')
+            .replace(/\\varnothing/g, '∅')
+            .replace(/\\geq/g, '≥')
+            .replace(/\\quad/g, ' ');
+    }
+
+    // --- FOUTENANALYSE: per oefening en per foute poging, gegroepeerd per fouttype ---
+    function genereerDiagnose(testList) {
+        const n = testList.length;
+        if (testScore === n) {
+            return "Perfect gewerkt! Je hebt de leerstof rond onvolledige vierkantsvergelijkingen helemaal onder de knie.";
+        }
+        const pct = Math.round(100 * testScore / n);
+        const TYPES = [
+            { id: '1', naam: 'Type 1', vorm: 'ax² = 0', plan: 'deel door a; dan staat er x² = 0 en dus is x = 0 de enige oplossing.' },
+            { id: '3', naam: 'Type 2', vorm: 'ax² + c = 0', plan: 'breng c naar rechts, deel door a en neem de wortel, plus én min. Staat er rechts een negatief getal, dan zijn er geen oplossingen.' },
+            { id: '2', naam: 'Type 3', vorm: 'ax² + bx = 0', plan: 'breng x buiten haakjes, x(ax + b) = 0, en stel elke factor gelijk aan 0. x = 0 is dus altijd een van de oplossingen.' },
+            { id: '4', naam: 'Type 4', vorm: 'a(x - p)² + k = 0', plan: 'breng k naar rechts, deel door a, neem de wortel (plus én min) en breng daarna p naar het andere lid. Staat er rechts een negatief getal, dan zijn er geen oplossingen.' }
+        ];
+        const meteenJuist = (item) => item.isCorrect && !item.alreadyAttemptedPartial;
+
+        // Elke foute poging een fouttype geven (zelfde herkenning als in de gemengde toets)
+        const tel = {};
+        testList.forEach((item, i) => {
+            const pogingen = (item.pogingen && item.pogingen.length) ? item.pogingen : (item.isCorrect ? [] : [item.userAnswer || '']);
+            pogingen.forEach(p => {
+                const ant = p && p !== '(geen antwoord)' ? leesMixAntwoord(p) : { ongeldig: true };
+                const code = ant.ongeldig ? 'O_ANDERS' : classifyOnv(item, ant.waarden, ant.leeg);
+                if (!tel[code]) tel[code] = { aantal: 0, oefeningen: [] };
+                tel[code].aantal++;
+                if (!tel[code].oefeningen.includes(i + 1)) tel[code].oefeningen.push(i + 1);
+            });
+        });
+        const codes = Object.keys(tel).sort((p, q) => tel[q].aantal - tel[p].aantal);
+
+        const kaart = 'background: #ffffff; border: 1px solid #fde68a; border-left: 4px solid #f59e0b; border-radius: 0 6px 6px 0; padding: 10px 14px; margin: 8px 0;';
+        let h = '';
+        if (pct >= 80) h += `<p>Dit is een sterke test: ${testScore} van de ${n} oefeningen had je meteen juist. Wat er nog misliep, zijn eerder slordigheden dan hiaten in je kennis.</p>`;
+        else if (pct >= 50) h += `<p>Je kent de aanpak, maar er sluipen nog fouten in: ${testScore} van de ${n} oefeningen had je meteen juist. Lees hieronder rustig waar het misliep; meestal zijn het dezelfde fouten die terugkomen.</p>`;
+        else h += `<p>Deze test was nog moeilijk: ${testScore} van de ${n} oefeningen had je meteen juist. Dat is niet erg, maar het betekent wel dat je de aanpak per type nog eens grondig moet herhalen. Hieronder lees je per type hoe het ging en waar het misliep.</p>`;
+
+        // Overzicht per type
+        const perType = TYPES.map(t => {
+            const lijst = testList.filter(item => item.type === t.id);
+            return Object.assign({}, t, { totaal: lijst.length, ok: lijst.filter(meteenJuist).length });
+        }).filter(t => t.totaal > 0);
+        h += `<div class="diag-item" style="${kaart}"><strong>📊 Per type:</strong><ul style="margin: 6px 0; padding-left: 22px;">` +
+            perType.map(t => `<li>${t.ok === t.totaal ? '✅' : '❌'} <strong>${t.naam}</strong> (${t.vorm}): ${t.ok} van de ${t.totaal} meteen juist</li>`).join('') +
+            `</ul></div>`;
+
+        // Werkpunten per fouttype
+        if (codes.length) {
+            h += '<p style="margin-bottom: 0;"><strong>Hier is een analyse van jouw werkpunten:</strong></p>';
+            codes.forEach(c => {
+                const f = FOUTEN_ONV[c];
+                const oef = tel[c].oefeningen;
+                h += `<div class="diag-item" style="${kaart}">🔹 <strong>${texNaarTekst(f.titel)}</strong> <span style="color: #92400e; font-size: 0.9rem;">(${oef.length === 1 ? 'oefening' : 'oefeningen'} ${oef.join(', ')})</span><br>${texNaarTekst(f.uitleg)}<br><em>💡 Tip: ${texNaarTekst(f.tip)}</em></div>`;
+            });
+        }
+
+        // Advies: het stappenplan van elk type waar het misliep
+        const mis = perType.filter(t => t.ok < t.totaal);
+        let advies = mis.map(t => `<li><strong>${t.naam} (${t.vorm}):</strong> ${t.plan}</li>`).join('');
+        advies += '<li>Controleer je oplossingen door ze in te vullen in de opgave: je moet 0 uitkomen.</li>';
+        if (pct < 80) advies += `<li>Oefen eerst in ${mis.length === 1 ? 'het tabblad van dat type' : 'de tabbladen van die types'} (met het stappenplan en de tips) en maak daarna een nieuwe test.</li>`;
+        h += `<div class="diag-item" style="${kaart}"><strong>📌 Herhaal het stappenplan:</strong><ul style="margin: 6px 0; padding-left: 22px;">${advies}</ul></div>`;
+        return h;
+    }
+
+    // --- OEFENTABBLADEN: zelfde generatoren als de test, geen herhaling van de laatste 12 oefeningen per tabblad ---
+    const oefenRecent = { '1': [], '2': [], '3': [], '4': [] };
+    function nieuweOefening(type) {
+        let it = null;
+        for (let poging = 0; poging < 60; poging++) {
+            it = generateTestExercise(type);
+            if (!oefenRecent[type].includes(it.eqStr)) break;
+        }
+        oefenRecent[type] = [it.eqStr, ...oefenRecent[type]].slice(0, 12);
+        return it;
+    }
+    // Leest en beoordeelt het antwoord in een oefentabblad; null als het vak leeg is
+    function beoordeelOefening(inputId, fbId, it) {
+        const ruw = document.getElementById(inputId).value;
+        const fb = document.getElementById(fbId);
+        if (ruw.trim() === '') {
+            fb.innerText = 'Vul eerst een antwoord in (of typ "geen oplossingen").';
+            fb.className = 'feedback partial';
+            return null;
+        }
+        return { fb: fb, res: evaluateAnswer(it, ruw.replace(/\s+/g, '').toLowerCase()) };
+    }
+
+    // --- TYPE 1 ---
+    let t1_it = null;
+    function loadT1() {
+        t1_it = nieuweOefening('1');
+        const a = t1_it.a;
+        document.getElementById('t1-eq').innerText = t1_it.eqStr;
+        document.getElementById('t1-input').value = '';
+        document.getElementById('t1-fb').innerText = '';
+        document.querySelectorAll('#type1 .hint-step').forEach(el => el.style.display = 'none');
+
+        if (a !== 1) {
+            document.getElementById('t1-btn-div').style.display = 'inline-block';
+            document.getElementById('t1-spec-1').innerText = `👉 Uitwerking: Deel ${gCoef(a)}x² door ${a} → x² = 0`;
+        } else {
+            document.getElementById('t1-btn-div').style.display = 'none';
+        }
+        document.getElementById('t1-spec-2').innerText = `👉 Uitwerking: x = 0`;
+    }
+    function checkT1() {
+        const b = beoordeelOefening('t1-input', 't1-fb', t1_it);
+        if (!b) return;
+        const fb = b.fb;
+        if (b.res === 'correct') {
+            fb.innerText = 'Super gedaan! Correct.';
+            fb.className = 'feedback correct';
+        } else {
+            fb.innerText = 'Niet helemaal juist. Bekijk gerust de tips hieronder!';
+            fb.className = 'feedback incorrect';
+        }
+    }
+
+    // --- TYPE 2 ---
+    let t2_it = null;
+    function loadT2() {
+        t2_it = nieuweOefening('2');
+        const a = t2_it.a, b = t2_it.b, rootStr = t2_it.target2;
+        const factor = `${gCoef(a)}x${gMetTeken(b)}`;
+        document.getElementById('t2-eq').innerText = t2_it.eqStr;
+        document.getElementById('t2-input').value = '';
+        document.getElementById('t2-fb').innerText = '';
+        document.querySelectorAll('#type2 .hint-step').forEach(el => el.style.display = 'none');
+
+        document.getElementById('t2-spec-1').innerText = `👉 Uitwerking: Zet x buiten haakjes: x(${factor}) = 0`;
+        document.getElementById('t2-spec-2').innerText = `👉 Uitwerking: x = 0  of  ${factor} = 0`;
+        document.getElementById('t2-spec-3').innerText = `👉 Uitwerking: ${gCoef(a)}x = ${-b} dus x = ${rootStr}. Oplossingen: x = 0 of x = ${rootStr}`;
+    }
+    function checkT2() {
+        const b = beoordeelOefening('t2-input', 't2-fb', t2_it);
+        if (!b) return;
+        const fb = b.fb;
+        if (b.res === 'correct') {
+            fb.innerText = 'Geweldig! Volledig juist opgelost.';
+            fb.className = 'feedback correct';
+        } else {
+            fb.innerText = `Niet helemaal. De oplossingen zijn x = 0 en x = ${t2_it.target2}.`;
+            fb.className = 'feedback incorrect';
+        }
+    }
+
+    // --- TYPE 3 ---
+    let t3_it = null;
+    function loadT3() {
+        t3_it = nieuweOefening('3');
+        const t3_a = t3_it.a, t3_c = t3_it.c, t3_root = t3_it.target1 || '', t3_hasSolutions = !t3_it.isNoSol;
+
+        document.getElementById('t3-eq').innerText = t3_it.eqStr;
+        document.getElementById('t3-input').value = '';
+        document.getElementById('t3-fb').innerText = '';
+        document.querySelectorAll('#type3 .hint-step').forEach(el => el.style.display = 'none');
+
+        const rightSideVal = -t3_c;
+        const dividedVal = breukTekst(rightSideVal, t3_a);
+
+        if (t3_a !== 1) {
+            document.getElementById('t3-btn-div').style.display = 'inline-block';
+            document.getElementById('t3-btn-sqrt').innerText = 'Stap 3: Worteltrekken';
+            document.getElementById('t3-spec-2').innerText = `👉 Uitwerking: Deel door ${t3_a}: x² = ${dividedVal}`;
+        } else {
+            document.getElementById('t3-btn-div').style.display = 'none';
+            document.getElementById('t3-btn-sqrt').innerText = 'Stap 2: Worteltrekken';
+        }
+
+        document.getElementById('t3-spec-1').innerText = `👉 Uitwerking: Breng ${gSigned(t3_c)} naar rechts: ${gCoef(t3_a)}x² = ${rightSideVal}`;
+
+        if (t3_hasSolutions) {
+            document.getElementById('t3-spec-3').innerText = `👉 Uitwerking: x = ${t3_root}  of  x = -${t3_root}`;
+        } else {
+            document.getElementById('t3-spec-3').innerText = `👉 Uitwerking: Een kwadraat kan niet gelijk zijn aan een negatief getal (${dividedVal}), dus geen reële oplossingen!`;
+        }
+    }
+    function checkT3() {
+        const b = beoordeelOefening('t3-input', 't3-fb', t3_it);
+        if (!b) return;
+        const fb = b.fb;
+        const t3_root = t3_it.target1;
+
+        if (t3_it.isNoSol) {
+            if (b.res === 'correct') {
+                fb.innerText = 'Uitstekend! Correct gezien dat er geen reële oplossingen zijn.';
+                fb.className = 'feedback correct';
+                return;
+            } else {
+                fb.innerText = 'Niet juist. Dit kwadraat wordt gelijk aan een negatief getal, dus zijn er geen reële oplossingen.';
+                fb.className = 'feedback incorrect';
+                return;
+            }
+        }
+
+        if (b.res === 'correct') {
+            fb.innerText = 'Fantastisch! Beide oplossingen zijn juist.';
+            fb.className = 'feedback correct';
+        } else if (b.res === 'partial') {
+            fb.innerText = `Vergeet de min-oplossing niet! De antwoorden zijn x = ${t3_root} en x = -${t3_root}.`;
+            fb.className = 'feedback incorrect';
+        } else {
+            fb.innerText = `Niet helemaal. De antwoorden zijn x = ${t3_root} en x = -${t3_root}.`;
+            fb.className = 'feedback incorrect';
+        }
+    }
+
+    // --- TYPE 4 ---
+    let t4_it = null;
+    function loadT4() {
+        t4_it = nieuweOefening('4');
+        const t4_a = t4_it.a, t4_p = t4_it.p, t4_k = t4_it.k, t4_hasSolutions = !t4_it.isNoSol;
+        const bh = gBinnen(t4_p);                       // x - 3 of x + 2
+        const rightSideVal = -t4_k;
+        const dividedK = breukTekst(-t4_k, t4_a);
+        const root = t4_hasSolutions ? Math.round(Math.sqrt(-t4_k / t4_a)) : 0;
+        const t4_ans1 = t4_p + root, t4_ans2 = t4_p - root;
+
+        document.getElementById('t4-eq').innerText = t4_it.eqStr;
+        document.getElementById('t4-input').value = '';
+        document.getElementById('t4-fb').innerText = '';
+        document.querySelectorAll('#type4 .hint-step').forEach(el => el.style.display = 'none');
+
+        if (t4_a !== 1) {
+            document.getElementById('t4-btn-div').style.display = 'inline-block';
+            document.getElementById('t4-btn-sqrt').innerText = 'Stap 3: Wortel nemen';
+            document.getElementById('t4-btn-solve').innerText = 'Stap 4: Oplossen voor x';
+            document.getElementById('t4-div-title').innerHTML = `<strong>Stap 2:</strong> Deel beide leden door ${t4_a}.`;
+            document.getElementById('t4-spec-2').innerText = `👉 Uitwerking: Deel door ${t4_a}: (${bh})² = ${dividedK}`;
+        } else {
+            document.getElementById('t4-btn-div').style.display = 'none';
+            document.getElementById('t4-btn-sqrt').innerText = 'Stap 2: Wortel nemen';
+            document.getElementById('t4-btn-solve').innerText = 'Stap 3: Oplossen voor x';
+        }
+
+        document.getElementById('t4-spec-1').innerText = `👉 Uitwerking: Breng ${gSigned(t4_k)} naar rechts: ${gCoef(t4_a)}(${bh})² = ${rightSideVal}`;
+
+        if (t4_hasSolutions) {
+            document.getElementById('t4-sqrt-title').innerHTML = `<strong>Stap ${t4_a !== 1 ? '3' : '2'}:</strong> Neem de wortel (plus en min).`;
+            document.getElementById('t4-spec-3').innerText = `👉 Uitwerking: ${bh} = ${root}  of  ${bh} = -${root}`;
+            document.getElementById('t4-solve-title').innerHTML = `<strong>Stap ${t4_a !== 1 ? '4' : '3'}:</strong> Bereken de waarden voor x.`;
+            document.getElementById('t4-spec-4').innerText = `👉 Uitwerking: x = ${t4_p} + ${root} = ${t4_ans1}  of  x = ${t4_p} - ${root} = ${t4_ans2}`;
+        } else {
+            document.getElementById('t4-sqrt-title').innerHTML = `<strong>Stap ${t4_a !== 1 ? '3' : '2'}:</strong> Wortel nemen.`;
+            document.getElementById('t4-spec-3').innerText = `👉 Uitwerking: Een kwadraat kan niet gelijk zijn aan een negatief getal (${dividedK}).`;
+            document.getElementById('t4-solve-title').innerHTML = `<strong>Stap ${t4_a !== 1 ? '4' : '3'}:</strong> Conclusie.`;
+            document.getElementById('t4-spec-4').innerText = `👉 Uitwerking: Geen reële oplossingen.`;
+        }
+    }
+    function checkT4() {
+        const b = beoordeelOefening('t4-input', 't4-fb', t4_it);
+        if (!b) return;
+        const fb = b.fb;
+        const t4_ans1 = t4_it.target1, t4_ans2 = t4_it.target2;
+
+        if (t4_it.isNoSol) {
+            if (b.res === 'correct') {
+                fb.innerText = 'Geweldig! Correct gezien dat er geen reële oplossingen zijn.';
+                fb.className = 'feedback correct';
+                return;
+            } else {
+                fb.innerText = 'Niet helemaal. Het kwadraat is gelijk aan een negatief getal, dus zijn er geen oplossingen.';
+                fb.className = 'feedback incorrect';
+                return;
+            }
+        }
+
+        if (b.res === 'correct') {
+            fb.innerText = 'Geweldig! Je hebt deze vergelijking helemaal juist opgelost.';
+            fb.className = 'feedback correct';
+        } else {
+            fb.innerText = `Niet helemaal. De juiste antwoorden zijn x = ${t4_ans1} en x = ${t4_ans2}.`;
+            fb.className = 'feedback incorrect';
+        }
+    }
+
+    // --- TEST / TOETS MODUS ---
+    let testList = [];
+    let testIndex = 0;
+    let testScore = 0;
+    let testTotalCount = 5;
+    let isSubmitting = false;
+    let currentRetry = false;
+    let testTimer = null;   // timer naar de volgende oefening (wordt gestopt als de leerling de test afbreekt)
+
+    function startTest() {
+        const naamVeld = document.getElementById('student-naam').value.trim();
+        if (!naamVeld) {
+            alert("Vul alsjeblieft eerst je voornaam en naam in voordat je de test start!");
+            return;
+        }
+
+        const typeChoice = document.getElementById('test-type-select').value;
+        testTotalCount = parseInt(document.getElementById('test-count-select').value);
+        testList = [];
+        testIndex = 0;
+        testScore = 0;
+        isSubmitting = false;
+        currentRetry = false;
+
+        // Gemengd: de vier types evenwichtig verdeeld (elk type komt aan bod), in willekeurige volgorde
+        let typeReeks = [];
+        if (typeChoice === 'gemengd') {
+            while (typeReeks.length < testTotalCount) typeReeks.push(...schud(['1', '2', '3', '4']));
+            typeReeks = schud(typeReeks.slice(0, testTotalCount));
+        }
+        // Nooit twee keer dezelfde vergelijking in één test (liefst ook geen zelfde antwoorden)
+        const gezien = new Set(), gezienAntw = new Set();
+        for (let i = 0; i < testTotalCount; i++) {
+            const chosenType = typeChoice === 'gemengd' ? typeReeks[i] : typeChoice;
+            testList.push(kiesUniekeOpgave(() => generateTestExercise(chosenType),
+                it => it.eqStr, onvAntwoordSleutel, gezien, gezienAntw));
+        }
+
+        document.getElementById('test-setup').style.display = 'none';
+        document.getElementById('test-active').style.display = 'block';
+        document.getElementById('test-result').style.display = 'none';
+        loadTestExercise();
+    }
+
+    // ---------- Hulpfuncties voor de generatoren ----------
+    const gKies = (lijst) => lijst[Math.floor(Math.random() * lijst.length)];
+    const gTot = (n) => Math.floor(Math.random() * n) + 1;                       // geheel getal 1 … n
+    const gCoef = (a) => (a === 1 ? '' : a === -1 ? '-' : String(a));            // 1 → '', -1 → '-'
+    const gMetTeken = (n) => (n < 0 ? ` - ${-n}` : ` + ${n}`);                   // ' + 5' of ' - 5'
+    const gSigned = (n) => (n < 0 ? String(n) : '+' + n);                        // +5 of -5
+    const gBinnen = (p) => (p > 0 ? `x - ${p}` : `x + ${-p}`);                   // x - 3 of x + 2
+
+    // ---------- Nooit twee keer dezelfde vraag ----------
+    // Harde regel: binnen één test, reeks of toets nooit twee keer dezelfde vergelijking.
+    // Zachte regels (als het kan): geen twee vragen met hetzelfde antwoord, en geen vergelijking
+    // die de leerling in een vorige test van deze sessie al kreeg.
+    let recenteOpgaven = [];
+    function kiesUniekeOpgave(maak, sleutel, antwoord, gezien, gezienAntw) {
+        let gekozen = null, reserve = null;
+        for (let poging = 0; poging < 400 && !gekozen; poging++) {
+            const it = maak();
+            const s = sleutel(it);
+            if (gezien.has(s)) continue;
+            const antw = antwoord(it);
+            if ((antw !== null && gezienAntw.has(antw)) || recenteOpgaven.includes(s)) {
+                if (!reserve) reserve = it;
+                continue;
+            }
+            gekozen = it;
+        }
+        gekozen = gekozen || reserve || maak();
+        gezien.add(sleutel(gekozen));
+        const antw = antwoord(gekozen);
+        if (antw !== null) gezienAntw.add(antw);
+        recenteOpgaven = [sleutel(gekozen), ...recenteOpgaven].slice(0, 80);
+        return gekozen;
+    }
+    // "x = 0" (type 1) en "geen oplossingen" mogen wel vaker voorkomen
+    const onvAntwoordSleutel = (it) => (it.type === '1' || it.isNoSol ? null : it.correctAnswerText);
+
+    // Genereert een toetsvraag van het gevraagde type, met veel variatie maar eenvoudige getallen.
+    // (De velden a, b, c, p en k worden ook gebruikt voor de uitwerking in de gemengde toets.)
+    function generateTestExercise(type) {
+        if (type === '1') {
+            // ax² = 0
+            const a = gKies([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, -1, -2, -3, -4, -5, -6]);
+            return {
+                type: '1',
+                a: a,
+                eqStr: `${gCoef(a)}x² = 0`,
+                correctAnswerText: 'x = 0',
+                hint: 'Deel beide leden door de coëfficiënt van x². Een kwadraat is alleen 0 als het getal zelf 0 is.',
+                steps: a === 1
+                    ? [`1. Er staat al x² = 0`, `2. Eindoplossing: x = 0`]
+                    : [`1. Deel beide leden door ${a}: x² = 0`, `2. Eindoplossing: x = 0`]
+            };
+        } else if (type === '2') {
+            // ax² + bx = 0  →  x = 0 of x = -b/a  (geheel getal of eenvoudige breuk, beide tekens)
+            let a, b;
+            do {
+                a = gKies([1, 1, 2, 2, 3, 3, 4, 5, 6, -1, -2, -3, -4]);
+                b = gTot(12) * (Math.random() < 0.6 ? -1 : 1);
+                const g = gcd(a, b);
+                var noemer = Math.abs(a) / g, teller = Math.abs(b) / g;
+            } while (noemer > 5 || teller / noemer > 9);
+            const rootStr = breukTekst(-b, a);
+            const bTerm = `${b < 0 ? ' - ' : ' + '}${Math.abs(b) === 1 ? '' : Math.abs(b)}x`;
+            const factor = `${gCoef(a)}x${gMetTeken(b)}`;
+            return {
+                type: '2',
+                a: a, b: b,
+                eqStr: `${gCoef(a)}x²${bTerm} = 0`,
+                target1: '0',
+                target2: rootStr,
+                correctAnswerText: `x = 0 of x = ${rootStr}`,
+                hint: `Zet de gemeenschappelijke factor x buiten haakjes en stel elk deel apart gelijk aan 0.`,
+                steps: [
+                    `1. Zet x buiten haakjes: x(${factor}) = 0`,
+                    `2. Stel elk deel gelijk aan 0: x = 0  of  ${factor} = 0`,
+                    `3. Werk verder uit: ${gCoef(a)}x = ${-b}`,
+                    `4. Oplossingen: x = 0  of  x = ${rootStr}`
+                ]
+            };
+        } else if (type === '3') {
+            // ax² + c = 0  →  x = ±r  of geen oplossingen (± 1 op 4)
+            const metOpl = Math.random() < 0.75;
+            let a, c, root = '';
+            if (metOpl && Math.random() < 0.2) {
+                // eenvoudige breuk als oplossing, bv. 4x² - 9 = 0 → x = ±3/2
+                const [aa, t, nm] = gKies([[4, 1, 2], [4, 3, 2], [4, 5, 2], [9, 1, 3], [9, 2, 3], [9, 4, 3], [9, 5, 3], [16, 1, 4], [16, 3, 4], [25, 2, 5], [25, 3, 5]]);
+                const teken = Math.random() < 0.3 ? -1 : 1;
+                a = teken * aa;
+                c = -teken * t * t;
+                root = `${t}/${nm}`;
+            } else if (metOpl) {
+                let r;
+                do {
+                    a = gKies([1, 1, 2, 3, 4, 5, -1, -2, -3]);
+                    r = gTot(10);
+                    c = -a * r * r;
+                } while (Math.abs(c) > 150);
+                root = String(r);
+            } else {
+                a = gKies([1, 1, 2, 3, 4, 5, -1, -2, -3]);
+                c = a * gTot(12);
+            }
+            const lid = `${gCoef(a)}x²`;
+            const divided = breukTekst(-c, a);
+            const eqStr = `${lid}${gMetTeken(c)} = 0`;
+            const stapDelen = a !== 1 ? [`2. Deel beide leden door ${a}: x² = ${divided}`] : [];
+            const nr = a !== 1 ? '3' : '2';
+            if (metOpl) {
+                return {
+                    type: '3',
+                    a: a, c: c,
+                    eqStr: eqStr,
+                    target1: root,
+                    target2: '-' + root,
+                    correctAnswerText: `x = ${root} of x = -${root}`,
+                    hint: `Breng ${gSigned(c)} naar rechts, deel eventueel door de coëfficiënt van x², en neem de wortel (plus en min).`,
+                    steps: [
+                        `1. Breng ${gSigned(c)} naar rechts: ${lid} = ${-c}`,
+                        ...stapDelen,
+                        `${nr}. Neem de vierkantswortel (plus en min): x = ${root}  of  x = -${root}`
+                    ]
+                };
+            } else {
+                return {
+                    type: '3',
+                    a: a, c: c,
+                    eqStr: eqStr,
+                    isNoSol: true,
+                    correctAnswerText: 'geen oplossingen',
+                    hint: `Breng ${gSigned(c)} naar rechts. Wat merk je op over het teken aan de rechterkant?`,
+                    steps: [
+                        `1. Breng ${gSigned(c)} naar rechts: ${lid} = ${-c}`,
+                        ...stapDelen,
+                        `${nr}. Een kwadraat kan niet gelijk zijn aan een negatief getal, dus geen reële oplossingen.`
+                    ]
+                };
+            }
+        } else {
+            // a(x - p)² + k = 0, ook met (x + p)² en negatieve a  →  x = p ± w  of geen oplossingen (± 3 op 10)
+            const a = gKies([1, 1, 1, 2, 2, 3, 4, -1, -1, -2, -3]);
+            const p = gKies([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5]);
+            const metOpl = Math.random() < 0.7;
+            let k, w = 0;
+            if (metOpl) {
+                do { w = gTot(6); k = -a * w * w; } while (Math.abs(k) > 100);
+            } else {
+                k = a * gTot(9);
+            }
+            const kw = `(${gBinnen(p)})²`;
+            const lid = `${gCoef(a)}${kw}`;
+            const q = breukTekst(-k, a);
+            const eqStr = `${lid}${gMetTeken(k)} = 0`;
+            const stapDelen = a !== 1 ? [`2. Deel beide leden door ${a}: ${kw} = ${q}`] : [];
+            const nr = (n) => String(a !== 1 ? n + 1 : n);
+            if (metOpl) {
+                const ans1 = p + w, ans2 = p - w;
+                return {
+                    type: '4',
+                    a: a, p: p, k: k,
+                    eqStr: eqStr,
+                    target1: String(ans1),
+                    target2: String(ans2),
+                    correctAnswerText: `x = ${ans1} of x = ${ans2}`,
+                    hint: `Breng ${gSigned(k)} naar rechts, deel eventueel door het getal voor het kwadraat, neem de wortel (plus en min) en los op voor x.`,
+                    steps: [
+                        `1. Breng ${gSigned(k)} naar rechts: ${lid} = ${-k}`,
+                        ...stapDelen,
+                        `${nr(2)}. Neem de wortel: ${gBinnen(p)} = ${w}  of  ${gBinnen(p)} = -${w}`,
+                        `${nr(3)}. Reken uit voor x: x = ${ans1}  of  x = ${ans2}`
+                    ]
+                };
+            } else {
+                return {
+                    type: '4',
+                    a: a, p: p, k: k,
+                    eqStr: eqStr,
+                    isNoSol: true,
+                    correctAnswerText: 'geen oplossingen',
+                    hint: `Breng ${gSigned(k)} naar rechts. Wat concludeer je als een kwadraat gelijk is aan een negatief getal?`,
+                    steps: [
+                        `1. Breng ${gSigned(k)} naar rechts: ${lid} = ${-k}`,
+                        ...stapDelen,
+                        `${nr(2)}. Een kwadraat kan niet negatief zijn, dus geen reële oplossingen.`
+                    ]
+                };
+            }
+        }
+    }
+
+    function parseUserParts(val) {
+        let cleaned = val.replace(/x\s*=\s*/g, '');
+        let parts = cleaned.split(/of|,|en|;/).map(p => p.trim()).filter(p => p.length > 0);
+        return parts;
+    }
+
+    function evalFraction(str) {
+        if (!str) return null;
+        if (str.includes('/')) {
+            let parts = str.split('/');
+            return parseFloat(parts[0]) / parseFloat(parts[1]);
+        }
+        let num = parseFloat(str);
+        return isNaN(num) ? null : num;
+    }
+
+    function matchToken(userToken, targetToken) {
+        if (userToken === targetToken) return true;
+        let uVal = evalFraction(userToken);
+        let tVal = evalFraction(targetToken);
+        if (uVal !== null && tVal !== null && Math.abs(uVal - tVal) < 0.001) return true;
+        return false;
+    }
+
+    function evaluateAnswer(current, rawVal) {
+        if (current.type === '1') {
+            return (rawVal === 'x=0' || rawVal === '0') ? 'correct' : 'incorrect';
+        }
+        if (current.isNoSol) {
+            return isNoSolutions(rawVal) ? 'correct' : 'incorrect';
+        }
+
+        let userParts = parseUserParts(rawVal);
+        let t1 = current.target1;
+        let t2 = current.target2;
+
+        let matchedCount = 0;
+        let used = [false, false];
+
+        for (let up of userParts) {
+            let found = false;
+            if (!used[0] && matchToken(up, t1)) {
+                used[0] = true;
+                found = true;
+            } else if (!used[1] && matchToken(up, t2)) {
+                used[1] = true;
+                found = true;
+            }
+            if (found) matchedCount++;
+        }
+
+        if (matchedCount === 2 && userParts.length === 2) {
+            return 'correct';
+        } else if (matchedCount === 1) {
+            return 'partial';
+        } else {
+            return 'incorrect';
+        }
+    }
+
+    function loadTestExercise() {
+        if (testIndex >= testList.length) {
+            showTestResult();
+            return;
+        }
+        isSubmitting = false;
+        currentRetry = false;
+        const current = testList[testIndex];
+        current.alreadyAttemptedPartial = false;
+        current.pogingen = [];   // alle foute pogingen, voor de foutenanalyse
+        document.getElementById('test-progress').innerText = `Oefening ${testIndex + 1} van ${testTotalCount}`;
+        document.getElementById('test-score-live').innerText = `Score: ${testScore}`;
+        document.getElementById('test-eq').innerText = current.eqStr;
+
+        const inputField = document.getElementById('test-input');
+        inputField.value = '';
+        inputField.placeholder = "Bijv. x = 1 of x = 2/3 of geen oplossingen";
+
+        document.getElementById('test-fb').innerText = '';
+        document.getElementById('test-hint-text').innerText = current.hint;
+        document.getElementById('test-hints').style.display = 'none';
+    }
+
+    function submitTestAnswer() {
+        if (isSubmitting) return;
+
+        const rawVal = document.getElementById('test-input').value.replace(/\s+/g, '').toLowerCase();
+        const current = testList[testIndex];
+        const fb = document.getElementById('test-fb');
+
+        // Leeg vak: niet fout rekenen en niet doorgaan, enkel vragen om een antwoord
+        if (rawVal === '') {
+            fb.innerText = 'Vul eerst een antwoord in (of typ "geen oplossingen").';
+            fb.className = 'feedback partial';
+            document.getElementById('test-input').focus();
+            return;
+        }
+
+        let evalRes = evaluateAnswer(current, rawVal);
+        if (evalRes !== 'correct') current.pogingen.push(document.getElementById('test-input').value.trim());
+
+        if (evalRes === 'correct') {
+            isSubmitting = true;
+            if (!current.alreadyAttemptedPartial) {
+                testScore++;
+            }
+            current.userAnswer = document.getElementById('test-input').value.trim() || '(geen antwoord)';
+            current.isCorrect = true;
+            fb.innerText = 'Juist! 👍';
+            fb.className = 'feedback correct';
+            testIndex++;
+            testTimer = setTimeout(loadTestExercise, 1200);
+        } else if (evalRes === 'partial') {
+            if (!currentRetry && current.target1) {
+                currentRetry = true;
+                current.alreadyAttemptedPartial = true;
+                fb.innerText = '⚠️ Je hebt 1 van de 2 oplossingen juist! Probeer het nog eens (je krijgt 1 extra kans).';
+                fb.className = 'feedback partial';
+            } else {
+                isSubmitting = true;
+                current.userAnswer = document.getElementById('test-input').value.trim() || '(geen antwoord)';
+                current.isCorrect = false;
+                fb.innerText = `Niet juist. Het juiste antwoord was: ${current.correctAnswerText}.`;
+                fb.className = 'feedback incorrect';
+                testIndex++;
+                testTimer = setTimeout(loadTestExercise, 1500);
+            }
+        } else {
+            isSubmitting = true;
+            current.userAnswer = document.getElementById('test-input').value.trim() || '(geen antwoord)';
+            current.isCorrect = false;
+            fb.innerText = `Niet juist. Het juiste antwoord was: ${current.correctAnswerText}.`;
+            fb.className = 'feedback incorrect';
+            testIndex++;
+            testTimer = setTimeout(loadTestExercise, 1500);
+        }
+    }
+
+    function showTestResult() {
+        document.getElementById('test-active').style.display = 'none';
+        const resBox = document.getElementById('test-result');
+        resBox.style.display = 'block';
+
+        let percentage = Math.round((testScore / testTotalCount) * 100);
+        let message = percentage >= 80 ? '🌟 Uitstekend gedaan!' : (percentage >= 50 ? '👍 Goed geprobeerd, blijf nog wat oefenen!' : '💪 Blijven oefenen, je komt er wel!');
+
+        let diagnoseText = genereerDiagnose(testList);
+
+        let html = `
+            <div class="score-box">
+                <h2>Test Afgerond! 🎉</h2>
+                <p style="font-size: 1.3rem;">Jouw score: <strong>${testScore} / ${testTotalCount}</strong> (${percentage}%)</p>
+                <p style="font-size: 1.1rem; font-weight: bold; color: var(--primary);">${message}</p>
+            </div>
+
+            <div class="fout-box" style="background-color: #fffbeb; border: 2px solid #facc15; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+                <h3 style="margin-top: 0; color: #b45309;">🧠 Jouw Persoonlijke Foutenanalyse</h3>
+                <div style="font-size: 1.05rem;">${diagnoseText}</div>
+            </div>
+
+            <div id="action-buttons" style="text-align: center; margin: 35px 0; background: white; padding: 20px; border-radius: 12px; border: 2px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <h3 style="margin-top: 0;">Bewaar je resultaten:</h3>
+                <p>Klik op de knop hieronder om je volledige rapport op te slaan. Je leerkracht kan hierom vragen.</p>
+
+                <button class="btn" style="font-size: 1.2rem; padding: 15px 30px; background-color: #dc2626; border-radius: 8px; width: 100%; max-width: 450px; margin-top: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="downloadPDF()" onmouseover="this.style.backgroundColor='#b91c1c'" onmouseout="this.style.backgroundColor='#dc2626'">
+                    <span style="font-size: 1.5rem;">📥</span> KLIK HIER OM EEN RAPPORT IN PDF TE DOWNLOADEN
+                </button>
+
+                <br><br>
+                <button class="btn btn-secondary" onclick="resetTest()">Nieuwe Test Maken 🔄</button>
+            </div>
+
+            <h2>📋 Uitgebreid Overzicht & Uitwerkingen</h2>
+            <p>Hieronder zie je per oefening of je antwoord juist (groen) of fout (rood) was, inclusief alle stappen:</p>
+            <br>
+        `;
+
+        testList.forEach((item, index) => {
+            let cardClass = item.isCorrect ? 'correct' : 'incorrect';
+            let icon = item.isCorrect ? '✅ Juist' : '❌ Fout';
+            let colorStyle = item.isCorrect ? 'color: var(--success);' : 'color: var(--error);';
+
+            html += `
+                <div class="review-card ${cardClass}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <strong>Oefening ${index + 1}</strong>
+                        <span style="font-weight: bold; ${colorStyle}">${icon}</span>
+                    </div>
+                    <div style="font-size: 1.2rem; font-weight: bold; color: var(--primary); margin-bottom: 8px;">${item.eqStr}</div>
+                    <p><strong>Jouw antwoord:</strong> ${item.userAnswer}</p>
+                    <p><strong>Juiste antwoord:</strong> ${item.correctAnswerText}</p>
+                    <div style="margin-top: 10px; background: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+                        <strong>Uitgewerkte stappen:</strong><br>
+                        ${item.steps.join('<br>')}
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `<div class="pdf-credit">© T. Gaerdelen</div>`;
+        resBox.innerHTML = html;
+    }
+
+    function resetTest() {
+        document.getElementById('test-setup').style.display = 'block';
+        document.getElementById('test-result').style.display = 'none';
+    }
+
+    // Test afbreken en terug naar de instellingen
+    function stopTest() {
+        if (!confirm('Wil je de test stoppen? Je antwoorden van deze test gaan verloren.')) return;
+        clearTimeout(testTimer);
+        isSubmitting = false;
+        document.getElementById('test-active').style.display = 'none';
+        resetTest();
+    }
+
+    // Aangepaste PDF functie waarbij we de downloadknop tijdelijk verbergen
+    function downloadPDF() {
+        const element = document.getElementById('test-result');
+        const studentNaam = document.getElementById('student-naam').value.trim() || 'Leerling';
+        const actionButtons = document.getElementById('action-buttons');
+
+        // Verberg de actieknoppen voor een propere PDF
+        if(actionButtons) actionButtons.style.display = 'none';
+        // Kleine binnenmarge, zodat de rechterrand van de kaders nooit van de pagina valt
+        element.classList.add('pdf-export');
+
+        const opt = {
+            margin:       [10, 10, 15, 10],
+            filename:     `Toetsresultaat_${studentNaam.replace(/\s+/g, '_')}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak:    { mode: ['css', 'legacy'], avoid: ['.review-card', '.score-box', '.diag-item'] }
+        };
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            // Laat de knoppen weer zien na het genereren
+            if(actionButtons) actionButtons.style.display = 'block';
+            element.classList.remove('pdf-export');
+        });
+    }
+
+    window.onload = function() {
+        loadT1();
+        loadT2();
+        loadT3();
+        loadT4();
+    };
+</script>
+
+<!-- =====================================================================
+     SCRIPT: GEMENGDE TOETS
+     (gebruikt de generatoren, foutclassificatie en het PDF-systeem van de twee onderdelen hierboven)
+     ===================================================================== -->
+<script>
+    let mixLijst = [];
+    let mixIndex = 0;
+    let mixScore = 0;
+    let mixAantal = 5;
+    let mixNaam = '';
+
+    const mixEl = (id) => document.getElementById(id);
+
+    function kiesMixAantal(n) {
+        mixAantal = n;
+        document.querySelectorAll('#app-mix .keuze-knop').forEach(k => k.classList.toggle('actief', parseInt(k.dataset.aantal) === n));
+    }
+
+    function schud(lijst) {
+        for (let i = lijst.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [lijst[i], lijst[j]] = [lijst[j], lijst[i]];
+        }
+        return lijst;
+    }
+
+    // ---------- Namen en vormen van de onvolledige types (zelfde nummering als in het onderdeel 'onvolledige vergelijkingen') ----------
+    const ONV_TYPENAAM = { '1': 'type 1', '3': 'type 2', '2': 'type 3', '4': 'type 4' };
+    const ONV_VORM = { '1': 'ax^2 = 0', '3': 'ax^2 + c = 0', '2': 'ax^2 + bx = 0', '4': 'a(x - p)^2 + k = 0' };
+
+    function onvTex(it) { return it.eqStr.replace(/²/g, '^2'); }
+    function mixVglTex(it) { return it.soort === 'vol' ? vergelijkingTex(it.a, it.b, it.c) : onvTex(it); }
+
+    // Exacte oplossingen van een onvolledige vergelijking als breuken, gesorteerd
+    function onvVerwacht(it) {
+        let r = [];
+        if (it.type === '1') {
+            r = [rat(0, 1)];
+        } else if (it.type === '2') {
+            r = [rat(0, 1), rat(-it.b, it.a)];
+        } else if (it.type === '3') {
+            if (!it.isNoSol) {
+                const q = rat(-it.c, it.a);
+                const w = rat(Math.round(Math.sqrt(q.n)), Math.round(Math.sqrt(q.d)));
+                r = [w, rat(-w.n, w.d)];
+            }
+        } else {
+            if (!it.isNoSol) {
+                const w = Math.round(Math.sqrt(-it.k / it.a));
+                r = [rat(it.p + w, 1), rat(it.p - w, 1)];
+            }
+        }
+        return r.sort((x, y) => ratVal(x) - ratVal(y));
+    }
+    function onvVerzamelingTex(it) {
+        const r = onvVerwacht(it);
+        if (r.length === 0) return '\\varnothing';
+        return `\\left\\{ ${r.map(x => ratTex(x)).join(',\\; ')} \\right\\}`;
+    }
+    function mixVerzamelingTex(it) {
+        return it.soort === 'vol' ? verzamelingTex(it.a, it.b, it.D) : onvVerzamelingTex(it);
+    }
+
+    // ---------- Reeks samenstellen: ongeveer de helft volledig, de helft onvolledig, door elkaar ----------
+    function maakGemengdeReeks(n) {
+        const nVol = n === 10 ? 5 : (Math.random() < 0.5 ? 2 : 3);
+        const nOnv = n - nVol;
+        const types = schud(['1', '2', '3', '4']);
+        const lijst = [];
+        // nooit twee keer dezelfde vergelijking (liefst ook geen zelfde antwoorden of vragen uit een vorige toets)
+        const gezien = new Set(), gezienAntw = new Set();
+        const sleutel = (it) => (it.soort === 'vol' ? vergelijkingTex(it.a, it.b, it.c) : it.eqStr);
+        const antwoord = (it) => (it.soort === 'vol' ? (it.D < 0 ? null : verzamelingTex(it.a, it.b, it.D)) : onvAntwoordSleutel(it));
+        const voegToe = (maak) => lijst.push(kiesUniekeOpgave(maak, sleutel, antwoord, gezien, gezienAntw));
+        for (let i = 0; i < nVol; i++) {
+            voegToe(() => {
+                const v = maakVolledigeVergelijking();
+                return { soort: 'vol', a: v.a, b: v.b, c: v.c, D: v.D, dFouten: [], rootsFouten: [], dOpgelost: false, rootsOpgelost: false, triesD: 0, triesRoots: 0 };
+            });
+        }
+        for (let i = 0; i < nOnv; i++) {
+            // eerst elk type één keer, daarna aanvullen met type 2, 3 of 4
+            const t = i < 4 ? types[i] : ['2', '3', '4'][Math.floor(Math.random() * 3)];
+            voegToe(() => Object.assign(generateTestExercise(t), { soort: 'onv', pogingen: [], opgelost: false, extraKans: false }));
+        }
+        return schud(lijst);
+    }
+
+    // ---------- Antwoord van de leerling lezen (aanvaardt de notaties van beide onderdelen) ----------
+    function leesGetal(t) {
+        if (/^[+-]?\d+(\.\d+)?$/.test(t)) return parseFloat(t);
+        const m = t.match(/^([+-]?\d+(?:\.\d+)?)\/([+-]?\d+(?:\.\d+)?)$/);
+        if (m && parseFloat(m[2]) !== 0) return parseFloat(m[1]) / parseFloat(m[2]);
+        return NaN;
+    }
+    function leesMixAntwoord(invoer) {
+        let s = invoer.toLowerCase().replace(/−/g, '-').trim();
+        if (/leeg|geen|∅|ø|\{\s*\}/.test(s) || /^(\/|-|v)$/.test(s)) return { leeg: true, waarden: [] };
+        s = s.replace(/x\s*[₁₂12]?\s*=/g, ' ')
+             .replace(/v\s*=/g, ' ')
+             .replace(/[{}\[\]()]/g, ' ')
+             .replace(/of|en/g, ' ')
+             .replace(/[,;]/g, ' ')
+             .replace(/\+\s*\/\s*-|\+\s*-/g, '±')
+             .replace(/±\s+/g, '±')
+             .replace(/-\s+(?=\d)/g, '-')
+             .replace(/\s*\/\s*/g, '/')
+             .trim();
+        if (!s) return { ongeldig: true };
+        const waarden = [];
+        for (const deel of s.split(/\s+/)) {
+            const pm = deel.startsWith('±');
+            const g = leesGetal(pm ? deel.slice(1) : deel);
+            if (isNaN(g)) return { ongeldig: true };
+            if (pm) waarden.push(g, -g); else waarden.push(g);
+        }
+        return { leeg: false, waarden: waarden };
+    }
+
+    // ---------- Toets starten / stoppen ----------
+    function startGemengd() {
+        const naam = mixEl('mix-naam').value.trim();
+        if (!naam) {
+            alert("Vul alsjeblieft eerst je voornaam en naam in voordat je de toets start!");
+            mixEl('mix-naam').focus();
+            return;
+        }
+        mixNaam = naam;
+        mixLijst = maakGemengdeReeks(mixAantal);
+        mixIndex = 0;
+        mixScore = 0;
+        mixEl('mix-setup').style.display = 'none';
+        mixEl('mix-einde').style.display = 'none';
+        mixEl('mix-actief').style.display = 'block';
+        laadMixOefening();
+    }
+
+    function nieuweGemengdeToets() {
+        mixLijst = [];
+        mixIndex = 0;
+        mixScore = 0;
+        mixEl('mix-actief').style.display = 'none';
+        mixEl('mix-einde').style.display = 'none';
+        mixEl('mix-setup').style.display = 'block';
+        mixEl('mix-rapport-status').textContent = '';
+        window.scrollTo(0, 0);
+    }
+
+    function stopGemengd() {
+        if (!confirm('Wil je de toets stoppen? Je antwoorden van deze toets gaan verloren.')) return;
+        nieuweGemengdeToets();
+    }
+
+    // ---------- Eén oefening tonen ----------
+    function laadMixOefening() {
+        const it = mixLijst[mixIndex];
+        const isVol = it.soort === 'vol';
+        mixEl('mix-teller').innerText = `Oefening ${mixIndex + 1} van ${mixLijst.length}`;
+        mixEl('mix-score').innerText = `Score: ${mixScore}`;
+        mixEl('mix-vgl').innerHTML = `$$${mixVglTex(it)}$$`;
+
+        mixEl('mix-vol-blok').style.display = isVol ? 'block' : 'none';
+        mixEl('mix-onv-blok').style.display = isVol ? 'none' : 'block';
+
+        // volledige vergelijking resetten
+        mixEl('mix-d-input').value = '';
+        mixEl('mix-d-input').disabled = false;
+        mixEl('mix-d-feedback').style.display = 'none';
+        mixEl('mix-step2').style.display = 'none';
+        mixEl('mix-v-input').value = '';
+        mixEl('mix-v-input').disabled = false;
+        mixEl('mix-v-feedback').style.display = 'none';
+        mixEl('mix-kladblok').style.display = 'none';
+        mixEl('mix-klad-b').value = '';
+        mixEl('mix-klad-d').value = '';
+        mixEl('mix-klad-a').value = '';
+
+        // onvolledige vergelijking resetten
+        mixEl('mix-onv-input').value = '';
+        mixEl('mix-onv-input').disabled = false;
+        mixEl('mix-onv-feedback').style.display = 'none';
+        mixEl('mix-hint').style.display = 'none';
+        mixEl('mix-hint-tekst').innerText = it.hint || '';
+
+        mixEl('mix-volgende').style.display = 'none';
+        safeTypeset();
+        window.scrollTo(0, 0);
+        (isVol ? mixEl('mix-d-input') : mixEl('mix-onv-input')).focus({ preventScroll: true });
+    }
+
+    function mixMelding(id, soort, html) {
+        const fb = mixEl(id);
+        fb.style.display = 'block';
+        fb.className = 'feedback ' + soort;
+        fb.innerHTML = html;
+    }
+
+    function mixToggleKladblok() {
+        const k = mixEl('mix-kladblok');
+        k.style.display = (k.style.display === 'none' || k.style.display === '') ? 'block' : 'none';
+    }
+    function mixToggleHint() {
+        const h = mixEl('mix-hint');
+        h.style.display = h.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // ---------- Volledige vergelijking: stap 1 (discriminant), zelfde regels als in het onderdeel 'volledige vergelijkingen' ----------
+    function mixCheckD() {
+        const it = mixLijst[mixIndex];
+        const veld = mixEl('mix-d-input');
+        if (veld.disabled) return;
+        const input = parseInt(veld.value);
+
+        if (isNaN(input)) {
+            mixMelding('mix-d-feedback', 'error', 'Vul een getal in.');
+            return;
+        }
+        if (input === it.D) {
+            mixMelding('mix-d-feedback', 'success', 'Correct! Bepaal nu de nulwaarde(n).');
+            it.dOpgelost = true;
+            veld.disabled = true;
+            toonMixStap2();
+        } else {
+            it.triesD++;
+            it.dFouten.push({ ingevuld: input, type: classifyD(input, it.a, it.b, it.c, it.D) });
+            if (it.triesD >= 2) {
+                mixMelding('mix-d-feedback', 'error', `Helaas, 2 foutieve pogingen.<br>De juiste formule is: $D = b^2 - 4ac = (${it.b})^2 - 4 \\cdot (${it.a}) \\cdot (${it.c}) = ${it.D}$.<br>We hebben de juiste $D$ gevonden, ga verder naar stap 2.`);
+                veld.value = it.D;
+                veld.disabled = true;
+                toonMixStap2();
+            } else {
+                mixMelding('mix-d-feedback', 'error', 'Fout. Tip: $D = b^2 - 4ac$ (denk aan de haakjes rond negatieve getallen). Probeer opnieuw!');
+            }
+        }
+        safeTypeset();
+    }
+
+    function toonMixStap2() {
+        mixEl('mix-step2').style.display = 'block';
+        mixEl('mix-v-input').focus({ preventScroll: true });
+    }
+
+    // ---------- Volledige vergelijking: stap 2 (nulwaarden) ----------
+    function mixCheckRootsVol() {
+        const it = mixLijst[mixIndex];
+        const veld = mixEl('mix-v-input');
+        if (veld.disabled) return;
+        const ruw = veld.value.trim();
+
+        if (ruw === '') {
+            mixMelding('mix-v-feedback', 'error', 'Vul een antwoord in of typ "leeg".');
+            return;
+        }
+        const ant = leesMixAntwoord(ruw);
+        if (ant.ongeldig) {
+            mixMelding('mix-v-feedback', 'error', 'Ongeldige invoer. Typ getallen, breuken (bijv. -3/2) of "leeg".');
+            return;
+        }
+
+        const verwacht = nulwaardenRat(it.a, it.b, it.D).map(ratVal);
+        const juist = ant.leeg
+            ? verwacht.length === 0
+            : (verwacht.length > 0 && ant.waarden.length === verwacht.length && zelfdeVerzameling(ant.waarden, verwacht));
+
+        if (juist) {
+            mixMelding('mix-v-feedback', 'success', 'Helemaal juist! 🎉');
+            if (it.triesD === 0 && it.triesRoots === 0) mixScore++;
+            it.rootsOpgelost = true;
+            veld.disabled = true;
+            rondMixOefeningAf();
+        } else {
+            it.triesRoots++;
+            it.rootsFouten.push({ ingevuld: ruw, type: classifyRoots(ant.waarden, ant.leeg, it.a, it.b, it.D) });
+            if (it.triesRoots >= 2) {
+                const correct = verwacht.length === 0
+                    ? 'Er waren <strong>geen reële nulwaarden</strong> omdat $D < 0$.'
+                    : `De juiste nulwaardenverzameling is: $V = ${verzamelingTex(it.a, it.b, it.D)}$.`;
+                mixMelding('mix-v-feedback', 'error', `Helaas, 2 foutieve pogingen.<br>${correct}`);
+                veld.disabled = true;
+                rondMixOefeningAf();
+            } else if (verwacht.length === 0 && !ant.leeg) {
+                mixMelding('mix-v-feedback', 'error', 'Fout. Kijk nog eens goed naar je berekende discriminant in stap 1... wat vertelt dit je over het aantal nulwaarden?');
+            } else {
+                mixMelding('mix-v-feedback', 'error', 'Fout. Controleer of je $\\frac{-b \\pm \\sqrt{D}}{2a}$ goed hebt ingevuld (denk aan het minteken voor b en breukvereenvoudiging).');
+            }
+        }
+        safeTypeset();
+    }
+
+    // ---------- Onvolledige vergelijking: zelfde regels als de test in het onderdeel 'onvolledige vergelijkingen' ----------
+    // Juist in één keer = punt. Eén van de twee oplossingen juist = 1 extra kans. Anders: juiste antwoord tonen.
+    function mixCheckOnv() {
+        const it = mixLijst[mixIndex];
+        const veld = mixEl('mix-onv-input');
+        if (veld.disabled) return;
+        const ruw = veld.value.trim();
+
+        if (ruw === '') {
+            mixMelding('mix-onv-feedback', 'error', 'Vul een antwoord in of typ "geen".');
+            return;
+        }
+        const ant = leesMixAntwoord(ruw);
+        if (ant.ongeldig) {
+            mixMelding('mix-onv-feedback', 'error', 'Ongeldige invoer. Typ bijvoorbeeld x = 2 of x = -3/2, of "geen oplossingen".');
+            return;
+        }
+
+        const verwacht = onvVerwacht(it).map(ratVal);
+        const juist = ant.leeg
+            ? verwacht.length === 0
+            : (verwacht.length > 0 && ant.waarden.length === verwacht.length && zelfdeVerzameling(ant.waarden, verwacht));
+
+        if (juist) {
+            mixMelding('mix-onv-feedback', 'success', 'Juist! 👍');
+            if (it.pogingen.length === 0) mixScore++;
+            it.opgelost = true;
+            veld.disabled = true;
+            rondMixOefeningAf();
+            return;
+        }
+
+        it.pogingen.push({ ingevuld: ruw, type: classifyOnv(it, ant.waarden, ant.leeg) });
+        const aantalJuist = ant.leeg ? 0 : verwacht.filter(x => ant.waarden.some(v => Math.abs(v - x) < 0.001)).length;
+
+        if (verwacht.length === 2 && aantalJuist === 1 && !it.extraKans) {
+            it.extraKans = true;
+            mixMelding('mix-onv-feedback', 'partial', '⚠️ Je hebt 1 van de 2 oplossingen juist! Probeer het nog eens (je krijgt 1 extra kans).');
+        } else {
+            mixMelding('mix-onv-feedback', 'error', `Niet juist. Het juiste antwoord was: ${it.correctAnswerText}.`);
+            veld.disabled = true;
+            rondMixOefeningAf();
+        }
+    }
+
+    function rondMixOefeningAf() {
+        const knop = mixEl('mix-volgende');
+        knop.innerText = mixIndex + 1 < mixLijst.length ? 'Volgende Oefening ➔' : 'Toets afronden ➔';
+        knop.style.display = 'block';
+        mixEl('mix-score').innerText = `Score: ${mixScore}`;
+        knop.focus({ preventScroll: true });
+    }
+
+    function mixVolgende() {
+        mixIndex++;
+        if (mixIndex < mixLijst.length) laadMixOefening();
+        else toonMixEinde();
+    }
+
+    function toonMixEinde() {
+        const n = mixLijst.length;
+        const pct = Math.round(100 * mixScore / n);
+        const vol = mixLijst.filter(it => it.soort === 'vol');
+        const onv = mixLijst.filter(it => it.soort === 'onv');
+        mixEl('mix-actief').style.display = 'none';
+        mixEl('mix-einde').style.display = 'block';
+        mixEl('mix-eindscore').innerText = `Jouw score: ${mixScore} / ${n} (${pct}%)`;
+        mixEl('mix-eindboodschap').innerText = pct >= 80 ? '🌟 Uitstekend gedaan!' : (pct >= 50 ? '👍 Goed geprobeerd, blijf nog wat oefenen!' : '💪 Blijven oefenen, je komt er wel!');
+        mixEl('mix-eind-detail').innerText = `Volledige vergelijkingen: ${vol.filter(itemFoutloos).length} / ${vol.length} meteen juist · Onvolledige vergelijkingen: ${onv.filter(itemFoutloos).length} / ${onv.length} meteen juist`;
+        window.scrollTo(0, 0);
+    }
+
+    // =====================================================================
+    // FOUTCLASSIFICATIE ONVOLLEDIGE VERGELIJKINGEN
+    // =====================================================================
+    function classifyOnv(it, st, isLeeg) {
+        if (it.type === '1') return 'O_TYPE1';
+        const exp = onvVerwacht(it).map(ratVal);
+        if (exp.length === 0) return 'O_WORTEL_NEGATIEF';
+        if (isLeeg) return 'O_GEEN_TE_VROEG';
+        const bijna = (x, y) => Math.abs(x - y) < 0.001;
+        const is = (lijst) => st.length === lijst.length && zelfdeVerzameling(st, lijst);
+        const een = (x) => st.length === 1 && bijna(st[0], x);
+
+        if (it.type === '2') {                       // ax² + bx = 0  →  {0, r}
+            const r = exp.find(x => !bijna(x, 0));
+            const B = -it.b;
+            if (een(r)) return 'O_NUL_VERGETEN';
+            if (een(0)) return 'O_FACTOR_VERGETEN';
+            if (is([0, -r])) return 'O_TEKEN';
+            if (!bijna(it.a / B, r) && (is([0, it.a / B]) || is([0, -it.a / B]))) return 'O_BREUK_OMGEKEERD';
+            if (st.length === 2 && st.some(v => bijna(v, 0))) return 'O_FACTOR_FOUT';
+            return 'O_ANDERS';
+        }
+
+        // ax² + c = 0  of  a(x - p)² + k = 0  →  {m - w, m + w}
+        const m = it.type === '4' ? it.p : 0;
+        const w = Math.max(...exp) - m;
+        const rechts = it.type === '4' ? -it.k : -it.c;   // rechterlid na het overbrengen
+        if (st.length === 1 && exp.some(x => bijna(x, st[0]))) return 'O_MIN_VERGETEN';
+        if (it.type === '4') {
+            if (is([-m + w, -m - w])) return 'O_TEKEN_P';
+            if (is([w, -w])) return 'O_P_VERGETEN';
+        }
+        if (it.a !== 1) {
+            const w0 = Math.sqrt(rechts);
+            if (is([m + w0, m - w0]) || een(m + w0)) return 'O_DELEN_A';
+        }
+        const q = rechts / it.a;
+        if (!bijna(q, w) && (is([m + q, m - q]) || een(m + q))) return 'O_WORTEL_VERGETEN';
+        if (it.type === '4' && st.some(v => bijna(v, m))) return 'O_P_ALS_OPLOSSING';
+        if (st.length === 2 && exp.filter(x => st.some(v => bijna(v, x))).length === 1) return 'O_TWEEDE_FOUT';
+        return 'O_ANDERS';
+    }
+
+    const FOUTEN_ONV = {
+        O_TYPE1: {
+            groep: 'O',
+            titel: 'Fout bij type 1: \\(ax^2 = 0\\)',
+            kort: 'bij \\(ax^2 = 0\\) is \\(x = 0\\)',
+            uitleg: 'Als een getal maal \\(x^2\\) gelijk is aan nul, dan moet \\(x^2\\) zelf nul zijn. En het enige getal waarvan het kwadraat nul is, is 0. De oplossing is dus áltijd gewoon \\(x = 0\\), welke coëfficiënt er ook voor staat.',
+            tip: 'Deel door \\(a\\): je krijgt \\(x^2 = 0\\) en dus \\(x = 0\\). Er is precies één oplossing.'
+        },
+        O_NUL_VERGETEN: {
+            groep: 'O',
+            titel: 'De oplossing \\(x = 0\\) vergeten',
+            kort: '\\(x = 0\\) vergeten',
+            uitleg: 'Bij \\(ax^2 + bx = 0\\) breng je \\(x\\) buiten haakjes: \\(x(ax + b) = 0\\). Een product is nul als minstens één factor nul is. De eerste factor is \\(x\\) zelf, dus \\(x = 0\\) is altijd een volwaardige oplossing.',
+            tip: 'Schrijf na het buiten haakjes brengen altijd beide gevallen voluit: \\(x = 0\\) of \\(ax + b = 0\\).'
+        },
+        O_FACTOR_VERGETEN: {
+            groep: 'O',
+            titel: 'Enkel \\(x = 0\\) gevonden',
+            kort: 'tweede factor niet uitgewerkt',
+            uitleg: 'Na het buiten haakjes brengen heb je twee factoren. Je stelde enkel \\(x\\) gelijk aan nul, maar ook de factor tussen haakjes levert een oplossing op.',
+            tip: 'Los ook de vergelijking \\(ax + b = 0\\) op: dat is een gewone eerstegraadsvergelijking.'
+        },
+        O_BREUK_OMGEKEERD: {
+            groep: 'O',
+            titel: 'Breuk omgekeerd bij het oplossen van de eerstegraadsvergelijking',
+            kort: 'breuk omgekeerd',
+            uitleg: 'Bij een vergelijking als \\(3x = 2\\) deel je beide leden door de coëfficiënt van \\(x\\): \\(x = \\frac{2}{3}\\). De coëfficiënt van \\(x\\) komt dus in de noemer, niet in de teller.',
+            tip: 'Controleer je antwoord door het in te vullen: \\(3 \\cdot \\frac{2}{3} = 2\\). Klopt het niet, dan staat je breuk wellicht omgekeerd.'
+        },
+        O_TEKEN: {
+            groep: 'O',
+            titel: 'Tekenfout in de oplossing',
+            kort: 'tekenfout',
+            uitleg: 'Je aanpak klopt, maar het teken van een van je oplossingen is omgekeerd. Dat gebeurt meestal bij het overbrengen van een term naar het andere lid: daar verandert het teken.',
+            tip: 'Zet bij het overbrengen telkens bewust het tegengestelde teken en vul je oplossing achteraf in ter controle.'
+        },
+        O_TEKEN_P: {
+            groep: 'O',
+            titel: 'Het teken van \\(p\\) omgekeerd',
+            kort: 'teken van \\(p\\) omgekeerd',
+            uitleg: 'Uit \\(x - p = r\\) volgt \\(x = p + r\\): je brengt \\(-p\\) naar het andere lid, waar het \\(+p\\) wordt. Wie dat omdraait, krijgt oplossingen met het verkeerde teken.',
+            tip: 'Vul je oplossing in in \\((x - p)^2\\) ter controle: je moet het getal uitkomen dat rechts stond.'
+        },
+        O_P_VERGETEN: {
+            groep: 'O',
+            titel: 'Het getal \\(p\\) niet meer overgebracht',
+            kort: '\\(p\\) vergeten',
+            uitleg: 'Na het worteltrekken heb je \\(x - p = r\\) of \\(x - p = -r\\). Je bent dan nog niet klaar: je moet \\(p\\) nog naar het andere lid brengen om \\(x\\) te vinden.',
+            tip: 'Schrijf na het worteltrekken nog één regel: \\(x = p + r\\) of \\(x = p - r\\).'
+        },
+        O_MIN_VERGETEN: {
+            groep: 'O',
+            titel: 'De negatieve oplossing vergeten (\\(\\pm\\))',
+            kort: 'min-oplossing vergeten',
+            uitleg: 'Bij het worteltrekken zijn er twee mogelijkheden: zowel \\(3^2\\) als \\((-3)^2\\) is gelijk aan 9. Uit \\(x^2 = 9\\) volgt dus \\(x = 3\\) én \\(x = -3\\). Hetzelfde geldt bij \\((x - p)^2 = \\ldots\\).',
+            tip: 'Zet bij het worteltrekken meteen \\(\\pm\\): \\(x = \\pm\\sqrt{\\ldots}\\), en werk dan beide gevallen uit.'
+        },
+        O_DELEN_A: {
+            groep: 'O',
+            titel: 'Niet gedeeld door \\(a\\) voor het worteltrekken',
+            kort: 'niet gedeeld door \\(a\\)',
+            uitleg: 'Voor je de wortel mag nemen, moet het kwadraat alleen staan. Staat er nog een coëfficiënt voor, zoals in \\(2x^2 = 8\\), dan deel je eerst beide leden door die coëfficiënt: \\(x^2 = 4\\).',
+            tip: 'Maak er een vaste volgorde van: eerst de constante naar rechts, dan delen door \\(a\\), dan pas de wortel.'
+        },
+        O_WORTEL_VERGETEN: {
+            groep: 'O',
+            titel: 'De wortel niet genomen',
+            kort: 'wortel vergeten',
+            uitleg: 'Uit \\(x^2 = 9\\) volgt niet \\(x = 9\\), maar \\(x = \\pm\\sqrt{9} = \\pm 3\\). De laatste stap, het worteltrekken, ontbrak.',
+            tip: 'Vraag je af: welk getal geeft in het kwadraat het getal rechts? Controleer daarna door je oplossing te kwadrateren.'
+        },
+        O_WORTEL_NEGATIEF: {
+            groep: 'O',
+            titel: 'Oplossingen gegeven terwijl er geen zijn',
+            kort: 'kwadraat = negatief getal',
+            uitleg: 'Een kwadraat (\\(x^2\\) of \\((x - p)^2\\)) is nooit negatief. Staat er na het overbrengen een negatief getal aan de rechterkant, dan voldoet geen enkel reëel getal: de vergelijking heeft geen reële oplossingen.',
+            tip: 'Kijk na het overbrengen eerst naar het teken van het rechterlid. Negatief? Dan noteer je meteen \\(V = \\varnothing\\).'
+        },
+        O_GEEN_TE_VROEG: {
+            groep: 'O',
+            titel: 'Geen oplossingen opgegeven terwijl ze wel bestaan',
+            kort: 'er zijn wél oplossingen',
+            uitleg: 'Er zijn alleen geen reële oplossingen als een kwadraat gelijk moet zijn aan een negatief getal. Is het rechterlid positief, dan kan je gewoon de wortel nemen. Bij \\(ax^2 + bx = 0\\) is \\(x = 0\\) trouwens altijd een oplossing.',
+            tip: 'Werk de vergelijking eerst volledig uit voor je besluit dat er geen oplossingen zijn.'
+        },
+        O_FACTOR_FOUT: {
+            groep: 'O',
+            titel: 'De tweede factor verkeerd opgelost',
+            kort: 'tweede factor fout opgelost',
+            uitleg: 'De oplossing \\(x = 0\\) had je goed, maar bij het oplossen van de tweede factor \\(ax + b = 0\\) liep het mis. Breng \\(b\\) naar het andere lid (met tegengesteld teken) en deel daarna door \\(a\\).',
+            tip: 'Vul je tweede oplossing in in \\(ax + b\\): je moet 0 uitkomen.'
+        },
+        O_P_ALS_OPLOSSING: {
+            groep: 'O',
+            titel: '\\(x = p\\) als oplossing gegeven',
+            kort: '\\(x = p\\) is geen oplossing',
+            uitleg: 'Je stelde \\(x - p\\) gelijk aan 0, alsof er een product stond dat nul moet zijn. Maar in \\(a(x - p)^2 + k = 0\\) staat er nog een getal \\(k\\) bij. Vul je \\(x = p\\) in, dan krijg je \\(a \\cdot 0 + k = k\\), en dat is niet 0. Het kwadraat \\((x - p)^2\\) vormt één geheel: breng eerst \\(k\\) naar rechts, deel door \\(a\\) en neem dan pas de wortel.',
+            tip: 'Controleer je oplossingen altijd door ze in te vullen in de opgave: je moet 0 uitkomen.'
+        },
+        O_TWEEDE_FOUT: {
+            groep: 'O',
+            titel: 'Eén oplossing juist, de andere fout uitgerekend',
+            kort: 'tweede oplossing fout',
+            uitleg: 'Eén van je oplossingen klopte, maar bij de andere ging het mis. Meestal gebeurt dat bij de negatieve wortel. Na het worteltrekken heb je twee aparte vergelijkingen, bijvoorbeeld \\(x - 1 = 2\\) en \\(x - 1 = -2\\). Uit de tweede volgt \\(x = 1 - 2 = -1\\).',
+            tip: 'Schrijf beide gevallen onder elkaar, reken ze afzonderlijk uit en controleer elke oplossing door ze in te vullen.'
+        },
+        O_ANDERS: {
+            groep: 'O',
+            titel: 'Reken- of slordigheidsfout bij een onvolledige vergelijking',
+            kort: 'rekenfout',
+            uitleg: 'Je antwoord past niet bij een van de klassieke valkuilen. Meestal gaat het om een slordigheid bij het overbrengen naar het andere lid of bij het vereenvoudigen.',
+            tip: 'Kijk goed je mintekens na bij het overbrengen naar het andere lid en controleer je oplossingen door ze in te vullen.'
+        }
+    };
+    const foutInfo = (t) => FOUTEN[t] || FOUTEN_ONV[t];
+
+    // =====================================================================
+    // RAPPORT GEMENGDE TOETS
+    // =====================================================================
+    const MIX_SOORTEN = [
+        { id: '1', naam: 'Onvolledig, type 1', zin: 'onvolledige vergelijkingen van type 1', tex: 'ax^2 = 0' },
+        { id: '3', naam: 'Onvolledig, type 2', zin: 'onvolledige vergelijkingen van type 2', tex: 'ax^2 + c = 0' },
+        { id: '2', naam: 'Onvolledig, type 3', zin: 'onvolledige vergelijkingen van type 3', tex: 'ax^2 + bx = 0' },
+        { id: '4', naam: 'Onvolledig, type 4', zin: 'onvolledige vergelijkingen van type 4', tex: 'a(x - p)^2 + k = 0' },
+        { id: 'vol', naam: 'Volledig', zin: 'volledige vergelijkingen', tex: 'ax^2 + bx + c = 0' }
+    ];
+    const soortId = (it) => (it.soort === 'vol' ? 'vol' : it.type);
+    const foutenVan = (it) => (it.soort === 'vol' ? [...it.dFouten, ...it.rootsFouten] : it.pogingen);
+    const itemFoutloos = (it) => foutenVan(it).length === 0;
+    const itemGetoond = (it) => (it.soort === 'vol' ? (!it.dOpgelost || !it.rootsOpgelost) : !it.opgelost);
+    const soortLabel = (it) => (it.soort === 'vol' ? 'volledig' : `onvolledig, ${ONV_TYPENAAM[it.type]}`);
+
+    function telFoutenGemengd() {
+        const tel = {};
+        mixLijst.forEach((it, i) => {
+            foutenVan(it).forEach(f => {
+                if (!tel[f.type]) tel[f.type] = { aantal: 0, oefeningen: [] };
+                tel[f.type].aantal++;
+                if (!tel[f.type].oefeningen.includes(i + 1)) tel[f.type].oefeningen.push(i + 1);
+            });
+        });
+        return tel;
+    }
+
+    function docentFeedbackGemengdHtml() {
+        const L = mixLijst;
+        const n = L.length;
+        const pct = n ? Math.round(100 * mixScore / n) : 0;
+        const vol = L.filter(it => it.soort === 'vol');
+        const onv = L.filter(it => it.soort === 'onv');
+        const volOk = vol.filter(itemFoutloos).length;
+        const onvOk = onv.filter(itemFoutloos).length;
+        const dEerste = vol.filter(it => it.dFouten.length === 0).length;
+        const getoond = L.filter(itemGetoond).length;
+        const tel = telFoutenGemengd();
+        const types = Object.keys(tel).sort((p, q) => tel[q].aantal - tel[p].aantal);
+        const meervoud = (k) => (k === 1 ? 'oefening' : 'oefeningen');
+        const soorten = MIX_SOORTEN.map(s => {
+            const lijst = L.filter(it => soortId(it) === s.id);
+            return Object.assign({}, s, { totaal: lijst.length, mis: lijst.filter(it => !itemFoutloos(it)).length });
+        }).filter(s => s.totaal > 0);
+
+        let opening;
+        if (mixScore === n) {
+            opening = `Een foutloze toets: je loste alle ${n} oefeningen in één keer volledig juist op. Je herkent telkens welk soort vergelijking je voor je hebt en je kiest de juiste aanpak: de snelle methode bij onvolledige vergelijkingen, de discriminant bij volledige. Goed gedaan!`;
+        } else if (pct >= 80) {
+            opening = `Dit is een sterke toets: ${mixScore} van de ${n} oefeningen kreeg je in één keer volledig juist. Je beheerst zowel de onvolledige als de volledige vergelijkingen; wat er nog misliep zijn eerder slordigheden dan hiaten in je kennis. Met wat extra aandacht werk je die zo weg.`;
+        } else if (pct >= 50) {
+            opening = `Je kent de werkwijzen, maar er sluipen nog te veel fouten in: ${mixScore} van de ${n} oefeningen kreeg je in één keer volledig juist. In een gemengde toets moet je bij elke vergelijking eerst kiezen welke methode past, en dat maakt het extra uitdagend. Het goede nieuws is dat het meestal dezelfde fouten zijn die terugkomen, en die kan je gericht aanpakken. Lees hieronder rustig na waar het misliep.`;
+        } else {
+            opening = `Deze toets was nog moeilijk: ${mixScore} van de ${n} oefeningen kreeg je in één keer volledig juist. Dat is helemaal niet erg, want volledige en onvolledige vergelijkingen door elkaar oplossen vraagt oefening. Ga eerst rustig door de uitgewerkte oplossingen achteraan, probeer elke stap te begrijpen en oefen daarna in de afzonderlijke onderdelen van de app voor je een nieuwe toets maakt.`;
+        }
+        let h = `<div class="docent-box"><p>${opening}</p></div>`;
+
+        // Wat goed ging
+        const sterk = [];
+        if (mixScore !== n) {
+            if (onv.length && onvOk === onv.length) {
+                sterk.push(`De onvolledige vergelijkingen loste je allemaal meteen juist op (${onvOk} van de ${onv.length}). Je herkent die types en past de snelle methode correct toe.`);
+            } else {
+                soorten.filter(s => s.id !== 'vol' && s.mis === 0).forEach(s => {
+                    sterk.push(`${s.totaal === 1 ? 'De onvolledige vergelijking' : `Alle ${s.totaal} onvolledige vergelijkingen`} van ${ONV_TYPENAAM[s.id]} (\\(${s.tex}\\)) loste je foutloos op.`);
+                });
+            }
+            if (vol.length && volOk === vol.length) {
+                sterk.push(`De volledige vergelijkingen loste je allemaal meteen juist op (${volOk} van de ${vol.length}): discriminant én nulwaarden zaten telkens goed.`);
+            } else if (vol.length && dEerste === vol.length) {
+                sterk.push('Bij de volledige vergelijkingen berekende je de discriminant telkens meteen juist. Dat is de basis van de hele methode, en die zit goed.');
+            }
+        }
+        if (sterk.length) {
+            h += `<div class="sterk-box"><p><strong>Wat goed ging</strong></p><ul>${sterk.map(s => `<li>${s}</li>`).join('')}</ul></div>`;
+        }
+
+        // Waar het misliep
+        if (types.length) {
+            h += '<p><strong>Waar het misliep</strong></p>';
+            const mis = soorten.filter(s => s.mis > 0);
+            if (mis.length) {
+                h += `<ul>${mis.map(s => `<li>Bij ${s.zin} (\\(${s.tex}\\)) ${s.totaal === 1 ? 'ging het mis' : `ging het in ${s.mis} van de ${s.totaal} oefeningen mis`}.</li>`).join('')}</ul>`;
+            }
+            [['O', 'Bij de onvolledige vergelijkingen'],
+             ['D', 'Bij het berekenen van de discriminant (volledige vergelijkingen)'],
+             ['R', 'Bij het bepalen van de nulwaarden (volledige vergelijkingen)']].forEach(([groep, kop]) => {
+                const lijst = types.filter(t => foutInfo(t).groep === groep);
+                if (!lijst.length) return;
+                h += `<p><em>${kop}</em></p>`;
+                lijst.forEach(t => {
+                    const f = foutInfo(t);
+                    h += `<div class="fout-kaart"><div class="fout-titel">${f.titel} <span class="aantal">(${tel[t].aantal}× — ${meervoud(tel[t].oefeningen.length)} ${tel[t].oefeningen.join(', ')})</span></div><p>${f.uitleg}</p><div class="tip"><strong>Tip:</strong> ${f.tip}</div></div>`;
+                });
+            });
+        }
+
+        // Advies
+        const advies = [];
+        advies.push('Kijk bij elke vergelijking eerst goed welke termen er staan voor je begint te rekenen. Ontbreekt de term in \\(x\\) of de constante term, of staat er een kwadraat van de vorm \\(a(x - p)^2\\)? Dan is de snelle methode voor onvolledige vergelijkingen het handigst. Staan alle drie de termen er, dan werk je met de discriminant.');
+        if (types.length) advies.push(`Je belangrijkste werkpunt is: <em>${foutInfo(types[0]).titel}</em>. ${foutInfo(types[0]).tip}`);
+        const onvMis = onv.length - onvOk, volMis = vol.length - volOk;
+        if (onvMis > 0 && volMis === 0) advies.push('Oefen nog wat extra in het onderdeel <em>Onvolledige tweedegraadsvergelijkingen</em> van deze app, vooral bij het type waar het misliep. Daar vind je per type een stappenplan met tips.');
+        else if (volMis > 0 && onvMis === 0) advies.push('Oefen nog wat extra in het onderdeel <em>Volledige tweedegraadsvergelijkingen</em> van deze app. Gebruik daar gerust het kladblok om de formule stap voor stap in te vullen.');
+        else if (volMis > 0 && onvMis > 0) advies.push('Oefen gericht in beide onderdelen van deze app: <em>Onvolledige tweedegraadsvergelijkingen</em> (met een stappenplan per type) en <em>Volledige tweedegraadsvergelijkingen</em> (met het kladblok voor de formule).');
+        if (getoond > 0) advies.push(`Bij ${getoond} ${meervoud(getoond)} moest de oplossing getoond worden. Probeer vergelijkingen van dat type nog eens zonder naar de uitwerking te kijken.`);
+        if (mixScore === n) advies.push('Je bent klaar voor een stevigere uitdaging: vergelijkingen waarbij \\(D\\) geen perfect kwadraat is, zoals \\(x^2 - 2x - 1 = 0\\) met nulwaarden \\(1 \\pm \\sqrt{2}\\).');
+        else if (pct < 80) advies.push('Maak daarna een nieuwe gemengde toets en sla geen enkele tussenstap over.');
+        h += `<p><strong>Mijn advies voor de volgende keer</strong></p><ul>${advies.map(a => `<li>${a}</li>`).join('')}</ul>`;
+        return h;
+    }
+
+    function perSoortHtml() {
+        const rijen = MIX_SOORTEN.map(s => {
+            const lijst = mixLijst.filter(it => soortId(it) === s.id);
+            if (!lijst.length) return '';
+            const ok = lijst.filter(itemFoutloos).length;
+            const kl = ok === lijst.length ? 't-ok' : (ok === 0 ? 't-bad' : 't-warn');
+            return `<tr><td class="links">${s.naam}</td><td>\\(${s.tex}\\)</td><td>${lijst.length}</td><td><span class="${kl}">${ok} / ${lijst.length}</span></td></tr>`;
+        }).join('');
+        return `<table class="overzicht"><tr><th>Soort vergelijking</th><th>Vorm</th><th>Aantal</th><th>Meteen juist</th></tr>${rijen}</table>`;
+    }
+
+    function overzichtGemengdHtml() {
+        const rijen = mixLijst.map((it, i) => {
+            let pog;
+            if (it.soort === 'vol') {
+                const pD = it.dFouten.length + (it.dOpgelost ? 1 : 0);
+                const pR = it.rootsFouten.length + (it.rootsOpgelost ? 1 : 0);
+                pog = `\\(D\\): ${pogingTekst(pD, it.dOpgelost)}<br>\\(V\\): ${pogingTekst(pR, it.rootsOpgelost)}`;
+            } else {
+                pog = pogingTekst(it.pogingen.length + (it.opgelost ? 1 : 0), it.opgelost);
+            }
+            const res = itemFoutloos(it) ? '<span class="t-ok">foutloos</span>'
+                : (itemGetoond(it) ? '<span class="t-bad">oplossing getoond</span>' : '<span class="t-warn">met fouten</span>');
+            return `<tr><td>${i + 1}</td><td>\\(${mixVglTex(it)}\\)</td><td>${soortLabel(it)}</td><td>\\(${mixVerzamelingTex(it)}\\)</td><td>${pog}</td><td>${res}</td></tr>`;
+        }).join('');
+        return `<table class="overzicht"><tr><th>Nr.</th><th>Vergelijking</th><th>Soort</th><th>\\(V\\)</th><th>Pogingen</th><th>Resultaat</th></tr>${rijen}</table>`;
+    }
+
+    // Uitgewerkte oplossing van een onvolledige vergelijking (zelfde stappen als in het onderdeel 'onvolledige vergelijkingen')
+    function oplossingOnvHtml(it) {
+        const stap = (titel, inhoud) => `<div class="stap"><div class="stap-titel">${titel}</div>${inhoud}</div>`;
+        const zonderDubbels = (reeks) => reeks.filter((t, i) => i === 0 || t !== reeks[i - 1]);
+        const a = it.a;
+        const aS = gCoef(a);   // 1 → '', -1 → '-'
+        let n = 1;
+        let h = '';
+
+        const typeZin = {
+            '1': 'Er is geen term in \\(x\\) en geen constante term',
+            '3': 'Er is geen term in \\(x\\)',
+            '2': 'Er is geen constante term',
+            '4': 'Er staat een kwadraat van de vorm \\((x - p)^2\\)'
+        }[it.type];
+        h += stap(`Stap ${n++} – Type herkennen`, `<p>${typeZin}: dit is een onvolledige vergelijking van ${ONV_TYPENAAM[it.type]}, \\(${ONV_VORM[it.type]}\\).</p>`);
+
+        if (it.type === '1') {
+            if (a !== 1) h += stap(`Stap ${n++} – Beide leden delen door ${a}`, `\\[ ${aS}x^2 = 0 \\quad\\Longrightarrow\\quad x^2 = 0 \\]`);
+            h += stap(`Stap ${n++} – Oplossing`, '<p>Het enige getal waarvan het kwadraat 0 is, is 0 zelf.</p>\\[ x = 0 \\]');
+        } else if (it.type === '2') {
+            const b = it.b, B = -b;
+            const bTerm = `${b < 0 ? '-' : '+'} ${Math.abs(b) === 1 ? '' : Math.abs(b)}x`;
+            const factor = `${aS}x ${b < 0 ? '-' : '+'} ${Math.abs(b)}`;
+            h += stap(`Stap ${n++} – \\(x\\) buiten haakjes brengen`, `\\[ ${aS}x^2 ${bTerm} = 0 \\quad\\Longleftrightarrow\\quad x(${factor}) = 0 \\]`);
+            h += stap(`Stap ${n++} – Elke factor gelijkstellen aan 0`, `<p>Een product is 0 als minstens één factor 0 is:</p>\\[ x = 0 \\quad\\text{of}\\quad ${factor} = 0 \\]`);
+            const opl = a === 1
+                ? `\\[ x = ${B} \\]`
+                : `\\[ ${aS}x = ${B} \\quad\\Longrightarrow\\quad x = ${zonderDubbels([`\\frac{${B}}{${a}}`, ratTex(rat(B, a))]).join(' = ')} \\]`;
+            h += stap(`Stap ${n++} – De tweede vergelijking oplossen`, opl);
+        } else if (it.type === '3') {
+            const rechts = -it.c;
+            const q = rat(rechts, a);
+            h += stap(`Stap ${n++} – Constante term naar het rechterlid brengen`, `\\[ ${aS}x^2 = ${rechts} \\]`);
+            if (a !== 1) h += stap(`Stap ${n++} – Beide leden delen door ${a}`, `\\[ x^2 = ${zonderDubbels([`\\frac{${rechts}}{${a}}`, ratTex(q)]).join(' = ')} \\]`);
+            if (!it.isNoSol) {
+                const w = rat(Math.round(Math.sqrt(q.n)), Math.round(Math.sqrt(q.d)));
+                h += stap(`Stap ${n++} – Wortel nemen (plus én min)`, `\\[ x = \\sqrt{${ratTex(q)}} = ${ratTex(w)} \\quad\\text{of}\\quad x = -\\sqrt{${ratTex(q)}} = ${ratTex(rat(-w.n, w.d))} \\]`);
+            } else {
+                h += stap(`Stap ${n++} – Conclusie`, `<p>Een kwadraat is nooit negatief: \\(x^2 = ${ratTex(q)}\\) kan dus niet. De vergelijking heeft <strong>geen reële oplossingen</strong>.</p>`);
+            }
+        } else {
+            const p = it.p, rechts = -it.k, q = rechts / a;
+            const bh = gBinnen(p);   // x - 3 of x + 2
+            h += stap(`Stap ${n++} – Constante term naar het rechterlid brengen`, `\\[ ${aS}(${bh})^2 = ${rechts} \\]`);
+            if (a !== 1) h += stap(`Stap ${n++} – Beide leden delen door ${a}`, `\\[ (${bh})^2 = \\frac{${rechts}}{${a}} = ${q} \\]`);
+            if (!it.isNoSol) {
+                const w = Math.round(Math.sqrt(q));
+                h += stap(`Stap ${n++} – Wortel nemen (plus én min)`, `\\[ ${bh} = ${w} \\quad\\text{of}\\quad ${bh} = -${w} \\]`);
+                h += stap(`Stap ${n++} – Oplossen voor \\(x\\)`, `\\[ x = ${p} + ${w} = ${p + w} \\quad\\text{of}\\quad x = ${p} - ${w} = ${p - w} \\]`);
+            } else {
+                h += stap(`Stap ${n++} – Conclusie`, `<p>Een kwadraat is nooit negatief: \\((${bh})^2 = ${q}\\) kan dus niet. De vergelijking heeft <strong>geen reële oplossingen</strong>.</p>`);
+            }
+        }
+
+        h += `<div class="antwoord-box">\\[ V = ${onvVerzamelingTex(it)} \\]</div>`;
+        return h;
+    }
+
+    function foutenBlokOnvHtml(it) {
+        if (!it.pogingen.length) return '';
+        const uniek = (lijst) => [...new Set(lijst)];
+        const labels = uniek(it.pogingen.map(f => FOUTEN_ONV[f.type].kort)).join(', ');
+        return `<div class="fouten-blok"><ul><li><strong>Jouw antwoord:</strong> je vulde ${uniek(it.pogingen.map(f => `<code>${esc(f.ingevuld)}</code>`)).join(' en ')} in (${labels}). <span class="nb">Juist: \\(V = ${onvVerzamelingTex(it)}\\).</span></li></ul></div>`;
+    }
+
+    function oefeningBlokGemengdHtml(it, i) {
+        const badge = itemFoutloos(it)
+            ? '<span class="badge badge-ok">foutloos</span>'
+            : (itemGetoond(it)
+                ? '<span class="badge badge-bad">oplossing getoond</span>'
+                : '<span class="badge badge-warn">met fouten</span>');
+        const fouten = it.soort === 'vol' ? foutenBlokHtml(it) : foutenBlokOnvHtml(it);
+        const uitwerking = it.soort === 'vol' ? oplossingHtml(it) : oplossingOnvHtml(it);
+        return `<div class="oef-blok"><div class="oef-start"><div class="oef-kop"><h3>Oefening ${i + 1} <span class="soort-label">· ${soortLabel(it)}</span></h3>${badge}</div>\\[ ${mixVglTex(it)} \\]${fouten}</div>${uitwerking}</div>`;
+    }
+
+    function bouwGemengdRapportHtml() {
+        const n = mixLijst.length;
+        const pct = n ? Math.round(100 * mixScore / n) : 0;
+        const vol = mixLijst.filter(it => it.soort === 'vol');
+        const onv = mixLijst.filter(it => it.soort === 'onv');
+        const datum = new Date().toLocaleDateString('nl-BE', { day: 'numeric', month: 'long', year: 'numeric' });
+
+        let h = `<h1>Rapport gemengde toets</h1><p class="meta"><strong>${esc(mixNaam)}</strong> · Volledige en onvolledige tweedegraadsvergelijkingen · ${datum}</p>`;
+        h += `<div class="score-rij">
+            <div class="score-kaart"><div class="groot">${mixScore} / ${n}</div><div class="klein">volledig juist in één keer</div></div>
+            <div class="score-kaart"><div class="groot">${pct}%</div><div class="klein">score</div></div>
+            <div class="score-kaart"><div class="groot">${vol.filter(itemFoutloos).length} / ${vol.length}</div><div class="klein">volledige meteen juist</div></div>
+            <div class="score-kaart"><div class="groot">${onv.filter(itemFoutloos).length} / ${onv.length}</div><div class="klein">onvolledige meteen juist</div></div>
+        </div>`;
+        h += '<h2>Feedback van je leerkracht</h2>' + docentFeedbackGemengdHtml();
+        h += '<h2 class="nieuwe-pagina">Overzicht van de toets</h2>';
+        h += '<p><strong>Per soort vergelijking</strong></p>' + perSoortHtml();
+        h += '<p><strong>Per oefening</strong></p>' + overzichtGemengdHtml();
+        h += '<h2 class="nieuwe-pagina">Uitgewerkte oplossingen</h2><p>Hieronder vind je bij elke oefening de volledige uitwerking, met alle tussenstappen. Staat er een fout bij jouw antwoord, dan lees je meteen wat er misliep.</p>';
+        h += mixLijst.map(oefeningBlokGemengdHtml).join('');
+        return h;
+    }
+
+    // Zoals verdeelOverPaginas, maar een kop met class 'nieuwe-pagina' begint altijd op een nieuwe pagina
+    function verdeelOverPaginasMetBreuken(eenheden, maxPx) {
+        const brokken = [];
+        let huidig = [];
+        eenheden.forEach(u => {
+            huidig.push(u);
+            if (u.dataset.vastMetVolgende !== '1') { brokken.push(huidig); huidig = []; }
+        });
+        if (huidig.length) brokken.push(huidig);
+
+        const paginas = [];
+        let pagina = [], hoogte = 0;
+        brokken.forEach(b => {
+            const nieuw = b[0].firstElementChild && b[0].firstElementChild.classList.contains('nieuwe-pagina');
+            const h = b.reduce((som, u) => som + u.getBoundingClientRect().height, 0);
+            if (pagina.length && (nieuw || hoogte + h > maxPx)) { paginas.push(pagina); pagina = []; hoogte = 0; }
+            pagina.push(...b);
+            hoogte += h;
+        });
+        if (pagina.length) paginas.push(pagina);
+        return paginas;
+    }
+
+    async function downloadGemengdRapport() {
+        const knop = mixEl('mix-rapport-knop');
+        const status = mixEl('mix-rapport-status');
+        const bron = document.getElementById('rapport-bron');
+        const oudeKnop = knop.innerHTML;
+        status.textContent = '';
+        knop.disabled = true;
+        try {
+            if (!window.html2canvas || !window.jspdf) throw new Error('PDF-bibliotheek niet geladen');
+            knop.textContent = 'Rapport wordt gemaakt…';
+
+            bron.innerHTML = bouwGemengdRapportHtml();
+            await typesetRapport(bron);
+            const eenheden = maakEenheden(bron);
+            bron.innerHTML = '';
+            eenheden.forEach(u => bron.appendChild(u));
+
+            const mmPerPx = PDF_BREEDTE_MM / PDF_BREEDTE_PX;
+            const paginas = verdeelOverPaginasMetBreuken(eenheden, Math.floor(PDF_NUTTIG_MM / mmPerPx));
+            bron.innerHTML = '';   // document klein houden: html2canvas kopieert het telkens volledig
+            const pdf = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+
+            for (let i = 0; i < paginas.length; i++) {
+                knop.textContent = `Rapport wordt gemaakt… (${i + 1}/${paginas.length})`;
+                const pg = document.createElement('div');
+                pg.className = 'rapport pdf-pagina';
+                paginas[i].forEach(u => pg.appendChild(u.cloneNode(true)));
+                document.body.appendChild(pg);
+                let canvas;
+                try {
+                    canvas = await window.html2canvas(pg, {
+                        scale: 2, backgroundColor: '#ffffff', logging: false,
+                        ignoreElements: (el) => el.parentNode === document.body && el !== pg
+                    });
+                } finally {
+                    document.body.removeChild(pg);
+                }
+                let b = PDF_BREEDTE_MM, h = canvas.height / canvas.width * b;
+                if (h > PDF_NUTTIG_MM) { b *= PDF_NUTTIG_MM / h; h = PDF_NUTTIG_MM; }
+                if (i > 0) pdf.addPage();
+                pdf.addImage(canvas.toDataURL('image/jpeg', 0.85), 'JPEG', PDF_MARGE_MM, PDF_MARGE_MM, b, h);
+                pdf.setFontSize(8);
+                pdf.setTextColor(113, 128, 150);
+                pdf.text(`Gemengde toets - ${mixNaam}`, PDF_MARGE_MM, 291);
+                pdf.text('© T. Gaerdelen', 105, 291, { align: 'center' });
+                pdf.text(`Pagina ${i + 1} van ${paginas.length}`, 198, 291, { align: 'right' });
+            }
+            const veiligeNaam = mixNaam.replace(/[^\p{L}\p{N}]+/gu, '_').replace(/^_+|_+$/g, '') || 'Leerling';
+            pdf.save(`Gemengde_toets_${veiligeNaam}_${new Date().toISOString().slice(0, 10)}.pdf`);
+        } catch (err) {
+            console.log(err);
+            status.textContent = 'Het rapport kon niet gemaakt worden. Controleer je internetverbinding en probeer opnieuw.';
+        } finally {
+            bron.innerHTML = '';
+            knop.disabled = false;
+            knop.innerHTML = oudeKnop;
+        }
+    }
+
+    // Enter-toets in de invulvelden van de toets
+    [['mix-d-input', mixCheckD], ['mix-v-input', mixCheckRootsVol], ['mix-onv-input', mixCheckOnv], ['mix-naam', startGemengd]].forEach(([id, fn]) => {
+        mixEl(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); fn(); } });
+    });
+</script>
+
+<!-- =====================================================================
+     SCRIPT: NAVIGATIE TUSSEN STARTSCHERM EN ONDERDELEN
+     (werkt ook met de terugknop van de browser)
+     ===================================================================== -->
+<script>
+    const SCHERMEN = { onvolledig: 'app-onv', volledig: 'app-vol', gemengd: 'app-mix' };
+
+    function toonScherm() {
+        const sleutel = location.hash.replace(/^#/, '');
+        const doel = SCHERMEN[sleutel] || 'app-home';
+        document.querySelectorAll('.scherm').forEach(s => { s.style.display = s.id === doel ? 'block' : 'none'; });
+        window.scrollTo(0, 0);
+    }
+    function openOnderdeel(naam) {
+        if (location.hash === '#' + naam) toonScherm();
+        else location.hash = naam;
+    }
+    function naarStart() {
+        if (location.hash && location.hash !== '#') location.hash = '';
+        else toonScherm();
+    }
+    window.addEventListener('hashchange', toonScherm);
+    toonScherm();
+</script>
+
+<div class="maker-credit" data-html2canvas-ignore>© T. Gaerdelen</div>
+</body>
+</html>
