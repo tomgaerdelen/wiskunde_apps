@@ -45,8 +45,9 @@
     }
     .brand { display: flex; align-items: center; gap: 16px; }
     .brand-icon {
-      width: 88px;
-      height: 88px;
+      height: 120px;
+      width: auto;
+      max-width: 300px;
       object-fit: contain;
       display: block;
     }
@@ -110,11 +111,30 @@
       transition: all 0.18s ease;
       box-shadow: 0 1px 2px rgba(0,0,0,0.04);
     }
-    .klas-btn:hover { border-color: #a5b4fc; transform: translateY(-2px); }
+    .klas-btn:not(:disabled):hover { border-color: #a5b4fc; transform: translateY(-2px); }
     .klas-btn.active {
       border-color: var(--primary);
       background: var(--primary-light);
       box-shadow: 0 4px 12px rgba(79, 70, 229, 0.12);
+    }
+    .klas-btn:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+      background: #f1f5f9;
+      box-shadow: none;
+    }
+    .klas-btn.locked-active {
+      cursor: default;
+    }
+    .klas-btn.locked-active:hover {
+      transform: none;
+      border-color: var(--primary);
+    }
+    .klas-btn.alle-klassen {
+      border-style: dashed;
+    }
+    .klas-btn.alle-klassen.active {
+      border-style: solid;
     }
     .klas-btn .klas-naam { display: block; font-size: 1.25rem; font-weight: 800; color: var(--text); }
     .klas-btn.active .klas-naam { color: var(--primary); }
@@ -169,6 +189,7 @@
     }
     .badge-version { background: #f1f5f9; color: #475569; font-family: monospace; }
     .badge-new { background: var(--success-bg); color: var(--success); }
+    .badge-klas { background: #fef3c7; color: #92400e; }
     .app-card h3 { margin: 0 0 8px 0; font-size: 1.15rem; color: var(--text); }
     .app-card p { margin: 0 0 20px 0; font-size: 0.92rem; color: var(--muted); }
     .open-btn {
@@ -277,7 +298,7 @@
 <header>
   <div class="header-inner">
     <div class="brand">
-      <img src="logo.png" alt="Bernardustechnicum Wiskunde Logo" class="brand-icon" onerror="this.style.display='none'; document.getElementById('brand-fb').style.display='flex';" />
+      <img src="logo.png" alt="Bernardustechnicum Wiskunde Logo" class="brand-icon" onerror="if(!this.dataset.triedCap){this.dataset.triedCap='1';this.src='Logo.png';}else{this.style.display='none';document.getElementById('brand-fb').style.display='flex';}" />
       <div id="brand-fb" class="brand-fallback">∑</div>
       <div>
         <h1>Wiskunde Oefenportaal</h1>
@@ -292,7 +313,7 @@
 </header>
 
 <main>
-  <div class="section-title">1. Kies jouw klas</div>
+  <div id="klassen-sectie-titel" class="section-title">1. Jouw klas</div>
   <div id="klassen-container" class="klassen-grid"></div>
 
   <div class="apps-header">
@@ -323,6 +344,8 @@
 
 <script>
 /* START_CONFIG_DATA */
+const LOGO_CONFIG = {"bestand":"logo.png","grootte":120};
+
 const KLASSEN = [
   {
     "id": "5duHT",
@@ -559,8 +582,9 @@ const GELDIGE_CODES = [
 ];
 /* END_CONFIG_DATA */
 
+let heeftAlleKlassenToegang = false;
 let geselecteerdeKlas = localStorage.getItem("wisk_leerling_klas") || KLASSEN[0].id;
-if (!KLASSEN.some(k => k.id === geselecteerdeKlas)) {
+if (geselecteerdeKlas !== "alle klassen" && !KLASSEN.some(k => k.id === geselecteerdeKlas)) {
   geselecteerdeKlas = KLASSEN[0].id;
 }
 
@@ -570,6 +594,26 @@ async function sha256Hex(tekst) {
   return Array.from(new Uint8Array(hashBuffer))
     .map(b => b.toString(16).padStart(2, "0"))
     .join("");
+}
+
+async function vindKlasVoorCode(code) {
+  if (!code || !Array.isArray(GELDIGE_CODES) || GELDIGE_CODES.length === 0) return null;
+  const codeHash = await sha256Hex(code);
+  const match = GELDIGE_CODES.find(item => item.h === codeHash);
+  if (!match) return null;
+  if (match.k) {
+    const alleKlassenHash = await sha256Hex(`${code}|alle klassen`);
+    if (alleKlassenHash === match.k) {
+      return "alle klassen";
+    }
+    for (const kObj of KLASSEN) {
+      const testKlasHash = await sha256Hex(`${code}|${kObj.id}`);
+      if (testKlasHash === match.k) {
+        return kObj.id;
+      }
+    }
+  }
+  return "";
 }
 
 function updateHeaderStatus() {
@@ -585,18 +629,45 @@ function updateHeaderStatus() {
 
 function renderKlassen() {
   const container = document.getElementById("klassen-container");
-  container.innerHTML = KLASSEN.map(k => {
-    const isActief = k.id === geselecteerdeKlas;
-    return `
-      <button class="klas-btn ${isActief ? "active" : ""}" onclick="kiesKlas('${k.id}')">
-        <span class="klas-naam">${k.naam}</span>
-        <span class="klas-sub">${k.subtitel || ""}</span>
+  const sectieTitel = document.getElementById("klassen-sectie-titel");
+  sectieTitel.textContent = heeftAlleKlassenToegang ? "1. Kies jouw klas" : "1. Jouw klas";
+
+  let knoppenHtml = "";
+
+  if (heeftAlleKlassenToegang) {
+    const isAlleActief = geselecteerdeKlas === "alle klassen";
+    knoppenHtml += `
+      <button class="klas-btn alle-klassen ${isAlleActief ? "active" : ""}" onclick="kiesKlas('alle klassen')">
+        <span class="klas-naam">Alle klassen</span>
+        <span class="klas-sub">Overzicht alle apps</span>
       </button>
     `;
+  }
+
+  knoppenHtml += KLASSEN.map(k => {
+    const isActief = k.id === geselecteerdeKlas;
+    if (heeftAlleKlassenToegang) {
+      return `
+        <button class="klas-btn ${isActief ? "active" : ""}" onclick="kiesKlas('${k.id}')">
+          <span class="klas-naam">${k.naam}</span>
+          <span class="klas-sub">${k.subtitel || ""}</span>
+        </button>
+      `;
+    } else {
+      return `
+        <button class="klas-btn ${isActief ? "active locked-active" : ""}" ${isActief ? "" : "disabled"}>
+          <span class="klas-naam">${k.naam}</span>
+          <span class="klas-sub">${k.subtitel || ""}</span>
+        </button>
+      `;
+    }
   }).join("");
+
+  container.innerHTML = knoppenHtml;
 }
 
 function kiesKlas(klasId) {
+  if (!heeftAlleKlassenToegang) return;
   geselecteerdeKlas = klasId;
   localStorage.setItem("wisk_leerling_klas", klasId);
   updateHeaderStatus();
@@ -606,11 +677,15 @@ function kiesKlas(klasId) {
 
 function renderApps() {
   const zoekterm = document.getElementById("zoek-input").value.trim().toLowerCase();
+  const toonAlleKlassen = geselecteerdeKlas === "alle klassen";
   const klasObj = KLASSEN.find(k => k.id === geselecteerdeKlas);
-  document.getElementById("apps-titel").textContent = `Apps voor ${klasObj ? klasObj.naam : geselecteerdeKlas}`;
+
+  document.getElementById("apps-titel").textContent = toonAlleKlassen
+    ? "Alle beschikbare apps (alle klassen)"
+    : `Apps voor ${klasObj ? klasObj.naam : geselecteerdeKlas}`;
 
   const gefilterd = APPS.filter(app => {
-    const hoortBijKlas = app.klassen.includes(geselecteerdeKlas);
+    const hoortBijKlas = toonAlleKlassen || app.klassen.includes(geselecteerdeKlas);
     const matchZoek = !zoekterm ||
       app.titel.toLowerCase().includes(zoekterm) ||
       app.beschrijving.toLowerCase().includes(zoekterm) ||
@@ -632,6 +707,9 @@ function renderApps() {
 
   container.innerHTML = gefilterd.map(app => {
     const urlMetVersie = `${app.bestand}?v=${encodeURIComponent(app.versie || "1.0")}`;
+    const klasBadges = toonAlleKlassen && Array.isArray(app.klassen)
+      ? app.klassen.map(k => `<span class="badge badge-klas">${k}</span>`).join("")
+      : "";
     return `
       <div class="app-card">
         <div>
@@ -639,6 +717,7 @@ function renderApps() {
             ${app.onderdeel ? `<span class="badge">${app.onderdeel}</span>` : ""}
             <span class="badge badge-version">v${app.versie || "1.0"}</span>
             ${app.nieuw ? `<span class="badge badge-new">Nieuw</span>` : ""}
+            ${klasBadges}
           </div>
           <h3>${app.titel}</h3>
           <p>${app.beschrijving}</p>
@@ -651,9 +730,14 @@ function renderApps() {
 
 function openCodeModal(kanSluiten = true) {
   const sel = document.getElementById("modal-klas");
-  sel.innerHTML = KLASSEN.map(k =>
+  let optiesHtml = "";
+  if (heeftAlleKlassenToegang) {
+    optiesHtml += `<option value="alle klassen" ${geselecteerdeKlas === "alle klassen" ? "selected" : ""}>Alle klassen</option>`;
+  }
+  optiesHtml += KLASSEN.map(k =>
     `<option value="${k.id}" ${k.id === geselecteerdeKlas ? "selected" : ""}>${k.naam}</option>`
   ).join("");
+  sel.innerHTML = optiesHtml;
 
   document.getElementById("modal-code").value = localStorage.getItem("wisk_leerling_code") || "";
   document.getElementById("modal-annuleer").style.display = kanSluiten ? "inline-block" : "none";
@@ -676,6 +760,7 @@ function toonModalFout(tekst) {
 async function bewaarLeerling() {
   const code = document.getElementById("modal-code").value.trim().toUpperCase();
   let klas = document.getElementById("modal-klas").value;
+  heeftAlleKlassenToegang = false;
 
   if (code.length < 4) {
     toonModalFout("Vul een geldige code van minstens 4 tekens in.");
@@ -683,20 +768,16 @@ async function bewaarLeerling() {
   }
 
   if (Array.isArray(GELDIGE_CODES) && GELDIGE_CODES.length > 0) {
-    const codeHash = await sha256Hex(code);
-    const match = GELDIGE_CODES.find(item => item.h === codeHash);
-    if (!match) {
+    const gekoppeldeKlas = await vindKlasVoorCode(code);
+    if (gekoppeldeKlas === null) {
       toonModalFout("❌ Onbekende leerlingcode. Controleer op typfouten of vraag je code aan je leerkracht.");
       return;
     }
-    if (match.k) {
-      for (const kObj of KLASSEN) {
-        const testKlasHash = await sha256Hex(`${code}|${kObj.id}`);
-        if (testKlasHash === match.k) {
-          klas = kObj.id;
-          break;
-        }
-      }
+    if (gekoppeldeKlas === "alle klassen") {
+      heeftAlleKlassenToegang = true;
+      klas = "alle klassen";
+    } else if (gekoppeldeKlas) {
+      klas = gekoppeldeKlas;
     }
   }
 
@@ -712,10 +793,25 @@ async function bewaarLeerling() {
 window.addEventListener("DOMContentLoaded", async () => {
   const opgeslagenCode = (localStorage.getItem("wisk_leerling_code") || "").trim().toUpperCase();
   if (opgeslagenCode && Array.isArray(GELDIGE_CODES) && GELDIGE_CODES.length > 0) {
-    const h = await sha256Hex(opgeslagenCode);
-    if (!GELDIGE_CODES.some(item => item.h === h)) {
+    const gekoppeldeKlas = await vindKlasVoorCode(opgeslagenCode);
+    if (gekoppeldeKlas === null) {
       localStorage.removeItem("wisk_leerling_code");
+    } else if (gekoppeldeKlas === "alle klassen") {
+      heeftAlleKlassenToegang = true;
+      if (geselecteerdeKlas !== "alle klassen" && !KLASSEN.some(k => k.id === geselecteerdeKlas)) {
+        geselecteerdeKlas = "alle klassen";
+        localStorage.setItem("wisk_leerling_klas", "alle klassen");
+      }
+    } else if (gekoppeldeKlas) {
+      heeftAlleKlassenToegang = false;
+      geselecteerdeKlas = gekoppeldeKlas;
+      localStorage.setItem("wisk_leerling_klas", gekoppeldeKlas);
     }
+  }
+
+  if (!heeftAlleKlassenToegang && geselecteerdeKlas === "alle klassen") {
+    geselecteerdeKlas = KLASSEN[0].id;
+    localStorage.setItem("wisk_leerling_klas", geselecteerdeKlas);
   }
 
   updateHeaderStatus();
