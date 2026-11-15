@@ -43,18 +43,24 @@
       align-items: center;
       gap: 12px;
     }
-    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand { display: flex; align-items: center; gap: 16px; }
     .brand-icon {
+      width: 88px;
+      height: 88px;
+      object-fit: contain;
+      display: block;
+    }
+    .brand-fallback {
       background: var(--primary);
       color: white;
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      display: flex;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: none;
       align-items: center;
       justify-content: center;
       font-weight: 800;
-      font-size: 1.2rem;
+      font-size: 1.4rem;
     }
     .brand h1 { font-size: 1.2rem; margin: 0; color: var(--text); }
     .brand span { display: block; font-size: 0.8rem; color: var(--muted); }
@@ -79,7 +85,7 @@
       cursor: pointer;
     }
     .user-pill button:hover { background: var(--primary-hover); }
-    main { max-width: 1040px; margin: 32px auto; padding: 0 20px; }
+    main { max-width: 1040px; margin: 32px auto; padding: 0 20px 48px; }
     .section-title {
       font-size: 0.9rem;
       text-transform: uppercase;
@@ -220,6 +226,16 @@
       font-size: 1rem;
       margin-bottom: 14px;
     }
+    .modal-error {
+      display: none;
+      background: #fee2e2;
+      color: #b91c1c;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
     .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
     .btn-cancel {
       padding: 10px 16px;
@@ -238,6 +254,22 @@
       cursor: pointer;
       font-weight: 600;
     }
+    .copyright-badge {
+      position: fixed;
+      bottom: 12px;
+      right: 16px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #94a3b8;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      pointer-events: none;
+      user-select: none;
+      z-index: 90;
+    }
   </style>
 </head>
 <body>
@@ -245,7 +277,8 @@
 <header>
   <div class="header-inner">
     <div class="brand">
-      <div class="brand-icon">∑</div>
+      <img src="logo.png" alt="Bernardustechnicum Wiskunde Logo" class="brand-icon" onerror="this.style.display='none'; document.getElementById('brand-fb').style.display='flex';" />
+      <div id="brand-fb" class="brand-fallback">∑</div>
       <div>
         <h1>Wiskunde Oefenportaal</h1>
         <span>Kies je klas en start een interactieve module</span>
@@ -270,6 +303,8 @@
   <div id="apps-container" class="apps-grid"></div>
 </main>
 
+<div class="copyright-badge">© T. Gaerdelen</div>
+
 <div id="code-modal" class="modal-overlay">
   <div class="modal-box">
     <h2>Aanmelden portaal</h2>
@@ -277,7 +312,8 @@
     <label for="modal-klas">Klas</label>
     <select id="modal-klas"></select>
     <label for="modal-code">Persoonlijke leerlingcode</label>
-    <input id="modal-code" type="text" placeholder="bv. WISK456" style="text-transform: uppercase;" />
+    <input id="modal-code" type="text" placeholder="bv. PULSAR947" style="text-transform: uppercase;" onkeydown="if(event.key==='Enter') bewaarLeerling();" />
+    <div id="modal-error" class="modal-error"></div>
     <div class="modal-actions">
       <button id="modal-annuleer" class="btn-cancel" onclick="sluitCodeModal()">Annuleren</button>
       <button class="btn-save" onclick="bewaarLeerling()">Opslaan</button>
@@ -296,7 +332,7 @@ const KLASSEN = [
   {
     "id": "5doSW",
     "naam": "5doSW",
-    "subtitel": "5e jaar"
+    "subtitel": "6e jaar"
   },
   {
     "id": "6doSW",
@@ -313,7 +349,7 @@ const KLASSEN = [
 const APPS = [
   {
     "titel": "Onvolledige tweedegraadsvergelijkingen",
-    "beschrijving": "Oefeningen op tweedegraadsvergelijkingen.",
+    "beschrijving": "Theorie, stapsgewijze oefeningen (Type 1 t.e.m. 4) met hints en zelftest.",
     "bestand": "tweedegraads_toets_test.html",
     "versie": "1.0",
     "nieuw": true,
@@ -321,62 +357,193 @@ const APPS = [
     "klassen": [
       "5duHT"
     ]
+  }
+];
+
+const GELDIGE_CODES = [
+  {
+    "h": "01d31fe0a826a34bcb92ea85b3a9853ec9a6616b34cbefa36b0ea21992d6dd41",
+    "k": "f60635bb7e34f80de6cb24718bfca1097138226563abf3eadc04991008311e54"
   },
   {
-    "titel": "5doSW semester 1",
-    "beschrijving": "Oefeningen en uitleg over de leerstof van semester 1.",
-    "bestand": "5doSW semester 1.html",
-    "versie": "1.0",
-    "nieuw": true,
-    "onderdeel": "Wiskunde",
-    "klassen": [
-      "5doSW"
-    ]
+    "h": "7bc76c6c4bf62c6762615f20496f2d7ecf7edcc245005781ca02ce7ae589bf3c",
+    "k": "36528d9a93b3bee22fac75542715dde6fc3adec5a220275ef0924c551679a1a5"
   },
   {
-    "titel": "6doSW semester 1",
-    "beschrijving": "Oefeningen en uitleg over de leerstof van semester 1.",
-    "bestand": "6doSW afgeleiden semester 1",
-    "versie": "1.0",
-    "nieuw": true,
-    "onderdeel": "Wiskunde",
-    "klassen": [
-      "6doSW"
-    ]
+    "h": "7948c156fd12642d36622228eb03bceddbf68dd2a0f59e357199af248bf5ba2d",
+    "k": "e769a5226402692aff048fbfa5bb31f70f42c01dfd9bb852d7abaad04f7526a7"
   },
   {
-    "titel": "6doTW leerstof semester 1",
-    "beschrijving": "Oefeningen en uitleg over de leerstof van semester 1.",
-    "bestand": "6doTW afgeleiden semester 1",
-    "versie": "1.0",
-    "nieuw": true,
-    "onderdeel": "Wiskunde",
-    "klassen": [
-      "6doTW"
-    ]
+    "h": "a933ce888b908a50524f29bdbc28e01e08e05e1cd57e3d018cf5a8dc66c2c4e1",
+    "k": "5e4f229824a6f6360efac711bb92b23e9199cd17181576250af5e5f27dde53da"
   },
   {
-    "titel": "6doTW ruimtemeetkunde semester 1",
-    "beschrijving": "Oefeningen en uitleg over ruimtemeetkunde",
-    "bestand": "6doTW ruimtemeetkunde semester 1.html",
-    "versie": "1.0",
-    "nieuw": true,
-    "onderdeel": "Wiskunde",
-    "klassen": [
-      "6doTW"
-    ]
+    "h": "202c970def604093b52b3d931d5cef8b00db1e678c19851c8f5ed58e985e6dc5",
+    "k": "a5ac077e53be154d3934f3de49494deb41a882fe2a9541901215adb5861393d5"
   },
   {
-    "titel": "6do afgeleiden en de kettingregel",
-    "beschrijving": "Oefeningen en uitleg over afgeleiden en de kettingregel.",
-    "bestand": "6do afgeleiden en de kettingregel",
-    "versie": "1.0",
-    "nieuw": true,
-    "onderdeel": "Wiskunde",
-    "klassen": [
-      "6doSW",
-      "6doTW"
-    ]
+    "h": "13bcca285d6cac3e8b8b1107ab98ac0adf708069c56229b3b5276c46ecc81fe9",
+    "k": "146b03ab8c54b0e76a78625fdda48b4d4675af2472f4143b8536a5af26fea2ac"
+  },
+  {
+    "h": "92669c10fb6f0e4f88a0a1d6021700a709393979bb07a5f699a7ca03bd4813a3",
+    "k": "a49036608fd35505edcc0160cc2eaa4fbbf3e25c20f399b9d6116c417742dcab"
+  },
+  {
+    "h": "2c218b59702803b918db52456b9dbf7e2b020fe06cc2866ece467370269b980e",
+    "k": "714650d2c9305f6ba2a596138c8d4dc335e68e3d40f17922d3f79162e2424b50"
+  },
+  {
+    "h": "d4acb3303c2f0c5300167529f10f6b45403047be997e712dbab6afc2156be1ee",
+    "k": "3d532cac692962cbcb834630949db30180d773943b3936f38c172fd691333e42"
+  },
+  {
+    "h": "2b1ab6e1c760fffd404634419eb69122786ff74dd6a200c64878da2904ffaf55",
+    "k": "8fa25f76c5bd15fd93187cdca9adc8ea2a825c5c8f3f8305b5c5d0eaaab66c2b"
+  },
+  {
+    "h": "8967ab8fb3ff277f0e1775e2ffd2bc9817274c61005a136005abc3f682a3d4e8",
+    "k": "a75bfb5814e9cb8fc183c0adf2c7c85deab11fe7ee705a4479c2a28f962286e6"
+  },
+  {
+    "h": "2094792c5f889bad7f8b2fd20e0b1f82d50372c5b976b5a1dd6e819eff1e0df8",
+    "k": "6b3c5e872467225e5dda175bdc8fe9a073cb066b4f6fa45906d152460ef5eab6"
+  },
+  {
+    "h": "067aa35426255999a7c1abf9d1363bb65b5bf34fcb0c5eba22632876f3fdace9",
+    "k": "5a75c0354b017a02c6f73ca5cde7f7684f96aacc25e2df35975c1478b8765183"
+  },
+  {
+    "h": "946d37e8475b03ad0e5a4aa86ac48691b8b70bd4af291061a6866bcefe2d0f14",
+    "k": "879a5afd62706c13cfca1937143c86c30d861c4540ec78f1292ccaa03c5a694e"
+  },
+  {
+    "h": "7d08e8a9fb722c6d525f0676fb8f567e75f20ebe8d91db370264dabc511cecf1",
+    "k": "367a0eac56f7b6fb08c4e4623038be323a7e2dd2cdd49412fd4c447c6b98bc26"
+  },
+  {
+    "h": "dcfc7b654bc1874eb8f6df31af4b8cfa161a6ace6ee404139703424fcb768013",
+    "k": "57dfcfd29729d188d31c26e15c928086474e58b30fb71f87a5c7f12e9d550c90"
+  },
+  {
+    "h": "0e6b321f9a48b84fa8d7d0d3f5974f86a00159c094aff936bb9348cb9854136c",
+    "k": "e3c8c4127ca9c15d1ae806d798a0ff544e20d1566836451e6d49912e74448f4a"
+  },
+  {
+    "h": "80922b1c2f54de6a328c01b86a731a5701a41930028b94da7e34a445e519568a",
+    "k": "bfc7bd697342b9ce9de5e0df9b893b52ceae8b61e5008895e60b64becaeb2040"
+  },
+  {
+    "h": "e2d5b7e18310b09577a12d1c17cf2d79e4440f9e6a2534a5011c37cee8df0428",
+    "k": "c922362fb975df58428830c15affbd2fe41cd20897b129fc37628247989efd96"
+  },
+  {
+    "h": "1313b4dd80fd826c3d047e9016f6e555644caa48820cf7ba30c04a8356f1df81",
+    "k": "ffb08bb6437030f38773431ad5b703fe23eab3059b9e6de7471109a37bf77856"
+  },
+  {
+    "h": "9ead53e7df6fff0e028243ea03ab682397b35f45836c636d5e6ca6af1f614514",
+    "k": "f15fd4f12726d3dd30a41c098f45796dcd4a782c0d3ca71ce04885e69885a1f8"
+  },
+  {
+    "h": "ec6ccaaa19b94e1e217624132e410f1129f6b42db48a63d3bd40371e449c62dc",
+    "k": "25185e8e2aab43958bde660ee6b07b3c74be2b5c7b7dd08f1cc0b9c5bed18ae5"
+  },
+  {
+    "h": "b77ac6e050d514defffe8c083fd1d6460503e5d76ef454ce1c3b9e8fcd235f52",
+    "k": "2706b22e50351db85ea97f5292d12a9a4b76080c2d4670f08a491c999a7acc6d"
+  },
+  {
+    "h": "d7d444a0cea62037d840a3a2d1f464ff5fb85e2a5bb8de8776df3967c8dc22da",
+    "k": "fd574ae42e3530b5b4bbb67fee4e0a5448138b36ff5fa8301756bb4d4449e0e9"
+  },
+  {
+    "h": "401b33fcf80f8f19856280133beafcaf12575ba4a10973abef20de6b731d00ac",
+    "k": "7701295778345461490a83f97984cd428d3f263b4a1653c347c99da2fe9e2d31"
+  },
+  {
+    "h": "56673f71aba0b7cd9cc70389a18e5530127e66bb1427c2988611f356773fa86c",
+    "k": "6af979eb9e82c7894a7bec35d76ce2cc540983d77d97cb448666bd8e18778148"
+  },
+  {
+    "h": "487c08cc211690f61eee10839f08c4b48bb2655f4558a705af0730422c201de9",
+    "k": "0b3257680bf3c219035e4bfbb50943d58b69f2c7ca4381ac55de11a61bffc0e0"
+  },
+  {
+    "h": "033cecbd3c4eb94e9d9f74c6ac963ae67ef103e0ba7a09a84228edf119c7d12a",
+    "k": "f17424f8cdb3c7aad1fb47a5af5d7f6947efc5b4c7820b720efbd1c17ace90af"
+  },
+  {
+    "h": "16898ef8497550e68d3b23aee4ad34b053f093a1f8e1bb2ca489a34426c888e1",
+    "k": "a3d182805b5fa7a2d9463217b7403b718752628dfc026927c40492624f9a7b54"
+  },
+  {
+    "h": "d6bf09b745463dba5c5e3a8c420b5013184d9ec7206842f7134381b7073cf64b",
+    "k": "bb488fb05ff9b1dae436c94501ed1b207cfdbd7104473231d9289b03b3f931f6"
+  },
+  {
+    "h": "1469633b6c6058b38c520d3a74dcfc52c8743f2ea1b2996c8b333372ed145574",
+    "k": "c110132913c0f371b6ca138c30c782a70eb45352c27f6d1598ad9bbd5864277d"
+  },
+  {
+    "h": "4867be198975880082c67da9560bb20f8ba821f2b68cd3100e055d83da50646d",
+    "k": "8f90bba34b2f012a94ba1a2dc75b59e26fd1785009e51d524f5098a88fbe0bc3"
+  },
+  {
+    "h": "44b2db0d7214dc72c8de5517555fa9e7c44b061d16df31f766a502b133b34412",
+    "k": "33023a2116a25f7c88432e5103e96df736576791e26d57c9e2ec673e66df0102"
+  },
+  {
+    "h": "f3dac9de72e76f72f245133e40e4816c9f8a01bdf6989897192539ca839e8edf",
+    "k": "50a19568d0d07cf68c0dd02284b6bfaea3087aeaedb83514a09c7ff9836bd43e"
+  },
+  {
+    "h": "a6b4c64ff465f0d3c8d5e9fe76d44adff93cb61186c914f661030361482d5175",
+    "k": "aab6eaf0fab3f8acc7d9db3305b69d034094c238e78c90d89c7425cd0837f919"
+  },
+  {
+    "h": "80fe421a7f4d3bf69edc15b5760292c235d4d7c79d8685dc368283856750c0ea",
+    "k": "d3164ebd9d340b53ffd4b7ba613c0ab7a6b0b9b0a15355f4b23f405899ac394f"
+  },
+  {
+    "h": "f58f05c49f47f190772a531aceabfd8a945df14c9f31bc5b5120d6ca164a8382",
+    "k": "7116a8f0c4edd28b2980fc0212539c854eaf477880dbb0f668eef9843ec32aad"
+  },
+  {
+    "h": "2c5f75b1cc75b6f90f5e0fc5c5dcfaf46565bea03ee28d03083d01ee1dbf0351",
+    "k": "42e55bcc90b7ae64e4a0b17e440a84635b5a5267f6f9b255dee788ed14412999"
+  },
+  {
+    "h": "4b3a740c492b9fe4cd6dea44f84260af1feb13fb3847c836b3ce66e98b0ef412",
+    "k": "56f669927090b89ed75dca0f75629ad2d38044930e62da5408891c6dcf19a8dd"
+  },
+  {
+    "h": "d0bd1b96606a45d4b3454241f443d26b8ce16b368eacc04388db960de664c54b",
+    "k": "ffb126cd8bf6c91337b8c0679b86fefa96ba6e21ef9489d631aad11274d2ec32"
+  },
+  {
+    "h": "cd4610dc6a1452ac1c75001e9b88c63a4fec35cc286bc5c908ca4d822b2c4cdf",
+    "k": "2e743646b86e75a805dc29f06640e6085012970bf4632110c3b103d7afb78db2"
+  },
+  {
+    "h": "da84e02c6f8a61a5ade8519dd7135a68cd3211c9799ec5791517a8c13a828929",
+    "k": "3f1c943ed859413d2053f9b276f4f8520e20556b3e8548be00ea8d129905cd06"
+  },
+  {
+    "h": "a62cfd62e65fc5c28aef8bdd4947845b84dcf17dd234de4fc31d0a2eee51515f",
+    "k": "8eaaaaa97330e14896618f6cdfc4d958297140575efa64c77ad834dd3dbfb58b"
+  },
+  {
+    "h": "7bd173ce45c65caf77ed2d69ca70de6b9c6a513cdded4f492bc70adc9bd1ffb5",
+    "k": "26c341ea03c2b6f4c018f51e19f984d0321318d6892f9de553f6f30e366c90e5"
+  },
+  {
+    "h": "aa9db5fc223e6d102a0bdc4d27739041bf735d2c5f43f6e608bc66ebbaa819ea",
+    "k": "6796a57396173d6906faf7bc40e582b79df5fbfc2f20be55193515e7b0730b40"
+  },
+  {
+    "h": "baf2e11cbb73b0049a2448dc999d914c05b229f11966bbe006726176b24ffc73",
+    "k": "055a9b86ba438614a1fcab37401fe9aed27b8f2a9cfe39efc4e6383d6e557f84"
   }
 ];
 /* END_CONFIG_DATA */
@@ -384,6 +551,14 @@ const APPS = [
 let geselecteerdeKlas = localStorage.getItem("wisk_leerling_klas") || KLASSEN[0].id;
 if (!KLASSEN.some(k => k.id === geselecteerdeKlas)) {
   geselecteerdeKlas = KLASSEN[0].id;
+}
+
+async function sha256Hex(tekst) {
+  const data = new TextEncoder().encode(tekst);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 function updateHeaderStatus() {
@@ -471,6 +646,9 @@ function openCodeModal(kanSluiten = true) {
 
   document.getElementById("modal-code").value = localStorage.getItem("wisk_leerling_code") || "";
   document.getElementById("modal-annuleer").style.display = kanSluiten ? "inline-block" : "none";
+  const errEl = document.getElementById("modal-error");
+  errEl.style.display = "none";
+  errEl.textContent = "";
   document.getElementById("code-modal").classList.add("open");
 }
 
@@ -478,13 +656,39 @@ function sluitCodeModal() {
   document.getElementById("code-modal").classList.remove("open");
 }
 
-function bewaarLeerling() {
+function toonModalFout(tekst) {
+  const errEl = document.getElementById("modal-error");
+  errEl.textContent = tekst;
+  errEl.style.display = "block";
+}
+
+async function bewaarLeerling() {
   const code = document.getElementById("modal-code").value.trim().toUpperCase();
-  const klas = document.getElementById("modal-klas").value;
+  let klas = document.getElementById("modal-klas").value;
+
   if (code.length < 4) {
-    alert("Vul een geldige code van minstens 4 tekens in.");
+    toonModalFout("Vul een geldige code van minstens 4 tekens in.");
     return;
   }
+
+  if (Array.isArray(GELDIGE_CODES) && GELDIGE_CODES.length > 0) {
+    const codeHash = await sha256Hex(code);
+    const match = GELDIGE_CODES.find(item => item.h === codeHash);
+    if (!match) {
+      toonModalFout("❌ Onbekende leerlingcode. Controleer op typfouten of vraag je code aan je leerkracht.");
+      return;
+    }
+    if (match.k) {
+      for (const kObj of KLASSEN) {
+        const testKlasHash = await sha256Hex(`${code}|${kObj.id}`);
+        if (testKlasHash === match.k) {
+          klas = kObj.id;
+          break;
+        }
+      }
+    }
+  }
+
   localStorage.setItem("wisk_leerling_code", code);
   localStorage.setItem("wisk_leerling_klas", klas);
   geselecteerdeKlas = klas;
@@ -494,7 +698,15 @@ function bewaarLeerling() {
   sluitCodeModal();
 }
 
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
+  const opgeslagenCode = (localStorage.getItem("wisk_leerling_code") || "").trim().toUpperCase();
+  if (opgeslagenCode && Array.isArray(GELDIGE_CODES) && GELDIGE_CODES.length > 0) {
+    const h = await sha256Hex(opgeslagenCode);
+    if (!GELDIGE_CODES.some(item => item.h === h)) {
+      localStorage.removeItem("wisk_leerling_code");
+    }
+  }
+
   updateHeaderStatus();
   renderKlassen();
   renderApps();
