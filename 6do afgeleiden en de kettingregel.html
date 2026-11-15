@@ -1,0 +1,3284 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6do afgeleiden en de kettingregel</title>
+<!-- Enige externe bibliotheek: KaTeX (vaste versie) voor de wiskundige weergave.
+     Zonder internet werkt de app ook, maar dan worden formules als tekst getoond. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+<!-- Handschrift-lettertype voor de feedback van de leerkracht (zonder internet: gewoon handschrift-lettertype van het toestel) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+<style>
+    :root {
+        --bg: #f1f5f9; --kaart: #ffffff; --rand: #e2e8f0; --tekst: #1e293b; --zacht: #64748b; --heel-zacht: #94a3b8;
+        --blauw: #1e3a8a; --blauw-licht: #eff6ff; --blauw-rand: #bfdbfe;
+        --groen: #059669; --groen-donker: #047857; --groen-licht: #ecfdf5; --groen-rand: #a7f3d0;
+        --rood: #e11d48; --rood-donker: #be123c; --rood-licht: #fff1f2; --rood-rand: #fecdd3;
+        --oranje-licht: #fffbeb; --oranje-rand: #fde68a; --oranje-tekst: #92400e;
+        --paars: #4f46e5;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--tekst); font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; line-height: 1.45; }
+    #app { max-width: 920px; margin: 0 auto; padding: 16px 16px 56px; }
+    button { font: inherit; cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .5; }
+    h1, h2, h3 { margin: 0; line-height: 1.2; }
+    .kaart { background: var(--kaart); border: 1px solid var(--rand); border-radius: 16px; box-shadow: 0 4px 18px rgba(15, 23, 42, .06); }
+    .kaart-binnen { padding: 20px; }
+    .grijs { color: var(--zacht); }
+    .klein { font-size: .85rem; }
+    .verborgen { display: none !important; }
+
+    /* ---------- knoppen ---------- */
+    .knop { border: none; border-radius: 12px; padding: 12px 18px; font-weight: 700; transition: background .15s, transform .05s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .knop:active:not(:disabled) { transform: translateY(1px); }
+    .knop-groen { background: var(--groen); color: #fff; } .knop-groen:hover:not(:disabled) { background: var(--groen-donker); }
+    .knop-rood { background: var(--rood); color: #fff; } .knop-rood:hover:not(:disabled) { background: var(--rood-donker); }
+    .knop-donker { background: #1e293b; color: #fff; } .knop-donker:hover:not(:disabled) { background: #0f172a; }
+    .knop-licht { background: #fff; color: var(--tekst); border: 1px solid var(--rand); } .knop-licht:hover:not(:disabled) { background: #f8fafc; }
+    .knop-blauw-licht { background: var(--blauw-licht); color: var(--blauw); border: 1px solid var(--blauw-rand); } .knop-blauw-licht:hover:not(:disabled) { background: #dbeafe; }
+    .knop-groot { padding: 16px 22px; font-size: 1.1rem; }
+    .knop-rij { display: flex; flex-wrap: wrap; gap: 10px; }
+    .knop-rij > .knop { flex: 1 1 140px; }
+    .linkknop { background: none; border: none; padding: 0; color: #2563eb; font-weight: 600; text-decoration: underline; }
+
+    /* ---------- menu ---------- */
+    .kop { text-align: center; padding: 26px 20px 8px; }
+    .kop h1 { color: var(--blauw); font-size: 1.9rem; font-weight: 800; }
+    .kop p { margin: 6px 0 0; color: var(--zacht); }
+    .menu-blok { background: #f8fafc; border: 1px solid var(--rand); border-radius: 14px; padding: 16px; margin-top: 14px; }
+    .menu-blok h2 { font-size: 1.05rem; color: #334155; margin-bottom: 10px; }
+    .keuze-rij { display: flex; flex-wrap: wrap; gap: 8px; }
+    .keuze { flex: 1 1 140px; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--rand); background: #fff; font-weight: 700; color: #334155; text-align: center; }
+    .keuze small { display: block; font-weight: 500; color: var(--zacht); margin-top: 2px; }
+    .keuze.aan { border-color: var(--blauw); background: var(--blauw-licht); color: var(--blauw); }
+    .keuze.aan small { color: #1d4ed8; }
+    .hoofdstuk-lijst { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; }
+    .hoofdstuk { display: flex; align-items: flex-start; gap: 10px; background: #fff; border: 2px solid var(--rand); border-radius: 12px; padding: 10px 12px; cursor: pointer; }
+    .hoofdstuk.aan { border-color: var(--groen); background: var(--groen-licht); }
+    .hoofdstuk input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--groen); flex: none; }
+    .hoofdstuk b { display: block; }
+    .hoofdstuk span { font-size: .82rem; color: var(--zacht); }
+    .snel { margin-top: 8px; font-size: .9rem; display: flex; gap: 14px; }
+    .start-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+    .start-blok { border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .start-blok.oefen { background: var(--groen-licht); border: 1px solid var(--groen-rand); }
+    .start-blok.toets { background: var(--rood-licht); border: 1px solid var(--rood-rand); }
+    .start-blok h2 { font-size: 1.1rem; }
+    .start-blok p { margin: 0; font-size: .9rem; color: #475569; }
+    .veld { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; font-weight: 600; color: #475569; }
+    .veld input, .veld select { font: inherit; font-weight: 500; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; }
+    .veld-rij { display: flex; gap: 10px; flex-wrap: wrap; }
+    .veld-rij .veld { flex: 1 1 140px; }
+    .melding { margin-top: 12px; padding: 10px 14px; border-radius: 10px; background: var(--oranje-licht); border: 1px solid var(--oranje-rand); color: var(--oranje-tekst); font-size: .92rem; }
+
+    /* ---------- oefen- en toetsscherm ---------- */
+    .balk { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #fff; border-radius: 16px 16px 0 0; flex-wrap: wrap; }
+    .balk.oefen { background: #065f46; } .balk.toets { background: #881337; }
+    .balk h2 { font-size: 1.05rem; flex: 1 1 auto; }
+    .balk .terug { background: rgba(255,255,255,.12); color: #fff; border: none; border-radius: 10px; padding: 8px 12px; font-weight: 600; }
+    .balk .terug:hover { background: rgba(255,255,255,.22); }
+    .teller { background: rgba(255,255,255,.14); border-radius: 999px; padding: 4px 12px; font-size: .88rem; font-weight: 600; white-space: nowrap; }
+    .voortgang { height: 6px; background: #fecdd3; }
+    .voortgang div { height: 100%; background: var(--rood); transition: width .3s; }
+    .opgave { background: #f8fafc; border: 1px solid var(--rand); border-radius: 14px; padding: 16px 16px 20px; text-align: center; }
+    .opgave-labels { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .label { font-size: .75rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #e2e8f0; color: #334155; text-transform: uppercase; letter-spacing: .03em; }
+    .label.n1 { background: #dcfce7; color: #166534; } .label.n2 { background: #fef9c3; color: #854d0e; } .label.n3 { background: #fee2e2; color: #991b1b; }
+    .opgave-vraag { font-size: .82rem; font-weight: 700; color: var(--zacht); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+    .formule-groot { font-size: 1.35rem; overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
+    .invoer-rij { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+    .invoer-rij label { font-weight: 700; font-size: 1.15rem; white-space: nowrap; font-family: "Times New Roman", serif; font-style: italic; }
+    .invoer { flex: 1; min-width: 0; padding: 14px; font-size: 1.15rem; font-family: ui-monospace, Consolas, monospace; border: 2px solid #cbd5e1; border-radius: 12px; outline: none; background: #fff; }
+    .invoer:focus { border-color: #3b82f6; }
+    .invoer:disabled { background: #f1f5f9; color: var(--zacht); }
+    .voorbeeld { height: 96px; margin-top: 8px; padding: 8px 12px; border: 1px dashed #cbd5e1; border-radius: 12px; background: #fcfdff; display: flex; flex-direction: column; align-items: center; justify-content: center; justify-content: safe center; overflow: auto; font-size: 1.15rem; }
+    .voorbeeld .klein { font-size: .8rem; }
+    .lees-fout { color: #b45309; font-size: .95rem; text-align: center; }
+
+    /* ---------- schermtoetsenbord ---------- */
+    .klavier { margin-top: 10px; background: #e2e8f0; border-radius: 14px; padding: 8px; user-select: none; -webkit-user-select: none; }
+    .klavier-rij { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-bottom: 6px; }
+    .klavier-rij:last-child { margin-bottom: 0; }
+    .klavier-rij.bg { grid-template-columns: repeat(4, 1fr); }
+    .toets-k { padding: 11px 2px; border-radius: 9px; border: 1px solid #cbd5e1; background: #fff; font-weight: 700; font-size: 1rem; color: #334155; min-width: 0; touch-action: manipulation; }
+    .toets-k:hover { background: var(--blauw-licht); }
+    .toets-k.fn { font-size: .9rem; color: #1d4ed8; }
+    .toets-k.bgk { color: #6d28d9; }
+    .toets-k.wis { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+    .toets-k.nav { background: #f8fafc; }
+    .klavier-voet { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: .8rem; color: var(--zacht); gap: 10px; flex-wrap: wrap; }
+
+    /* ---------- feedback, hints, uitwerking ---------- */
+    .feedback { margin-top: 14px; padding: 14px 16px; border-radius: 12px; display: flex; gap: 12px; align-items: flex-start; }
+    .feedback .ico { font-size: 1.3rem; line-height: 1; flex: none; margin-top: 2px; }
+    .feedback.juist { background: var(--groen-licht); border: 1px solid var(--groen-rand); color: #065f46; }
+    .feedback.fout { background: var(--rood-licht); border: 1px solid var(--rood-rand); color: #9f1239; }
+    .feedback.info { background: var(--oranje-licht); border: 1px solid var(--oranje-rand); color: var(--oranje-tekst); }
+    .feedback .formule-groot { font-size: 1.1rem; text-align: left; }
+    .hulp { margin-top: 14px; background: var(--blauw-licht); border: 1px solid var(--blauw-rand); border-radius: 12px; padding: 14px 16px; overflow-x: auto; }
+    .hulp h3 { font-size: 1rem; color: var(--blauw); margin-bottom: 8px; }
+    .stappen { margin: 0; padding-left: 24px; }
+    .stappen li { margin: 10px 0; line-height: 1.6; }
+    .regel { line-height: 1.6; }
+    .stappen li.eind { list-style: none; margin-left: -22px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--blauw-rand); font-weight: 700; color: var(--blauw); }
+    .regel { font-weight: 600; }
+    .actie-rij { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .actie-rij .knop { flex: 1 1 130px; }
+    details.uitleg { margin-top: 16px; border: 1px solid var(--rand); border-radius: 12px; background: #fff; }
+    details.uitleg summary { cursor: pointer; padding: 10px 14px; font-weight: 700; color: #334155; }
+    details.uitleg .inhoud { padding: 0 14px 12px; font-size: .92rem; }
+    .typtabel { width: 100%; border-collapse: collapse; }
+    .typtabel td { padding: 5px 6px; border-top: 1px solid #f1f5f9; vertical-align: middle; }
+    .typtabel code { background: #f1f5f9; padding: 2px 6px; border-radius: 6px; font-size: .9rem; }
+
+    /* ---------- rapport ---------- */
+    .rapport-kop { text-align: center; }
+    .rapport-kop h2 { font-size: 1.8rem; font-weight: 800; }
+    .rapport-info { color: var(--zacht); margin-top: 6px; font-size: .95rem; }
+    .score { display: inline-block; margin-top: 14px; padding: 10px 26px; border-radius: 999px; background: #f1f5f9; font-size: 1.4rem; font-weight: 800; }
+    .score.goed { color: #047857; } .score.matig { color: #b45309; } .score.zwak { color: #be123c; }
+    .vraag-kaart { margin-top: 14px; border-radius: 12px; padding: 14px 16px; border-left: 8px solid; }
+    .vraag-kaart.juist { background: var(--groen-licht); border-color: #10b981; }
+    .vraag-kaart.fout { background: var(--rood-licht); border-color: #f43f5e; }
+    .vraag-kop { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .vraag-kop h3 { font-size: 1rem; }
+    .stempel { font-size: .75rem; font-weight: 800; padding: 3px 10px; border-radius: 6px; }
+    .juist .stempel { background: #a7f3d0; color: #065f46; } .fout .stempel { background: #fecdd3; color: #9f1239; }
+    .antwoorden { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(255,255,255,.75); border-radius: 10px; padding: 10px 12px; margin-top: 8px; }
+    .antwoorden > div { min-width: 0; overflow-x: auto; overflow-y: hidden; }
+    .antwoorden .katex-display { margin: 4px 0 2px; }
+    .antwoorden .katex-display > .katex { text-align: left; }
+    .antwoorden .tit { font-size: .72rem; font-weight: 800; color: var(--zacht); text-transform: uppercase; letter-spacing: .04em; }
+    .vraag-kaart details { margin-top: 8px; background: #fff; border-radius: 10px; padding: 8px 12px; }
+    .vraag-kaart summary { cursor: pointer; font-weight: 700; color: #334155; }
+    .rapport-credit { display: none; }
+
+    /* ---------- feedback van de leerkracht (handgeschreven stijl) ---------- */
+    .leerkracht { margin-top: 14px; padding: 12px 18px 10px; border-radius: 12px; background: #fffdf4; border: 1px solid #f2e6c4; border-left: 6px solid #dc2626;
+        font-family: 'Patrick Hand', 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', cursive; color: #b91c1c; font-size: 1.15rem; line-height: 1.45; overflow-x: auto; }
+    .leerkracht.goed { border-left-color: #059669; color: #047857; }
+    .leerkracht p { margin: 6px 0; }
+    .lk-kop { font-size: 1.35rem; font-weight: 700; }
+    .lk-fout { margin: 2px 0 6px; }
+    .lk-fout b { text-decoration: underline wavy #ef4444; text-underline-offset: 5px; text-decoration-thickness: 1px; }
+    .lk-rij { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
+    .lk-wie { min-width: 96px; }
+    .lk-omcirkeld { display: inline-block; border: 2px solid #ef4444; border-radius: 46% 54% 50% 50% / 60% 48% 52% 40%; padding: 8px 18px 4px; transform: rotate(-1deg); color: #1e293b; max-width: 100%; overflow-x: auto; }
+    .lk-juist { display: inline-block; color: #1e293b; padding: 0 10px 2px; border-bottom: 2px solid #10b981; max-width: 100%; overflow-x: auto; }
+    .leerkracht .katex-display { margin: 0; }
+    .leerkracht .katex { color: #1e293b; }
+    .lk-tip { color: #1d4ed8; }
+    .lk-lijst { margin: 4px 0 6px; padding-left: 24px; }
+    .lk-lijst li { margin: 3px 0; }
+    .lk-groot { font-size: 1.22rem; margin: 18px 0 4px; }
+    .pdf-rapport { background: #fff; color: var(--tekst); }
+    .pdf-rapport .kaart { box-shadow: none; border: none; }
+    .pdf-rapport .kaart-binnen { padding: 0 4px; }
+    .pdf-rapport .vraag-kaart, .pdf-rapport .leerkracht { break-inside: avoid; }
+    /* In de PDF altijd de opmaak van een groot scherm, ook als je de PDF op een gsm maakt. */
+    .pdf-rapport .antwoorden { grid-template-columns: 1fr 1fr; }
+    .pdf-rapport .formule-groot { font-size: 1.25rem; }
+    .pdf-rapport .rapport-kop h2 { font-size: 1.7rem; }
+    .pdf-rapport .leerkracht { font-size: 1.05rem; }
+    .pdf-rapport .lk-groot { font-size: 1.1rem; }
+    .uitwerking-details { margin-top: 12px; border: 1px solid var(--blauw-rand); border-radius: 12px; background: #fff; }
+    .uitwerking-details > summary { cursor: pointer; padding: 10px 14px; font-weight: 700; color: var(--blauw); }
+    .uitwerking-details > .hulp { margin: 0 10px 10px; }
+
+    /* ---------- naamvermelding ---------- */
+    .maker-credit { position: fixed; right: 14px; bottom: 10px; font-size: 12px; color: var(--heel-zacht); background: rgba(255,255,255,.85); padding: 2px 8px; border-radius: 6px; pointer-events: none; z-index: 50; }
+
+    @media (max-width: 640px) {
+        #app { padding: 10px 10px 48px; }
+        .kaart-binnen { padding: 14px; }
+        .kop h1 { font-size: 1.5rem; }
+        .start-grid { grid-template-columns: 1fr; }
+        .antwoorden { grid-template-columns: 1fr; }
+        .formule-groot { font-size: 1.15rem; }
+        .toets-k { padding: 12px 0; font-size: .95rem; }
+        .toets-k.fn { font-size: .78rem; }
+        .klavier-rij { gap: 4px; }
+        .invoer-rij label { font-size: 1rem; }
+        .maker-credit { position: static; display: block; text-align: right; background: none; margin: -40px 12px 14px; }
+    }
+
+    @media print {
+        body { background: #fff; }
+        #app { max-width: none; padding: 0; }
+        .geen-print, .maker-credit { display: none !important; }
+        .kaart { box-shadow: none; border: none; }
+        .vraag-kaart, .leerkracht { break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .rapport-credit { display: block; text-align: right; font-size: 11px; color: #94a3b8; margin-top: 16px; }
+    }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="maker-credit">© T. Gaerdelen</div>
+
+<!-- =====================================================================
+     OEFENINGENBANK
+     Formaat (één oefening per blok, begint altijd met "f:"):
+       @cat, @niveau, @voor  = standaardwaarden voor de volgende oefeningen
+       f:     functie in invoer-notatie (zoals een leerling typt)
+       d:     afgeleide (oplossing) in invoer-notatie
+       dom:   interval waarop nagekeken wordt (f en f' moeten er bestaan)
+       regel: eerste hint (welke regel?)
+       s:     stap van de uitwerking; $...$ = LaTeX, [[...]] = invoer-notatie als formule
+       fout:  veelgemaakte fout | gerichte feedback
+     De app controleert bij het opstarten elke oplossing numeriek (zie console).
+     ===================================================================== -->
+<script type="text/plain" class="oefendata">
+// ---------------- REKENREGELS, VEELTERMEN EN MACHTEN ----------------
+@cat basis
+@voor 5 8
+@niveau 1
+
+f: 4x^3 - 5x^2 + 2x - 9
+d: 12x^2 - 10x + 2
+dom: -2 2
+regel: Somregel en machtsregel: $(x^n)' = n\,x^{n-1}$
+s: Leid elke term apart af (somregel). Een constante factor blijft staan.
+s: $(4x^3)' = 4\cdot 3x^2 = 12x^2$, $\;(-5x^2)' = -10x$ en $(2x)' = 2$
+s: De afgeleide van de constante $-9$ is $0$.
+fout: 12x^2 - 10x + 2 - 9 | De afgeleide van een constante (hier −9) is 0.
+fout: 12x^2 - 10x | De afgeleide van 2x is 2, niet 0.
+
+f: x^7 + 3x^5 - x
+d: 7x^6 + 15x^4 - 1
+dom: -1.5 1.5
+regel: Somregel en machtsregel: $(x^n)' = n\,x^{n-1}$
+s: $(x^7)' = 7x^6$ en $(3x^5)' = 3\cdot 5x^4 = 15x^4$
+s: $(-x)' = -1$
+fout: 7x^6 + 15x^4 | De afgeleide van −x is −1, niet 0.
+fout: 7x^6 + 15x^4 - x | De afgeleide van −x is −1.
+
+f: 2/3 x^6 - 1/2 x^4 + 5
+d: 4x^5 - 2x^3
+dom: -1.5 1.5
+regel: Somregel en machtsregel: $(x^n)' = n\,x^{n-1}$
+s: $\left(\frac{2}{3}x^6\right)' = \frac{2}{3}\cdot 6x^5 = 4x^5$
+s: $\left(-\frac{1}{2}x^4\right)' = -\frac{1}{2}\cdot 4x^3 = -2x^3$
+s: De constante $5$ heeft als afgeleide $0$.
+fout: 4x^5 - 2x^3 + 5 | De afgeleide van een constante is 0.
+
+f: 1/x
+d: -1/x^2
+dom: 0.3 3
+regel: Schrijf als macht: $\frac{1}{x} = x^{-1}$
+s: $\frac{1}{x} = x^{-1}$
+s: $(x^{-1})' = -1\cdot x^{-2} = -\frac{1}{x^2}$
+fout: ln(x) | Opgelet: ln(x) heeft 1/x als afgeleide, niet omgekeerd.
+
+f: sqrt(x)
+d: 1/(2sqrt(x))
+dom: 0.2 4
+regel: Schrijf als macht: $\sqrt{x} = x^{\frac12}$
+s: $\sqrt{x} = x^{\frac12}$
+s: $\left(x^{\frac12}\right)' = \frac12\, x^{-\frac12} = \frac{1}{2\sqrt{x}}$
+fout: 1/sqrt(x) | Vergeet de factor ½ niet: $(x^{\frac12})' = \frac12 x^{-\frac12}$.
+
+f: 5/x^3
+d: -15/x^4
+dom: 0.3 3
+regel: Schrijf als macht: $\frac{5}{x^3} = 5x^{-3}$
+s: $\frac{5}{x^3} = 5x^{-3}$
+s: $(5x^{-3})' = 5\cdot(-3)\,x^{-4} = -\frac{15}{x^4}$
+fout: -15/x^2 | De exponent daalt met 1: $-3 - 1 = -4$ (niet $-2$).
+
+f: 3sqrt(x) - 2x
+d: 3/(2sqrt(x)) - 2
+dom: 0.2 4
+regel: Somregel en $(\sqrt{x})' = \frac{1}{2\sqrt{x}}$
+s: $(3\sqrt{x})' = 3\cdot\frac{1}{2\sqrt{x}} = \frac{3}{2\sqrt{x}}$
+s: $(-2x)' = -2$
+
+f: (2x+1)^2
+d: 8x + 4
+dom: -2 2
+regel: Werk eerst uit (of gebruik de kettingregel).
+s: $(2x+1)^2 = 4x^2 + 4x + 1$
+s: $(4x^2 + 4x + 1)' = 8x + 4$
+fout: 2(2x+1) | Met de kettingregel moet je nog vermenigvuldigen met de afgeleide van 2x+1, namelijk 2.
+
+f: x^4 - 3/x
+d: 4x^3 + 3/x^2
+dom: 0.3 3
+regel: Somregel; schrijf $\frac{3}{x} = 3x^{-1}$
+s: $(x^4)' = 4x^3$
+s: $\left(-3x^{-1}\right)' = -3\cdot(-1)\,x^{-2} = \frac{3}{x^2}$
+fout: 4x^3 - 3/x^2 | Let op het teken: $(-3x^{-1})' = +3x^{-2}$.
+
+@niveau 2
+f: x^2 sqrt(x)
+d: 5/2 x sqrt(x)
+dom: 0.2 3
+regel: Schrijf als één macht van $x$.
+s: $x^2\sqrt{x} = x^2\cdot x^{\frac12} = x^{\frac52}$
+s: $\left(x^{\frac52}\right)' = \frac52\, x^{\frac32} = \frac52\, x\sqrt{x}$
+
+f: 1/sqrt(x)
+d: -1/(2x sqrt(x))
+dom: 0.3 3
+regel: Schrijf als macht: $\frac{1}{\sqrt{x}} = x^{-\frac12}$
+s: $\frac{1}{\sqrt{x}} = x^{-\frac12}$
+s: $\left(x^{-\frac12}\right)' = -\frac12\, x^{-\frac32} = -\frac{1}{2x\sqrt{x}}$
+
+f: (x^3 - 2x)/x^2
+d: 1 + 2/x^2
+dom: 0.3 3
+regel: Splits eerst de breuk (of gebruik de quotiëntregel).
+s: $\frac{x^3 - 2x}{x^2} = x - \frac{2}{x} = x - 2x^{-1}$
+s: $(x - 2x^{-1})' = 1 + 2x^{-2} = 1 + \frac{2}{x^2}$
+
+f: x^(2/3)
+d: 2/(3x^(1/3))
+dom: 0.3 3
+regel: Machtsregel met een breuk als exponent
+s: $\left(x^{\frac23}\right)' = \frac23\, x^{\frac23 - 1} = \frac23\, x^{-\frac13}$
+s: $= \frac{2}{3x^{\frac13}} = \frac{2}{3\sqrt[3]{x}}$
+fout: 2/3 x^(5/3) | De exponent daalt met 1: $\frac23 - 1 = -\frac13$.
+
+f: x sqrt(x) + 4/sqrt(x)
+d: 3/2 sqrt(x) - 2/(x sqrt(x))
+dom: 0.3 3
+regel: Schrijf elke term als macht van $x$.
+s: $x\sqrt{x} + \frac{4}{\sqrt{x}} = x^{\frac32} + 4x^{-\frac12}$
+s: $\left(x^{\frac32}\right)' = \frac32\, x^{\frac12} = \frac32\sqrt{x}$
+s: $\left(4x^{-\frac12}\right)' = -2x^{-\frac32} = -\frac{2}{x\sqrt{x}}$
+
+@niveau 3
+f: (2x^2 - 3)^2/x^3
+d: 4 + 12/x^2 - 27/x^4
+dom: 0.4 3
+regel: Werk de teller uit en splits de breuk.
+s: $\frac{(2x^2-3)^2}{x^3} = \frac{4x^4 - 12x^2 + 9}{x^3} = 4x - 12x^{-1} + 9x^{-3}$
+s: $(4x - 12x^{-1} + 9x^{-3})' = 4 + 12x^{-2} - 27x^{-4}$
+s: $= 4 + \frac{12}{x^2} - \frac{27}{x^4}$
+
+f: (sqrt(x) + 1)^2/sqrt(x)
+d: 1/(2sqrt(x)) - 1/(2x sqrt(x))
+dom: 0.3 3
+regel: Werk de teller uit, splits de breuk en schrijf als machten.
+s: $\frac{(\sqrt{x}+1)^2}{\sqrt{x}} = \frac{x + 2\sqrt{x} + 1}{\sqrt{x}} = x^{\frac12} + 2 + x^{-\frac12}$
+s: $\left(x^{\frac12} + 2 + x^{-\frac12}\right)' = \frac12\, x^{-\frac12} - \frac12\, x^{-\frac32}$
+s: $= \frac{1}{2\sqrt{x}} - \frac{1}{2x\sqrt{x}}$
+
+// ---------------- PRODUCT- EN QUOTIËNTREGEL ----------------
+@cat prodquot
+@niveau 1
+
+f: (x^2+1)(3x-2)
+d: 9x^2 - 4x + 3
+dom: -2 2
+regel: Productregel: $(u\cdot v)' = u'v + uv'$
+s: $u = x^2+1 \Rightarrow u' = 2x$ en $v = 3x-2 \Rightarrow v' = 3$
+s: $f'(x) = 2x(3x-2) + (x^2+1)\cdot 3$
+s: $= 6x^2 - 4x + 3x^2 + 3 = 9x^2 - 4x + 3$
+fout: 6x | $(u\cdot v)' \neq u'\cdot v'$. Gebruik de productregel $(u\cdot v)' = u'v + uv'$.
+
+f: x^3(2x+5)
+d: 8x^3 + 15x^2
+dom: -2 2
+regel: Productregel: $(u\cdot v)' = u'v + uv'$ (of eerst uitwerken)
+s: $u = x^3 \Rightarrow u' = 3x^2$ en $v = 2x+5 \Rightarrow v' = 2$
+s: $f'(x) = 3x^2(2x+5) + x^3\cdot 2 = 6x^3 + 15x^2 + 2x^3 = 8x^3 + 15x^2$
+fout: 6x^2 | $(u\cdot v)' \neq u'\cdot v'$. Gebruik de productregel.
+
+f: (x+1)/(x-1)
+d: -2/(x-1)^2
+dom: 1.3 4
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = x+1 \Rightarrow u' = 1$ en $v = x-1 \Rightarrow v' = 1$
+s: $f'(x) = \frac{1\cdot(x-1) - (x+1)\cdot 1}{(x-1)^2} = \frac{-2}{(x-1)^2}$
+fout: -2/(x-1) | Vergeet het kwadraat in de noemer niet: $\left(\frac{u}{v}\right)' = \frac{u'v-uv'}{v^2}$.
+fout: 1 | $\left(\frac{u}{v}\right)' \neq \frac{u'}{v'}$. Gebruik de quotiëntregel.
+
+f: 3x/(x^2+1)
+d: (3 - 3x^2)/(x^2+1)^2
+dom: -2 2
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = 3x \Rightarrow u' = 3$ en $v = x^2+1 \Rightarrow v' = 2x$
+s: $f'(x) = \frac{3(x^2+1) - 3x\cdot 2x}{(x^2+1)^2} = \frac{3 - 3x^2}{(x^2+1)^2}$
+fout: (3x^2 - 3)/(x^2+1)^2 | In de teller van de quotiëntregel staat $u'v - uv'$: let op de volgorde.
+fout: 3/(2x) | $\left(\frac{u}{v}\right)' \neq \frac{u'}{v'}$. Gebruik de quotiëntregel.
+
+f: (2x-3)/(x+4)
+d: 11/(x+4)^2
+dom: -3 3
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = 2x-3 \Rightarrow u' = 2$ en $v = x+4 \Rightarrow v' = 1$
+s: $f'(x) = \frac{2(x+4) - (2x-3)\cdot 1}{(x+4)^2} = \frac{2x + 8 - 2x + 3}{(x+4)^2} = \frac{11}{(x+4)^2}$
+fout: 5/(x+4)^2 | Let op het minteken voor de haakjes: $-(2x-3) = -2x + 3$.
+
+f: (x^2-4)(x^2+4)
+d: 4x^3
+dom: -2 2
+regel: Productregel (of eerst uitwerken met een merkwaardig product)
+s: $u = x^2-4 \Rightarrow u' = 2x$ en $v = x^2+4 \Rightarrow v' = 2x$
+s: $f'(x) = 2x(x^2+4) + (x^2-4)\cdot 2x = 2x^3 + 8x + 2x^3 - 8x = 4x^3$
+s: Controle: $(x^2-4)(x^2+4) = x^4 - 16$ en $(x^4 - 16)' = 4x^3$.
+fout: 4x^2 | $(u\cdot v)' \neq u'\cdot v'$. Gebruik de productregel.
+
+f: (x^3+1)/x^2
+d: 1 - 2/x^3
+dom: 0.3 3
+regel: Quotiëntregel, of splits eerst de breuk.
+s: Splitsen: $\frac{x^3+1}{x^2} = x + x^{-2}$
+s: $(x + x^{-2})' = 1 - 2x^{-3} = 1 - \frac{2}{x^3}$
+s: Met de quotiëntregel: $\frac{3x^2\cdot x^2 - (x^3+1)\cdot 2x}{x^4} = \frac{x^4 - 2x}{x^4} = 1 - \frac{2}{x^3}$
+fout: 3x^2/(2x) | $\left(\frac{u}{v}\right)' \neq \frac{u'}{v'}$. Gebruik de quotiëntregel.
+
+@niveau 2
+f: (x^2+3x)/(x-2)
+d: (x^2 - 4x - 6)/(x-2)^2
+dom: 2.3 5
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = x^2+3x \Rightarrow u' = 2x+3$ en $v = x-2 \Rightarrow v' = 1$
+s: $f'(x) = \frac{(2x+3)(x-2) - (x^2+3x)}{(x-2)^2}$
+s: $= \frac{2x^2 - x - 6 - x^2 - 3x}{(x-2)^2} = \frac{x^2 - 4x - 6}{(x-2)^2}$
+
+f: (x^2-1)/(x^2+1)
+d: 4x/(x^2+1)^2
+dom: -2 2
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = x^2-1 \Rightarrow u' = 2x$ en $v = x^2+1 \Rightarrow v' = 2x$
+s: $f'(x) = \frac{2x(x^2+1) - (x^2-1)\cdot 2x}{(x^2+1)^2} = \frac{4x}{(x^2+1)^2}$
+fout: 1 | $\left(\frac{u}{v}\right)' \neq \frac{u'}{v'}$. Gebruik de quotiëntregel.
+
+f: sqrt(x)(x^2+1)
+d: (5x^2+1)/(2sqrt(x))
+dom: 0.2 3
+regel: Productregel: $(u\cdot v)' = u'v + uv'$
+s: $u = \sqrt{x} \Rightarrow u' = \frac{1}{2\sqrt{x}}$ en $v = x^2+1 \Rightarrow v' = 2x$
+s: $f'(x) = \frac{x^2+1}{2\sqrt{x}} + 2x\sqrt{x}$
+s: Op gelijke noemer: $\frac{x^2 + 1 + 4x^2}{2\sqrt{x}} = \frac{5x^2+1}{2\sqrt{x}}$
+
+f: 1/(x^2+2x+3)
+d: -(2x+2)/(x^2+2x+3)^2
+dom: -3 2
+regel: Quotiëntregel met teller $1$ (of de kettingregel)
+s: $u = 1 \Rightarrow u' = 0$ en $v = x^2+2x+3 \Rightarrow v' = 2x+2$
+s: $f'(x) = \frac{0\cdot v - 1\cdot(2x+2)}{(x^2+2x+3)^2} = -\frac{2x+2}{(x^2+2x+3)^2}$
+fout: 1/(2x+2) | $\left(\frac{1}{v}\right)' \neq \frac{1}{v'}$. Gebruik de quotiëntregel: $\left(\frac{1}{v}\right)' = -\frac{v'}{v^2}$.
+
+f: x/(x^2-4)
+d: -(x^2+4)/(x^2-4)^2
+dom: -1.5 1.5
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = x \Rightarrow u' = 1$ en $v = x^2-4 \Rightarrow v' = 2x$
+s: $f'(x) = \frac{(x^2-4) - x\cdot 2x}{(x^2-4)^2} = \frac{-x^2-4}{(x^2-4)^2} = -\frac{x^2+4}{(x^2-4)^2}$
+
+f: (x^2+1)/(x^2-x+1)
+d: (1-x^2)/(x^2-x+1)^2
+dom: -2 2
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = x^2+1 \Rightarrow u' = 2x$ en $v = x^2-x+1 \Rightarrow v' = 2x-1$
+s: $f'(x) = \frac{2x(x^2-x+1) - (x^2+1)(2x-1)}{(x^2-x+1)^2}$
+s: Teller: $2x^3 - 2x^2 + 2x - (2x^3 - x^2 + 2x - 1) = 1 - x^2$
+s: $f'(x) = \frac{1-x^2}{(x^2-x+1)^2}$
+
+f: x^3/(x^2+3)
+d: (x^4 + 9x^2)/(x^2+3)^2
+dom: -2 2
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = x^3 \Rightarrow u' = 3x^2$ en $v = x^2+3 \Rightarrow v' = 2x$
+s: $f'(x) = \frac{3x^2(x^2+3) - x^3\cdot 2x}{(x^2+3)^2} = \frac{x^4 + 9x^2}{(x^2+3)^2}$
+
+f: (x^2-3x)(x^2+2)
+d: 4x^3 - 9x^2 + 4x - 6
+dom: -2 2
+regel: Productregel: $(u\cdot v)' = u'v + uv'$
+s: $u = x^2-3x \Rightarrow u' = 2x-3$ en $v = x^2+2 \Rightarrow v' = 2x$
+s: $f'(x) = (2x-3)(x^2+2) + (x^2-3x)\cdot 2x$
+s: $= 2x^3 - 3x^2 + 4x - 6 + 2x^3 - 6x^2 = 4x^3 - 9x^2 + 4x - 6$
+fout: (2x-3)2x | $(u\cdot v)' \neq u'\cdot v'$. Gebruik de productregel.
+
+@niveau 3
+f: (3x+1)(x^2-x)(x+2)
+d: 12x^3 + 12x^2 - 10x - 2
+dom: -2 2
+regel: Productregel voor drie factoren: $(uvw)' = u'vw + uv'w + uvw'$
+s: $u = 3x+1,\ v = x^2-x,\ w = x+2$ met $u' = 3,\ v' = 2x-1,\ w' = 1$
+s: $f'(x) = 3(x^2-x)(x+2) + (3x+1)(2x-1)(x+2) + (3x+1)(x^2-x)$
+s: De drie termen: $3x^3 + 3x^2 - 6x$, $\;6x^3 + 11x^2 - 3x - 2$ en $3x^3 - 2x^2 - x$
+s: Samen: $f'(x) = 12x^3 + 12x^2 - 10x - 2$
+
+f: x^2/(x+1)^2
+d: 2x/(x+1)^3
+dom: 0 3
+regel: Quotiëntregel, met de kettingregel voor $(x+1)^2$
+s: $u = x^2 \Rightarrow u' = 2x$ en $v = (x+1)^2 \Rightarrow v' = 2(x+1)$
+s: $f'(x) = \frac{2x(x+1)^2 - x^2\cdot 2(x+1)}{(x+1)^4}$
+s: Zet $2x(x+1)$ voorop: $\frac{2x(x+1)\left[(x+1) - x\right]}{(x+1)^4} = \frac{2x}{(x+1)^3}$
+
+f: sqrt(x)/(x+1)
+d: (1-x)/(2sqrt(x)(x+1)^2)
+dom: 0.2 3
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = \sqrt{x} \Rightarrow u' = \frac{1}{2\sqrt{x}}$ en $v = x+1 \Rightarrow v' = 1$
+s: $f'(x) = \frac{\frac{x+1}{2\sqrt{x}} - \sqrt{x}}{(x+1)^2}$
+s: Teller en noemer maal $2\sqrt{x}$: $\frac{x + 1 - 2x}{2\sqrt{x}\,(x+1)^2} = \frac{1-x}{2\sqrt{x}\,(x+1)^2}$
+
+f: (2x+1)^2(x-3)
+d: (2x+1)(6x-11)
+dom: -2 3
+regel: Productregel, met de kettingregel voor $(2x+1)^2$
+s: $u = (2x+1)^2 \Rightarrow u' = 2(2x+1)\cdot 2 = 4(2x+1)$ en $v = x-3 \Rightarrow v' = 1$
+s: $f'(x) = 4(2x+1)(x-3) + (2x+1)^2$
+s: Zet $(2x+1)$ voorop: $(2x+1)\left[4(x-3) + (2x+1)\right] = (2x+1)(6x-11)$
+fout: 2(2x+1)(x-3) + (2x+1)^2 | Bij $u = (2x+1)^2$ vergeet je de afgeleide van de binnenste functie (2).
+
+f: (x^2+2x)/(x^2-2x)
+d: -4/(x-2)^2
+dom: 2.3 5
+regel: Quotiëntregel; vereenvoudig eerst de breuk.
+s: Vereenvoudig: $\frac{x^2+2x}{x^2-2x} = \frac{x(x+2)}{x(x-2)} = \frac{x+2}{x-2}$ (voor $x \neq 0$)
+s: $f'(x) = \frac{1\cdot(x-2) - (x+2)\cdot 1}{(x-2)^2} = \frac{-4}{(x-2)^2}$
+</script>
+
+<script type="text/plain" class="oefendata">
+// ---------------- KETTINGREGEL (MACHTEN EN WORTELS) ----------------
+@cat ketting
+@voor 5 8
+@niveau 1
+
+f: (2x-5)^4
+d: 8(2x-5)^3
+dom: -1 4
+regel: Kettingregel: $\left(u^n\right)' = n\,u^{n-1}\cdot u'$
+s: Buitenste functie: $u^4$, binnenste functie: $u = 2x-5 \Rightarrow u' = 2$
+s: $f'(x) = 4(2x-5)^3\cdot 2 = 8(2x-5)^3$
+fout: 4(2x-5)^3 | Vergeet de afgeleide van de binnenste functie niet: $(2x-5)' = 2$.
+
+f: (3x+1)^5
+d: 15(3x+1)^4
+dom: -1 1
+regel: Kettingregel: $\left(u^n\right)' = n\,u^{n-1}\cdot u'$
+s: $u = 3x+1 \Rightarrow u' = 3$
+s: $f'(x) = 5(3x+1)^4\cdot 3 = 15(3x+1)^4$
+fout: 5(3x+1)^4 | Vergeet de afgeleide van de binnenste functie niet: $(3x+1)' = 3$.
+
+f: sqrt(4x+1)
+d: 2/sqrt(4x+1)
+dom: 0 3
+regel: Kettingregel: $\left(\sqrt{u}\right)' = \frac{u'}{2\sqrt{u}}$
+s: $u = 4x+1 \Rightarrow u' = 4$
+s: $f'(x) = \frac{4}{2\sqrt{4x+1}} = \frac{2}{\sqrt{4x+1}}$
+fout: 1/(2sqrt(4x+1)) | Vergeet de afgeleide van de binnenste functie niet: $(4x+1)' = 4$.
+
+f: (x^2+1)^3
+d: 6x(x^2+1)^2
+dom: -2 2
+regel: Kettingregel: $\left(u^n\right)' = n\,u^{n-1}\cdot u'$
+s: $u = x^2+1 \Rightarrow u' = 2x$
+s: $f'(x) = 3(x^2+1)^2\cdot 2x = 6x(x^2+1)^2$
+fout: 3(x^2+1)^2 | Vergeet de afgeleide van de binnenste functie niet: $(x^2+1)' = 2x$.
+
+f: 1/(2x+3)
+d: -2/(2x+3)^2
+dom: -1 3
+regel: Schrijf als macht $(2x+3)^{-1}$ en gebruik de kettingregel.
+s: $f(x) = (2x+3)^{-1}$ met $u = 2x+3 \Rightarrow u' = 2$
+s: $f'(x) = -1\cdot(2x+3)^{-2}\cdot 2 = -\frac{2}{(2x+3)^2}$
+fout: -1/(2x+3)^2 | Vergeet de afgeleide van de binnenste functie niet: $(2x+3)' = 2$.
+
+f: (1-x)^6
+d: -6(1-x)^5
+dom: -1 2
+regel: Kettingregel: $\left(u^n\right)' = n\,u^{n-1}\cdot u'$
+s: $u = 1-x \Rightarrow u' = -1$
+s: $f'(x) = 6(1-x)^5\cdot(-1) = -6(1-x)^5$
+fout: 6(1-x)^5 | De afgeleide van de binnenste functie 1−x is −1: er komt dus een minteken bij.
+
+f: (5 - 2x^3)^2
+d: -12x^2(5-2x^3)
+dom: -1.5 1.5
+regel: Kettingregel: $\left(u^2\right)' = 2u\cdot u'$
+s: $u = 5-2x^3 \Rightarrow u' = -6x^2$
+s: $f'(x) = 2(5-2x^3)\cdot(-6x^2) = -12x^2(5-2x^3)$
+fout: 2(5-2x^3) | Vergeet de afgeleide van de binnenste functie niet: $(5-2x^3)' = -6x^2$.
+
+@niveau 2
+f: sqrt(x^2+3x)
+d: (2x+3)/(2sqrt(x^2+3x))
+dom: 0.2 3
+regel: Kettingregel: $\left(\sqrt{u}\right)' = \frac{u'}{2\sqrt{u}}$
+s: $u = x^2+3x \Rightarrow u' = 2x+3$
+s: $f'(x) = \frac{2x+3}{2\sqrt{x^2+3x}}$
+fout: 1/(2sqrt(x^2+3x)) | Vergeet de afgeleide van de binnenste functie niet: $(x^2+3x)' = 2x+3$.
+
+f: (x^2-3x+1)^4
+d: 4(2x-3)(x^2-3x+1)^3
+dom: -1 3
+regel: Kettingregel: $\left(u^n\right)' = n\,u^{n-1}\cdot u'$
+s: $u = x^2-3x+1 \Rightarrow u' = 2x-3$
+s: $f'(x) = 4(x^2-3x+1)^3\cdot(2x-3)$
+fout: 4(x^2-3x+1)^3 | Vergeet de afgeleide van de binnenste functie niet: $(x^2-3x+1)' = 2x-3$.
+
+f: 1/(x^2+1)^2
+d: -4x/(x^2+1)^3
+dom: -2 2
+regel: Schrijf als macht $(x^2+1)^{-2}$ en gebruik de kettingregel.
+s: $f(x) = (x^2+1)^{-2}$ met $u = x^2+1 \Rightarrow u' = 2x$
+s: $f'(x) = -2(x^2+1)^{-3}\cdot 2x = -\frac{4x}{(x^2+1)^3}$
+fout: -2/(x^2+1)^3 | Vergeet de afgeleide van de binnenste functie niet: $(x^2+1)' = 2x$.
+
+f: sqrt(1-x^2)
+d: -x/sqrt(1-x^2)
+dom: -0.9 0.9
+regel: Kettingregel: $\left(\sqrt{u}\right)' = \frac{u'}{2\sqrt{u}}$
+s: $u = 1-x^2 \Rightarrow u' = -2x$
+s: $f'(x) = \frac{-2x}{2\sqrt{1-x^2}} = -\frac{x}{\sqrt{1-x^2}}$
+fout: 1/(2sqrt(1-x^2)) | Vergeet de afgeleide van de binnenste functie niet: $(1-x^2)' = -2x$.
+
+f: (x^2+4)^(3/2)
+d: 3x sqrt(x^2+4)
+dom: -2 2
+regel: Kettingregel met een gebroken exponent: $\left(u^{\frac32}\right)' = \frac32 u^{\frac12}\cdot u'$
+s: $u = x^2+4 \Rightarrow u' = 2x$
+s: $f'(x) = \frac32 (x^2+4)^{\frac12}\cdot 2x = 3x\sqrt{x^2+4}$
+
+f: 3/sqrt(2x+1)
+d: -3/((2x+1)sqrt(2x+1))
+dom: 0 3
+regel: Schrijf als macht $3(2x+1)^{-\frac12}$ en gebruik de kettingregel.
+s: $f(x) = 3(2x+1)^{-\frac12}$ met $u = 2x+1 \Rightarrow u' = 2$
+s: $f'(x) = 3\cdot\left(-\frac12\right)(2x+1)^{-\frac32}\cdot 2 = -3(2x+1)^{-\frac32}$
+s: $= -\frac{3}{(2x+1)\sqrt{2x+1}}$
+
+f: x sqrt(x^2+1)
+d: (2x^2+1)/sqrt(x^2+1)
+dom: -2 2
+regel: Productregel, met de kettingregel voor de wortel
+s: $u = x \Rightarrow u' = 1$ en $v = \sqrt{x^2+1} \Rightarrow v' = \frac{2x}{2\sqrt{x^2+1}} = \frac{x}{\sqrt{x^2+1}}$
+s: $f'(x) = \sqrt{x^2+1} + \frac{x^2}{\sqrt{x^2+1}}$
+s: Op gelijke noemer: $\frac{x^2+1+x^2}{\sqrt{x^2+1}} = \frac{2x^2+1}{\sqrt{x^2+1}}$
+
+f: (x^3 - 1/x)^2
+d: 2(x^3 - 1/x)(3x^2 + 1/x^2)
+dom: 0.4 2
+regel: Kettingregel: $\left(u^2\right)' = 2u\cdot u'$
+s: $u = x^3 - x^{-1} \Rightarrow u' = 3x^2 + x^{-2}$
+s: $f'(x) = 2\left(x^3 - \frac{1}{x}\right)\left(3x^2 + \frac{1}{x^2}\right)$
+
+@niveau 3
+f: sqrt(x + sqrt(x))
+d: (2sqrt(x)+1)/(4sqrt(x)sqrt(x+sqrt(x)))
+dom: 0.2 3
+regel: Kettingregel, twee keer na elkaar
+s: $u = x + \sqrt{x} \Rightarrow u' = 1 + \frac{1}{2\sqrt{x}} = \frac{2\sqrt{x}+1}{2\sqrt{x}}$
+s: $f'(x) = \frac{u'}{2\sqrt{u}} = \frac{2\sqrt{x}+1}{2\sqrt{x}}\cdot\frac{1}{2\sqrt{x+\sqrt{x}}}$
+s: $= \frac{2\sqrt{x}+1}{4\sqrt{x}\,\sqrt{x+\sqrt{x}}}$
+
+f: ((x+1)/(x-1))^3
+d: -6(x+1)^2/(x-1)^4
+dom: 1.3 4
+regel: Kettingregel, met de quotiëntregel voor de binnenste functie
+s: $u = \frac{x+1}{x-1} \Rightarrow u' = \frac{(x-1)-(x+1)}{(x-1)^2} = \frac{-2}{(x-1)^2}$
+s: $f'(x) = 3\left(\frac{x+1}{x-1}\right)^2\cdot\frac{-2}{(x-1)^2}$
+s: $= -\frac{6(x+1)^2}{(x-1)^4}$
+
+f: ((x^2+1)^3 + 1)^2
+d: 12x(x^2+1)^2((x^2+1)^3 + 1)
+dom: -1 1
+regel: Kettingregel in drie lagen
+s: Buitenste laag: $\left(u^2\right)' = 2u\cdot u'$ met $u = (x^2+1)^3 + 1$
+s: Daarbinnen: $u' = 3(x^2+1)^2\cdot 2x = 6x(x^2+1)^2$
+s: $f'(x) = 2\left((x^2+1)^3+1\right)\cdot 6x(x^2+1)^2 = 12x(x^2+1)^2\left((x^2+1)^3+1\right)$
+
+f: (2x-1)^4(x+1)^3
+d: (2x-1)^3(x+1)^2(14x+5)
+dom: -1 2
+regel: Productregel, met de kettingregel voor beide factoren
+s: $u = (2x-1)^4 \Rightarrow u' = 8(2x-1)^3$ en $v = (x+1)^3 \Rightarrow v' = 3(x+1)^2$
+s: $f'(x) = 8(2x-1)^3(x+1)^3 + 3(2x-1)^4(x+1)^2$
+s: Zet $(2x-1)^3(x+1)^2$ voorop: $(2x-1)^3(x+1)^2\left[8(x+1) + 3(2x-1)\right] = (2x-1)^3(x+1)^2(14x+5)$
+
+f: sqrt((x^2+1)/x)
+d: (x^2-1)/(2x^2 sqrt((x^2+1)/x))
+dom: 0.3 3
+regel: Kettingregel; schrijf de binnenste functie eerst als $x + \frac{1}{x}$.
+s: $u = \frac{x^2+1}{x} = x + x^{-1} \Rightarrow u' = 1 - \frac{1}{x^2} = \frac{x^2-1}{x^2}$
+s: $f'(x) = \frac{u'}{2\sqrt{u}} = \frac{x^2-1}{2x^2\sqrt{\frac{x^2+1}{x}}}$
+
+// ---------------- GONIOMETRISCHE FUNCTIES ----------------
+@cat gonio
+@niveau 1
+
+f: sin(x^2)
+d: 2x cos(x^2)
+dom: -2 2
+regel: Kettingregel: $(\sin u)' = \cos u\cdot u'$
+s: $u = x^2 \Rightarrow u' = 2x$
+s: $f'(x) = \cos(x^2)\cdot 2x = 2x\cos(x^2)$
+fout: cos(x^2) | Vergeet de afgeleide van de binnenste functie niet: $(x^2)' = 2x$.
+fout: cos(2x) | Neem cos van dezelfde binnenste functie $x^2$ en vermenigvuldig dan met $(x^2)' = 2x$.
+
+f: 3cos(2x)
+d: -6sin(2x)
+dom: -2 2
+regel: Kettingregel: $(\cos u)' = -\sin u\cdot u'$
+s: $u = 2x \Rightarrow u' = 2$
+s: $f'(x) = 3\cdot(-\sin(2x))\cdot 2 = -6\sin(2x)$
+fout: 6sin(2x) | Let op: $(\cos u)' = -\sin u\cdot u'$ (met minteken).
+fout: -3sin(2x) | Vergeet de afgeleide van de binnenste functie niet: $(2x)' = 2$.
+
+f: tan(3x)
+d: 3/cos(3x)^2
+dom: -0.4 0.4
+regel: Kettingregel: $(\tan u)' = \frac{u'}{\cos^2 u}$
+s: $u = 3x \Rightarrow u' = 3$
+s: $f'(x) = \frac{3}{\cos^2(3x)}$ (of ook $3\left(1 + \tan^2(3x)\right)$)
+fout: 1/cos(3x)^2 | Vergeet de afgeleide van de binnenste functie niet: $(3x)' = 3$.
+
+f: sin(x) + cos(x)
+d: cos(x) - sin(x)
+dom: -3 3
+regel: $(\sin x)' = \cos x$ en $(\cos x)' = -\sin x$
+s: $(\sin x)' = \cos x$
+s: $(\cos x)' = -\sin x$
+fout: cos(x) + sin(x) | Let op: $(\cos x)' = -\sin x$ (met minteken).
+
+f: x^2 - 4sin(x)
+d: 2x - 4cos(x)
+dom: -3 3
+regel: Somregel en $(\sin x)' = \cos x$
+s: Leid elke term apart af (somregel). De constante factor $-4$ blijft staan.
+s: $(x^2)' = 2x$ en $(-4\sin x)' = -4\cos x$
+s: Samen: $f'(x) = 2x - 4\cos x$
+
+f: cos(5x - 1)
+d: -5sin(5x-1)
+dom: -2 2
+regel: Kettingregel: $(\cos u)' = -\sin u\cdot u'$
+s: $u = 5x - 1 \Rightarrow u' = 5$
+s: $f'(x) = -\sin(5x-1)\cdot 5 = -5\sin(5x-1)$
+fout: -sin(5x-1) | Vergeet de afgeleide van de binnenste functie niet: $(5x-1)' = 5$.
+
+f: 2sin(x/2)
+d: cos(x/2)
+dom: -3 3
+regel: Kettingregel: $(\sin u)' = \cos u\cdot u'$
+s: $u = \frac{x}{2} \Rightarrow u' = \frac12$
+s: $f'(x) = 2\cos\left(\frac{x}{2}\right)\cdot\frac12 = \cos\left(\frac{x}{2}\right)$
+fout: 2cos(x/2) | Vergeet de afgeleide van de binnenste functie niet: $\left(\frac{x}{2}\right)' = \frac12$.
+
+@niveau 2
+f: x sin(x)
+d: sin(x) + x cos(x)
+dom: -3 3
+regel: Productregel: $(u\cdot v)' = u'v + uv'$
+s: $u = x \Rightarrow u' = 1$ en $v = \sin x \Rightarrow v' = \cos x$
+s: $f'(x) = \sin x + x\cos x$
+fout: cos(x) | $(u\cdot v)' \neq u'\cdot v'$. Gebruik de productregel.
+
+f: sin(x)^2
+d: 2sin(x)cos(x)
+dom: -3 3
+regel: Kettingregel: $\left(u^2\right)' = 2u\cdot u'$ met $u = \sin x$
+s: $u = \sin x \Rightarrow u' = \cos x$
+s: $f'(x) = 2\sin x\cos x$ (en dat is ook gelijk aan $\sin(2x)$)
+fout: 2sin(x) | Vergeet de afgeleide van de binnenste functie niet: $(\sin x)' = \cos x$.
+fout: cos(x)^2 | $\left(\sin^2 x\right)'$ is niet $\cos^2 x$: gebruik de kettingregel $\left(u^2\right)' = 2u\cdot u'$.
+
+f: sin(x)cos(x)
+d: cos(x)^2 - sin(x)^2
+dom: -3 3
+regel: Productregel: $(u\cdot v)' = u'v + uv'$
+s: $u = \sin x \Rightarrow u' = \cos x$ en $v = \cos x \Rightarrow v' = -\sin x$
+s: $f'(x) = \cos x\cdot\cos x + \sin x\cdot(-\sin x) = \cos^2 x - \sin^2 x$
+s: Dat is ook gelijk aan $\cos(2x)$.
+fout: -sin(x)cos(x) | $(u\cdot v)' \neq u'\cdot v'$. Gebruik de productregel.
+
+f: sin(x)/x
+d: (x cos(x) - sin(x))/x^2
+dom: 0.3 3
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = \sin x \Rightarrow u' = \cos x$ en $v = x \Rightarrow v' = 1$
+s: $f'(x) = \frac{x\cos x - \sin x}{x^2}$
+fout: cos(x) | $\left(\frac{u}{v}\right)' \neq \frac{u'}{v'}$. Gebruik de quotiëntregel.
+
+f: cos(x)^3
+d: -3cos(x)^2 sin(x)
+dom: -3 3
+regel: Kettingregel: $\left(u^3\right)' = 3u^2\cdot u'$ met $u = \cos x$
+s: $u = \cos x \Rightarrow u' = -\sin x$
+s: $f'(x) = 3\cos^2 x\cdot(-\sin x) = -3\cos^2 x\,\sin x$
+fout: 3cos(x)^2 | Vergeet de afgeleide van de binnenste functie niet: $(\cos x)' = -\sin x$.
+fout: -3sin(x)^2 | Leid eerst de macht af ($3\cos^2 x$) en vermenigvuldig dan met $(\cos x)' = -\sin x$.
+
+f: tan(x^2)
+d: 2x/cos(x^2)^2
+dom: -1 1
+regel: Kettingregel: $(\tan u)' = \frac{u'}{\cos^2 u}$
+s: $u = x^2 \Rightarrow u' = 2x$
+s: $f'(x) = \frac{2x}{\cos^2(x^2)}$
+fout: 1/cos(x^2)^2 | Vergeet de afgeleide van de binnenste functie niet: $(x^2)' = 2x$.
+
+f: sqrt(sin(x))
+d: cos(x)/(2sqrt(sin(x)))
+dom: 0.2 2.8
+regel: Kettingregel: $\left(\sqrt{u}\right)' = \frac{u'}{2\sqrt{u}}$
+s: $u = \sin x \Rightarrow u' = \cos x$
+s: $f'(x) = \frac{\cos x}{2\sqrt{\sin x}}$
+fout: 1/(2sqrt(sin(x))) | Vergeet de afgeleide van de binnenste functie niet: $(\sin x)' = \cos x$.
+
+f: x^2 cos(3x)
+d: 2x cos(3x) - 3x^2 sin(3x)
+dom: -2 2
+regel: Productregel, met de kettingregel voor $\cos(3x)$
+s: $u = x^2 \Rightarrow u' = 2x$ en $v = \cos(3x) \Rightarrow v' = -3\sin(3x)$
+s: $f'(x) = 2x\cos(3x) - 3x^2\sin(3x)$
+fout: 2x cos(3x) - x^2 sin(3x) | Bij $\cos(3x)$ vergeet je de afgeleide van de binnenste functie: $(3x)' = 3$.
+
+f: 1/cos(x)
+d: sin(x)/cos(x)^2
+dom: -1.2 1.2
+regel: Schrijf als macht $(\cos x)^{-1}$ (of gebruik de quotiëntregel).
+s: $f(x) = (\cos x)^{-1}$
+s: $f'(x) = -1\cdot(\cos x)^{-2}\cdot(-\sin x) = \frac{\sin x}{\cos^2 x}$
+fout: -1/sin(x) | $\left(\frac{1}{v}\right)' \neq \frac{1}{v'}$. Gebruik de quotiëntregel: $\left(\frac{1}{v}\right)' = -\frac{v'}{v^2}$.
+
+f: cot(2x)
+d: -2/sin(2x)^2
+dom: 0.2 1.4
+regel: Kettingregel: $(\cot u)' = -\frac{u'}{\sin^2 u}$
+s: $u = 2x \Rightarrow u' = 2$
+s: $f'(x) = -\frac{2}{\sin^2(2x)}$
+fout: -1/sin(2x)^2 | Vergeet de afgeleide van de binnenste functie niet: $(2x)' = 2$.
+fout: 2/sin(2x)^2 | Let op: $(\cot u)' = -\frac{u'}{\sin^2 u}$ (met minteken).
+
+f: x tan(x)
+d: tan(x) + x/cos(x)^2
+dom: -1 1
+regel: Productregel: $(u\cdot v)' = u'v + uv'$
+s: $u = x \Rightarrow u' = 1$ en $v = \tan x \Rightarrow v' = \frac{1}{\cos^2 x}$
+s: $f'(x) = \tan x + \frac{x}{\cos^2 x}$
+
+@niveau 3
+f: sin(x)/(1+cos(x))
+d: 1/(1+cos(x))
+dom: -2 2
+regel: Quotiëntregel; vereenvoudig daarna met $\sin^2 x + \cos^2 x = 1$.
+s: $u = \sin x \Rightarrow u' = \cos x$ en $v = 1 + \cos x \Rightarrow v' = -\sin x$
+s: $f'(x) = \frac{\cos x\,(1+\cos x) + \sin^2 x}{(1+\cos x)^2} = \frac{\cos x + \cos^2 x + \sin^2 x}{(1+\cos x)^2}$
+s: $= \frac{\cos x + 1}{(1+\cos x)^2} = \frac{1}{1+\cos x}$
+
+f: tan(2x)^3
+d: 6tan(2x)^2/cos(2x)^2
+dom: -0.6 0.6
+regel: Kettingregel in drie lagen: macht, tangens, veelterm
+s: Buitenste laag: $\left(u^3\right)' = 3u^2\cdot u'$ met $u = \tan(2x)$
+s: $u' = \frac{1}{\cos^2(2x)}\cdot 2$
+s: $f'(x) = 3\tan^2(2x)\cdot\frac{2}{\cos^2(2x)} = \frac{6\tan^2(2x)}{\cos^2(2x)}$
+fout: 3tan(2x)^2/cos(2x)^2 | Vergeet de binnenste laag niet: $(2x)' = 2$.
+
+f: cos(sin(x))
+d: -sin(sin(x))cos(x)
+dom: -3 3
+regel: Kettingregel: $(\cos u)' = -\sin u\cdot u'$ met $u = \sin x$
+s: $u = \sin x \Rightarrow u' = \cos x$
+s: $f'(x) = -\sin(\sin x)\cdot\cos x$
+fout: -sin(cos(x)) | Neem −sin van de binnenste functie zelf (sin x) en vermenigvuldig dan met $(\sin x)' = \cos x$.
+fout: -sin(sin(x)) | Vergeet de afgeleide van de binnenste functie niet: $(\sin x)' = \cos x$.
+
+f: sin(x^2)^3
+d: 6x sin(x^2)^2 cos(x^2)
+dom: -1.5 1.5
+regel: Kettingregel in drie lagen
+s: $\left(\sin^3(x^2)\right)' = 3\sin^2(x^2)\cdot\left(\sin(x^2)\right)'$
+s: $\left(\sin(x^2)\right)' = \cos(x^2)\cdot 2x$
+s: $f'(x) = 3\sin^2(x^2)\cdot\cos(x^2)\cdot 2x = 6x\sin^2(x^2)\cos(x^2)$
+
+f: (1 - cos(x))/(1 + cos(x))
+d: 2sin(x)/(1+cos(x))^2
+dom: -2 2
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = 1 - \cos x \Rightarrow u' = \sin x$ en $v = 1 + \cos x \Rightarrow v' = -\sin x$
+s: $f'(x) = \frac{\sin x\,(1+\cos x) + (1-\cos x)\sin x}{(1+\cos x)^2}$
+s: $= \frac{2\sin x}{(1+\cos x)^2}$
+</script>
+
+<script type="text/plain" class="oefendata">
+// ---------------- EXPONENTIËLE EN LOGARITMISCHE FUNCTIES ----------------
+@cat explog
+@voor 5 8
+@niveau 1
+
+f: e^(4x+1)
+d: 4e^(4x+1)
+dom: -1 1
+regel: Kettingregel: $\left(e^u\right)' = e^u\cdot u'$
+s: $u = 4x+1 \Rightarrow u' = 4$
+s: $f'(x) = e^{4x+1}\cdot 4 = 4e^{4x+1}$
+fout: e^(4x+1) | Vergeet de afgeleide van de exponent niet: $(4x+1)' = 4$.
+fout: (4x+1)e^(4x) | Dit is geen macht van x: gebruik $\left(e^u\right)' = e^u\cdot u'$.
+
+f: ln(x^2+1)
+d: 2x/(x^2+1)
+dom: -2 2
+regel: Kettingregel: $(\ln u)' = \frac{u'}{u}$
+s: $u = x^2+1 \Rightarrow u' = 2x$
+s: $f'(x) = \frac{2x}{x^2+1}$
+fout: 1/(x^2+1) | Vergeet de afgeleide van de binnenste functie niet: $(x^2+1)' = 2x$.
+
+f: 3e^x - 2ln(x)
+d: 3e^x - 2/x
+dom: 0.3 3
+regel: $(e^x)' = e^x$ en $(\ln x)' = \frac{1}{x}$
+s: $(3e^x)' = 3e^x$
+s: $(-2\ln x)' = -\frac{2}{x}$
+fout: 3x e^(x-1) - 2/x | $e^x$ is geen macht van x: $(e^x)' = e^x$.
+
+f: ln(5x)
+d: 1/x
+dom: 0.2 3
+regel: Kettingregel $(\ln u)' = \frac{u'}{u}$ (of de rekenregel $\ln(5x) = \ln 5 + \ln x$)
+s: $u = 5x \Rightarrow u' = 5$
+s: $f'(x) = \frac{5}{5x} = \frac{1}{x}$
+s: Of: $\ln(5x) = \ln 5 + \ln x$, en $\ln 5$ is een constante.
+fout: 1/(5x) | Vergeet de afgeleide van de binnenste functie niet: $(5x)' = 5$.
+fout: 5/x | $(\ln u)' = \frac{u'}{u}$: deel door de binnenste functie zelf (5x), niet door x.
+
+f: 2^x
+d: 2^x ln(2)
+dom: -2 2
+regel: Exponentiële functie met grondtal $a$: $\left(a^x\right)' = a^x\ln a$
+s: De $x$ staat in de exponent en het grondtal is $a = 2$: dit is een exponentiële functie, geen macht van $x$.
+s: $\left(2^x\right)' = 2^x\ln 2$
+fout: x 2^(x-1) | $2^x$ is geen macht van x (de x staat in de exponent): $(a^x)' = a^x \ln a$.
+fout: 2^x | Vergeet de factor ln 2 niet: enkel $e^x$ is zijn eigen afgeleide.
+
+f: e^(-x^2)
+d: -2x e^(-x^2)
+dom: -2 2
+regel: Kettingregel: $\left(e^u\right)' = e^u\cdot u'$
+s: $u = -x^2 \Rightarrow u' = -2x$
+s: $f'(x) = e^{-x^2}\cdot(-2x) = -2x\,e^{-x^2}$
+fout: e^(-x^2) | Vergeet de afgeleide van de exponent niet: $(-x^2)' = -2x$.
+
+f: log_2(x)
+d: 1/(x ln(2))
+dom: 0.3 3
+regel: Logaritme met grondtal $a$: $\left(\log_a x\right)' = \frac{1}{x\ln a}$
+s: $\log_2 x = \frac{\ln x}{\ln 2}$
+s: $f'(x) = \frac{1}{\ln 2}\cdot\frac{1}{x} = \frac{1}{x\ln 2}$
+fout: 1/x | Vergeet de factor $\frac{1}{\ln 2}$ niet: $(\log_a x)' = \frac{1}{x\ln a}$.
+
+f: e^(3x) - e^(-x)
+d: 3e^(3x) + e^(-x)
+dom: -1 1
+regel: Kettingregel: $\left(e^u\right)' = e^u\cdot u'$
+s: $\left(e^{3x}\right)' = 3e^{3x}$
+s: $\left(-e^{-x}\right)' = -e^{-x}\cdot(-1) = e^{-x}$
+fout: 3e^(3x) - e^(-x) | Let op het minteken: $\left(e^{-x}\right)' = -e^{-x}$, dus $\left(-e^{-x}\right)' = +e^{-x}$.
+
+@niveau 2
+f: x^3 ln(x)
+d: 3x^2 ln(x) + x^2
+dom: 0.3 3
+regel: Productregel: $(u\cdot v)' = u'v + uv'$
+s: $u = x^3 \Rightarrow u' = 3x^2$ en $v = \ln x \Rightarrow v' = \frac{1}{x}$
+s: $f'(x) = 3x^2\ln x + x^3\cdot\frac{1}{x} = 3x^2\ln x + x^2$
+fout: 3x^2/x | $(u\cdot v)' \neq u'\cdot v'$. Gebruik de productregel.
+
+f: x e^(-x)
+d: (1-x)e^(-x)
+dom: -1 3
+regel: Productregel, met de kettingregel voor $e^{-x}$
+s: $u = x \Rightarrow u' = 1$ en $v = e^{-x} \Rightarrow v' = -e^{-x}$
+s: $f'(x) = e^{-x} - x\,e^{-x} = (1-x)\,e^{-x}$
+fout: (1+x)e^(-x) | $\left(e^{-x}\right)' = -e^{-x}$: let op het minteken.
+fout: -e^(-x) | $(u\cdot v)' \neq u'\cdot v'$. Gebruik de productregel.
+
+f: e^(-2x)cos(4x)
+d: -e^(-2x)(2cos(4x) + 4sin(4x))
+dom: -1 1
+regel: Productregel, met de kettingregel voor beide factoren
+s: $u = e^{-2x} \Rightarrow u' = -2e^{-2x}$ en $v = \cos(4x) \Rightarrow v' = -4\sin(4x)$
+s: $f'(x) = -2e^{-2x}\cos(4x) - 4e^{-2x}\sin(4x)$
+s: $= -e^{-2x}\left(2\cos(4x) + 4\sin(4x)\right)$
+fout: 8e^(-2x)sin(4x) | $(u\cdot v)' \neq u'\cdot v'$. Gebruik de productregel.
+
+f: ln(x)/x
+d: (1 - ln(x))/x^2
+dom: 0.3 4
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = \ln x \Rightarrow u' = \frac{1}{x}$ en $v = x \Rightarrow v' = 1$
+s: $f'(x) = \frac{\frac{1}{x}\cdot x - \ln x}{x^2} = \frac{1 - \ln x}{x^2}$
+fout: 1/x | $\left(\frac{u}{v}\right)' \neq \frac{u'}{v'}$. Gebruik de quotiëntregel.
+
+f: e^x/(e^x+1)
+d: e^x/(e^x+1)^2
+dom: -2 2
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = e^x \Rightarrow u' = e^x$ en $v = e^x+1 \Rightarrow v' = e^x$
+s: $f'(x) = \frac{e^x(e^x+1) - e^x\cdot e^x}{(e^x+1)^2} = \frac{e^x}{(e^x+1)^2}$
+fout: 1 | $\left(\frac{u}{v}\right)' \neq \frac{u'}{v'}$. Gebruik de quotiëntregel.
+
+f: ln(sin(x))
+d: cos(x)/sin(x)
+dom: 0.3 2.8
+regel: Kettingregel: $(\ln u)' = \frac{u'}{u}$
+s: $u = \sin x \Rightarrow u' = \cos x$
+s: $f'(x) = \frac{\cos x}{\sin x} = \cot x$
+fout: 1/sin(x) | Vergeet de afgeleide van de binnenste functie niet: $(\sin x)' = \cos x$.
+
+f: e^(sqrt(x))
+d: e^(sqrt(x))/(2sqrt(x))
+dom: 0.2 3
+regel: Kettingregel: $\left(e^u\right)' = e^u\cdot u'$
+s: $u = \sqrt{x} \Rightarrow u' = \frac{1}{2\sqrt{x}}$
+s: $f'(x) = \frac{e^{\sqrt{x}}}{2\sqrt{x}}$
+fout: e^(sqrt(x)) | Vergeet de afgeleide van de exponent niet: $(\sqrt{x})' = \frac{1}{2\sqrt{x}}$.
+
+f: 3^(2x-1)
+d: 2ln(3) 3^(2x-1)
+dom: -1 1.5
+regel: Kettingregel: $\left(a^u\right)' = a^u\ln a\cdot u'$
+s: $u = 2x - 1 \Rightarrow u' = 2$
+s: $f'(x) = 3^{2x-1}\cdot\ln 3\cdot 2 = 2\ln 3\cdot 3^{2x-1}$
+fout: 2*3^(2x-1) | Vergeet de factor ln 3 niet: $(a^u)' = a^u \ln a\cdot u'$.
+fout: (2x-1)3^(2x-2) | Dit is geen macht van x: de x staat in de exponent. Gebruik $(a^u)' = a^u\ln a\cdot u'$.
+
+f: ln(x^2 - 4x + 5)
+d: (2x-4)/(x^2-4x+5)
+dom: -1 4
+regel: Kettingregel: $(\ln u)' = \frac{u'}{u}$
+s: $u = x^2-4x+5 \Rightarrow u' = 2x-4$
+s: $f'(x) = \frac{2x-4}{x^2-4x+5}$
+fout: 1/(x^2-4x+5) | Vergeet de afgeleide van de binnenste functie niet: $(x^2-4x+5)' = 2x-4$.
+
+f: x^2 e^(3x)
+d: x(3x+2)e^(3x)
+dom: -1 1
+regel: Productregel, met de kettingregel voor $e^{3x}$
+s: $u = x^2 \Rightarrow u' = 2x$ en $v = e^{3x} \Rightarrow v' = 3e^{3x}$
+s: $f'(x) = 2x\,e^{3x} + 3x^2e^{3x} = x(3x+2)\,e^{3x}$
+fout: 2x e^(3x) + x^2 e^(3x) | Vergeet bij $e^{3x}$ de afgeleide van de exponent niet: $(3x)' = 3$.
+
+f: ln(sqrt(x^2+1))
+d: x/(x^2+1)
+dom: -2 2
+regel: Rekenregel $\ln\sqrt{u} = \frac12\ln u$, daarna de kettingregel
+s: $\ln\sqrt{x^2+1} = \frac12\ln(x^2+1)$
+s: $f'(x) = \frac12\cdot\frac{2x}{x^2+1} = \frac{x}{x^2+1}$
+
+f: e^(sin(2x))
+d: 2cos(2x)e^(sin(2x))
+dom: -2 2
+regel: Kettingregel: $\left(e^u\right)' = e^u\cdot u'$
+s: $u = \sin(2x) \Rightarrow u' = 2\cos(2x)$
+s: $f'(x) = e^{\sin(2x)}\cdot 2\cos(2x) = 2\cos(2x)\,e^{\sin(2x)}$
+fout: e^(sin(2x)) | Vergeet de afgeleide van de exponent niet: $(\sin(2x))' = 2\cos(2x)$.
+fout: cos(2x)e^(sin(2x)) | Bij $\sin(2x)$ vergeet je de afgeleide van $2x$.
+
+f: ln(x)^2
+d: 2ln(x)/x
+dom: 0.3 3
+regel: Kettingregel: $\left(u^2\right)' = 2u\cdot u'$ met $u = \ln x$
+s: $u = \ln x \Rightarrow u' = \frac{1}{x}$
+s: $f'(x) = 2\ln x\cdot\frac{1}{x} = \frac{2\ln x}{x}$
+fout: 2ln(x) | Vergeet de afgeleide van de binnenste functie niet: $(\ln x)' = \frac{1}{x}$.
+
+f: x^2 log(x)
+d: 2x log(x) + x/ln(10)
+dom: 0.3 3
+regel: Productregel; $(\log x)' = \frac{1}{x\ln 10}$ ($\log$ is de logaritme met grondtal 10)
+s: $u = x^2 \Rightarrow u' = 2x$ en $v = \log x \Rightarrow v' = \frac{1}{x\ln 10}$
+s: $f'(x) = 2x\log x + x^2\cdot\frac{1}{x\ln 10} = 2x\log x + \frac{x}{\ln 10}$
+
+f: e^x ln(x)
+d: e^x ln(x) + e^x/x
+dom: 0.3 3
+regel: Productregel: $(u\cdot v)' = u'v + uv'$
+s: $u = e^x \Rightarrow u' = e^x$ en $v = \ln x \Rightarrow v' = \frac{1}{x}$
+s: $f'(x) = e^x\ln x + \frac{e^x}{x}$
+fout: e^x/x | $(u\cdot v)' \neq u'\cdot v'$. Gebruik de productregel.
+
+f: 2^(x^2)
+d: 2x ln(2) 2^(x^2)
+dom: -1.5 1.5
+regel: Kettingregel: $\left(a^u\right)' = a^u\ln a\cdot u'$
+s: $u = x^2 \Rightarrow u' = 2x$
+s: $f'(x) = 2^{x^2}\cdot\ln 2\cdot 2x = 2x\ln 2\cdot 2^{x^2}$
+fout: 2^(x^2) ln(2) | Vergeet de afgeleide van de exponent niet: $(x^2)' = 2x$.
+
+@niveau 3
+f: e^x/sin(x)
+d: e^x(sin(x) - cos(x))/sin(x)^2
+dom: 0.3 2.8
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = e^x \Rightarrow u' = e^x$ en $v = \sin x \Rightarrow v' = \cos x$
+s: $f'(x) = \frac{e^x\sin x - e^x\cos x}{\sin^2 x} = \frac{e^x(\sin x - \cos x)}{\sin^2 x}$
+fout: e^x/cos(x) | $\left(\frac{u}{v}\right)' \neq \frac{u'}{v'}$. Gebruik de quotiëntregel.
+
+f: ln(3x)/(x^2+1)
+d: (x^2 + 1 - 2x^2 ln(3x))/(x(x^2+1)^2)
+dom: 0.3 3
+regel: Quotiëntregel, met de kettingregel voor $\ln(3x)$
+s: $u = \ln(3x) \Rightarrow u' = \frac{3}{3x} = \frac{1}{x}$ en $v = x^2+1 \Rightarrow v' = 2x$
+s: $f'(x) = \frac{\frac{1}{x}(x^2+1) - 2x\ln(3x)}{(x^2+1)^2}$
+s: Teller en noemer maal $x$: $\frac{x^2 + 1 - 2x^2\ln(3x)}{x\,(x^2+1)^2}$
+
+f: ln((x-1)/(x+1))
+d: 2/(x^2-1)
+dom: 1.3 4
+regel: Rekenregel $\ln\frac{a}{b} = \ln a - \ln b$, daarna afleiden
+s: $\ln\frac{x-1}{x+1} = \ln(x-1) - \ln(x+1)$
+s: $f'(x) = \frac{1}{x-1} - \frac{1}{x+1} = \frac{(x+1) - (x-1)}{(x-1)(x+1)} = \frac{2}{x^2-1}$
+
+f: ln(ln(x))
+d: 1/(x ln(x))
+dom: 1.5 5
+regel: Kettingregel: $(\ln u)' = \frac{u'}{u}$ met $u = \ln x$
+s: $u = \ln x \Rightarrow u' = \frac{1}{x}$
+s: $f'(x) = \frac{\frac{1}{x}}{\ln x} = \frac{1}{x\ln x}$
+fout: 1/ln(x) | Vergeet de afgeleide van de binnenste functie niet: $(\ln x)' = \frac{1}{x}$.
+
+f: (1 + ln(x))/(1 - ln(x))
+d: 2/(x(1-ln(x))^2)
+dom: 0.3 2.2
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = 1 + \ln x \Rightarrow u' = \frac{1}{x}$ en $v = 1 - \ln x \Rightarrow v' = -\frac{1}{x}$
+s: $f'(x) = \frac{\frac{1}{x}(1-\ln x) + \frac{1}{x}(1+\ln x)}{(1-\ln x)^2} = \frac{\frac{2}{x}}{(1-\ln x)^2}$
+s: $= \frac{2}{x\,(1-\ln x)^2}$
+fout: -1 | $\left(\frac{u}{v}\right)' \neq \frac{u'}{v'}$. Gebruik de quotiëntregel.
+
+f: e^(x^2) ln(x^2+1)
+d: 2x e^(x^2) ln(x^2+1) + 2x e^(x^2)/(x^2+1)
+dom: -1.5 1.5
+regel: Productregel, met de kettingregel voor beide factoren
+s: $u = e^{x^2} \Rightarrow u' = 2x\,e^{x^2}$ en $v = \ln(x^2+1) \Rightarrow v' = \frac{2x}{x^2+1}$
+s: $f'(x) = 2x\,e^{x^2}\ln(x^2+1) + \frac{2x\,e^{x^2}}{x^2+1}$
+</script>
+
+<script type="text/plain" class="oefendata">
+// ---------------- CYCLOMETRISCHE FUNCTIES (ENKEL 8 UUR) ----------------
+@cat cyclo
+@voor 8
+@niveau 1
+
+f: Bgsin(3x)
+d: 3/sqrt(1-9x^2)
+dom: -0.3 0.3
+regel: Kettingregel: $\left(\operatorname{Bgsin} u\right)' = \frac{u'}{\sqrt{1-u^2}}$
+s: $u = 3x \Rightarrow u' = 3$ en $u^2 = 9x^2$
+s: $f'(x) = \frac{3}{\sqrt{1-9x^2}}$
+fout: 1/sqrt(1-9x^2) | Vergeet de afgeleide van de binnenste functie niet: $(3x)' = 3$.
+fout: 3/sqrt(1-3x^2) | Let op: $u^2 = (3x)^2 = 9x^2$.
+
+f: Bgtan(2x)
+d: 2/(1+4x^2)
+dom: -2 2
+regel: Kettingregel: $\left(\operatorname{Bgtan} u\right)' = \frac{u'}{1+u^2}$
+s: $u = 2x \Rightarrow u' = 2$ en $u^2 = 4x^2$
+s: $f'(x) = \frac{2}{1+4x^2}$
+fout: 1/(1+4x^2) | Vergeet de afgeleide van de binnenste functie niet: $(2x)' = 2$.
+fout: 2/(1+2x^2) | Let op: $u^2 = (2x)^2 = 4x^2$.
+
+f: Bgcos(x^2)
+d: -2x/sqrt(1-x^4)
+dom: -0.9 0.9
+regel: Kettingregel: $\left(\operatorname{Bgcos} u\right)' = \frac{-u'}{\sqrt{1-u^2}}$
+s: $u = x^2 \Rightarrow u' = 2x$ en $u^2 = x^4$
+s: $f'(x) = \frac{-2x}{\sqrt{1-x^4}}$
+fout: 2x/sqrt(1-x^4) | Let op: $\left(\operatorname{Bgcos} u\right)' = \frac{-u'}{\sqrt{1-u^2}}$ (met minteken).
+fout: -1/sqrt(1-x^4) | Vergeet de afgeleide van de binnenste functie niet: $(x^2)' = 2x$.
+
+f: Bgtan(e^x)
+d: e^x/(1+e^(2x))
+dom: -2 2
+regel: Kettingregel: $\left(\operatorname{Bgtan} u\right)' = \frac{u'}{1+u^2}$
+s: $u = e^x \Rightarrow u' = e^x$ en $u^2 = \left(e^x\right)^2 = e^{2x}$
+s: $f'(x) = \frac{e^x}{1+e^{2x}}$
+fout: 1/(1+e^(2x)) | Vergeet de afgeleide van de binnenste functie niet: $(e^x)' = e^x$.
+
+f: Bgcot(x/2)
+d: -2/(4+x^2)
+dom: -3 3
+regel: Kettingregel: $\left(\operatorname{Bgcot} u\right)' = \frac{-u'}{1+u^2}$
+s: $u = \frac{x}{2} \Rightarrow u' = \frac12$ en $u^2 = \frac{x^2}{4}$
+s: $f'(x) = \frac{-\frac12}{1+\frac{x^2}{4}} = -\frac{2}{4+x^2}$ (teller en noemer maal 4)
+fout: 2/(4+x^2) | Let op: $\left(\operatorname{Bgcot} u\right)' = \frac{-u'}{1+u^2}$ (met minteken).
+
+f: Bgsin(x/3)
+d: 1/sqrt(9-x^2)
+dom: -2.5 2.5
+regel: Kettingregel: $\left(\operatorname{Bgsin} u\right)' = \frac{u'}{\sqrt{1-u^2}}$
+s: $u = \frac{x}{3} \Rightarrow u' = \frac13$
+s: $f'(x) = \frac{\frac13}{\sqrt{1-\frac{x^2}{9}}} = \frac{\frac13}{\frac13\sqrt{9-x^2}} = \frac{1}{\sqrt{9-x^2}}$
+
+f: 3Bgtan(x) - Bgsin(x)
+d: 3/(1+x^2) - 1/sqrt(1-x^2)
+dom: -0.9 0.9
+regel: $\left(\operatorname{Bgtan} x\right)' = \frac{1}{1+x^2}$ en $\left(\operatorname{Bgsin} x\right)' = \frac{1}{\sqrt{1-x^2}}$
+s: $\left(3\operatorname{Bgtan} x\right)' = \frac{3}{1+x^2}$
+s: $\left(-\operatorname{Bgsin} x\right)' = -\frac{1}{\sqrt{1-x^2}}$
+
+@niveau 2
+f: x Bgtan(x)
+d: Bgtan(x) + x/(1+x^2)
+dom: -2 2
+regel: Productregel: $(u\cdot v)' = u'v + uv'$
+s: $u = x \Rightarrow u' = 1$ en $v = \operatorname{Bgtan} x \Rightarrow v' = \frac{1}{1+x^2}$
+s: $f'(x) = \operatorname{Bgtan} x + \frac{x}{1+x^2}$
+fout: 1/(1+x^2) | $(u\cdot v)' \neq u'\cdot v'$. Gebruik de productregel.
+
+f: Bgcos(x)^2
+d: -2Bgcos(x)/sqrt(1-x^2)
+dom: -0.9 0.9
+regel: Kettingregel: $\left(u^2\right)' = 2u\cdot u'$ met $u = \operatorname{Bgcos} x$
+s: $u = \operatorname{Bgcos} x \Rightarrow u' = \frac{-1}{\sqrt{1-x^2}}$
+s: $f'(x) = 2\operatorname{Bgcos} x\cdot\frac{-1}{\sqrt{1-x^2}} = -\frac{2\operatorname{Bgcos} x}{\sqrt{1-x^2}}$
+fout: 2Bgcos(x) | Vergeet de afgeleide van de binnenste functie niet: $(\operatorname{Bgcos} x)' = \frac{-1}{\sqrt{1-x^2}}$.
+
+f: Bgsin(sqrt(x))
+d: 1/(2sqrt(x-x^2))
+dom: 0.1 0.9
+regel: Kettingregel: $\left(\operatorname{Bgsin} u\right)' = \frac{u'}{\sqrt{1-u^2}}$
+s: $u = \sqrt{x} \Rightarrow u' = \frac{1}{2\sqrt{x}}$ en $u^2 = x$
+s: $f'(x) = \frac{1}{\sqrt{1-x}}\cdot\frac{1}{2\sqrt{x}} = \frac{1}{2\sqrt{x-x^2}}$
+fout: 1/sqrt(1-x) | Vergeet de afgeleide van de binnenste functie niet: $(\sqrt{x})' = \frac{1}{2\sqrt{x}}$.
+
+f: ln(Bgtan(x))
+d: 1/((1+x^2)Bgtan(x))
+dom: 0.2 3
+regel: Kettingregel: $(\ln u)' = \frac{u'}{u}$ met $u = \operatorname{Bgtan} x$
+s: $u = \operatorname{Bgtan} x \Rightarrow u' = \frac{1}{1+x^2}$
+s: $f'(x) = \frac{\frac{1}{1+x^2}}{\operatorname{Bgtan} x} = \frac{1}{(1+x^2)\operatorname{Bgtan} x}$
+fout: 1/Bgtan(x) | Vergeet de afgeleide van de binnenste functie niet: $(\operatorname{Bgtan} x)' = \frac{1}{1+x^2}$.
+
+f: Bgtan(1/x)
+d: -1/(1+x^2)
+dom: 0.3 3
+regel: Kettingregel: $\left(\operatorname{Bgtan} u\right)' = \frac{u'}{1+u^2}$
+s: $u = \frac{1}{x} \Rightarrow u' = -\frac{1}{x^2}$ en $u^2 = \frac{1}{x^2}$
+s: $f'(x) = \frac{-\frac{1}{x^2}}{1+\frac{1}{x^2}} = \frac{-1}{x^2+1}$ (teller en noemer maal $x^2$)
+fout: 1/(1+1/x^2) | Vergeet de afgeleide van de binnenste functie niet: $\left(\frac1x\right)' = -\frac{1}{x^2}$.
+
+f: Bgsin(2x-1)
+d: 1/sqrt(x-x^2)
+dom: 0.1 0.9
+regel: Kettingregel: $\left(\operatorname{Bgsin} u\right)' = \frac{u'}{\sqrt{1-u^2}}$
+s: $u = 2x-1 \Rightarrow u' = 2$ en $1 - u^2 = 1 - (4x^2 - 4x + 1) = 4x - 4x^2$
+s: $f'(x) = \frac{2}{\sqrt{4x-4x^2}} = \frac{2}{2\sqrt{x-x^2}} = \frac{1}{\sqrt{x-x^2}}$
+fout: 1/sqrt(1-(2x-1)^2) | Vergeet de afgeleide van de binnenste functie niet: $(2x-1)' = 2$.
+
+f: e^(Bgtan(x))
+d: e^(Bgtan(x))/(1+x^2)
+dom: -2 2
+regel: Kettingregel: $\left(e^u\right)' = e^u\cdot u'$
+s: $u = \operatorname{Bgtan} x \Rightarrow u' = \frac{1}{1+x^2}$
+s: $f'(x) = \frac{e^{\operatorname{Bgtan} x}}{1+x^2}$
+fout: e^(Bgtan(x)) | Vergeet de afgeleide van de exponent niet: $(\operatorname{Bgtan} x)' = \frac{1}{1+x^2}$.
+
+f: Bgtan(sqrt(x))
+d: 1/(2sqrt(x)(1+x))
+dom: 0.2 3
+regel: Kettingregel: $\left(\operatorname{Bgtan} u\right)' = \frac{u'}{1+u^2}$
+s: $u = \sqrt{x} \Rightarrow u' = \frac{1}{2\sqrt{x}}$ en $u^2 = x$
+s: $f'(x) = \frac{1}{1+x}\cdot\frac{1}{2\sqrt{x}} = \frac{1}{2\sqrt{x}\,(1+x)}$
+
+f: Bgsin(x)/x
+d: (x/sqrt(1-x^2) - Bgsin(x))/x^2
+dom: 0.1 0.9
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = \operatorname{Bgsin} x \Rightarrow u' = \frac{1}{\sqrt{1-x^2}}$ en $v = x \Rightarrow v' = 1$
+s: $f'(x) = \frac{\frac{x}{\sqrt{1-x^2}} - \operatorname{Bgsin} x}{x^2}$
+
+@niveau 3
+f: x^2 Bgsin(sqrt(x))
+d: 2x Bgsin(sqrt(x)) + x^2/(2sqrt(x-x^2))
+dom: 0.1 0.9
+regel: Productregel, met een geneste kettingregel
+s: $u = x^2 \Rightarrow u' = 2x$
+s: $v = \operatorname{Bgsin}\sqrt{x} \Rightarrow v' = \frac{1}{\sqrt{1-x}}\cdot\frac{1}{2\sqrt{x}} = \frac{1}{2\sqrt{x-x^2}}$
+s: $f'(x) = 2x\operatorname{Bgsin}\sqrt{x} + \frac{x^2}{2\sqrt{x-x^2}}$
+
+f: Bgtan((1+x)/(1-x))
+d: 1/(1+x^2)
+dom: -0.8 0.8
+regel: Kettingregel, met de quotiëntregel voor de binnenste functie
+s: $u = \frac{1+x}{1-x} \Rightarrow u' = \frac{(1-x) + (1+x)}{(1-x)^2} = \frac{2}{(1-x)^2}$
+s: $1 + u^2 = \frac{(1-x)^2 + (1+x)^2}{(1-x)^2} = \frac{2 + 2x^2}{(1-x)^2}$
+s: $f'(x) = \frac{u'}{1+u^2} = \frac{2}{2+2x^2} = \frac{1}{1+x^2}$
+
+f: Bgsin((x^2-1)/(x^2+1))
+d: 2/(x^2+1)
+dom: 0.2 3
+regel: Kettingregel, met de quotiëntregel voor de binnenste functie
+s: $u = \frac{x^2-1}{x^2+1} \Rightarrow u' = \frac{2x(x^2+1) - (x^2-1)\cdot 2x}{(x^2+1)^2} = \frac{4x}{(x^2+1)^2}$
+s: $1 - u^2 = \frac{(x^2+1)^2 - (x^2-1)^2}{(x^2+1)^2} = \frac{4x^2}{(x^2+1)^2}$, dus $\sqrt{1-u^2} = \frac{2x}{x^2+1}$ (voor $x > 0$)
+s: $f'(x) = \frac{4x}{(x^2+1)^2}\cdot\frac{x^2+1}{2x} = \frac{2}{x^2+1}$
+
+f: Bgcos(sqrt(1-x^2))
+d: 1/sqrt(1-x^2)
+dom: 0.1 0.9
+regel: Kettingregel: $\left(\operatorname{Bgcos} u\right)' = \frac{-u'}{\sqrt{1-u^2}}$
+s: $u = \sqrt{1-x^2} \Rightarrow u' = \frac{-x}{\sqrt{1-x^2}}$ en $1 - u^2 = x^2$
+s: $f'(x) = \frac{\frac{x}{\sqrt{1-x^2}}}{\sqrt{x^2}} = \frac{x}{x\sqrt{1-x^2}} = \frac{1}{\sqrt{1-x^2}}$ (voor $x > 0$)
+
+f: x Bgsin(x) + sqrt(1-x^2)
+d: Bgsin(x)
+dom: -0.9 0.9
+regel: Productregel en kettingregel; vereenvoudig daarna.
+s: $\left(x\operatorname{Bgsin} x\right)' = \operatorname{Bgsin} x + \frac{x}{\sqrt{1-x^2}}$
+s: $\left(\sqrt{1-x^2}\right)' = \frac{-x}{\sqrt{1-x^2}}$
+s: Samen: $f'(x) = \operatorname{Bgsin} x$
+
+f: Bgtan(x) + Bgtan(1/x)
+d: 0
+dom: 0.3 3
+regel: Leid elke term af en vereenvoudig.
+s: $\left(\operatorname{Bgtan} x\right)' = \frac{1}{1+x^2}$
+s: $\left(\operatorname{Bgtan}\frac{1}{x}\right)' = \frac{-\frac{1}{x^2}}{1+\frac{1}{x^2}} = -\frac{1}{x^2+1}$
+s: Samen: $f'(x) = 0$. De functie is dus constant (voor $x > 0$ is ze gelijk aan $\frac{\pi}{2}$).
+
+f: sqrt(1-x^2) Bgsin(x)
+d: 1 - x Bgsin(x)/sqrt(1-x^2)
+dom: -0.9 0.9
+regel: Productregel: $(u\cdot v)' = u'v + uv'$
+s: $u = \sqrt{1-x^2} \Rightarrow u' = \frac{-x}{\sqrt{1-x^2}}$ en $v = \operatorname{Bgsin} x \Rightarrow v' = \frac{1}{\sqrt{1-x^2}}$
+s: $f'(x) = \frac{-x\operatorname{Bgsin} x}{\sqrt{1-x^2}} + \sqrt{1-x^2}\cdot\frac{1}{\sqrt{1-x^2}}$
+s: $= 1 - \frac{x\operatorname{Bgsin} x}{\sqrt{1-x^2}}$
+
+f: (x^2+1)Bgtan(x) - x
+d: 2x Bgtan(x)
+dom: -2 2
+regel: Productregel; vereenvoudig daarna.
+s: $\left((x^2+1)\operatorname{Bgtan} x\right)' = 2x\operatorname{Bgtan} x + (x^2+1)\cdot\frac{1}{1+x^2} = 2x\operatorname{Bgtan} x + 1$
+s: $(-x)' = -1$
+s: Samen: $f'(x) = 2x\operatorname{Bgtan} x$
+
+f: Bgsin(x)/sqrt(1-x^2)
+d: (1 + x Bgsin(x)/sqrt(1-x^2))/(1-x^2)
+dom: -0.9 0.9
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = \operatorname{Bgsin} x \Rightarrow u' = \frac{1}{\sqrt{1-x^2}}$ en $v = \sqrt{1-x^2} \Rightarrow v' = \frac{-x}{\sqrt{1-x^2}}$
+s: $u'v = 1$ en $uv' = \frac{-x\operatorname{Bgsin} x}{\sqrt{1-x^2}}$
+s: $f'(x) = \frac{1 + \frac{x\operatorname{Bgsin} x}{\sqrt{1-x^2}}}{1-x^2}$
+
+// ---------------- GEMENGDE UITDAGINGEN ----------------
+@cat mix
+@voor 5 8
+@niveau 2
+
+f: e^(sqrt(1-x^2))
+d: -x e^(sqrt(1-x^2))/sqrt(1-x^2)
+dom: -0.9 0.9
+regel: Kettingregel twee keer: exponentiële functie en wortel
+s: $\left(e^u\right)' = e^u\cdot u'$ met $u = \sqrt{1-x^2}$
+s: $u' = \frac{-2x}{2\sqrt{1-x^2}} = \frac{-x}{\sqrt{1-x^2}}$
+s: $f'(x) = e^{\sqrt{1-x^2}}\cdot\frac{-x}{\sqrt{1-x^2}} = -\frac{x\,e^{\sqrt{1-x^2}}}{\sqrt{1-x^2}}$
+
+f: tan(x) - x
+d: tan(x)^2
+dom: -1 1
+regel: $(\tan x)' = \frac{1}{\cos^2 x} = 1 + \tan^2 x$
+s: $f'(x) = \frac{1}{\cos^2 x} - 1$
+s: Met $\frac{1}{\cos^2 x} = 1 + \tan^2 x$ wordt dat $f'(x) = \tan^2 x$.
+
+f: sin(e^(2x))
+d: 2e^(2x)cos(e^(2x))
+dom: -1 1
+regel: Kettingregel in drie lagen
+s: $(\sin u)' = \cos u\cdot u'$ met $u = e^{2x} \Rightarrow u' = 2e^{2x}$
+s: $f'(x) = \cos\left(e^{2x}\right)\cdot 2e^{2x}$
+fout: cos(e^(2x)) | Vergeet de afgeleide van de binnenste functie niet: $\left(e^{2x}\right)' = 2e^{2x}$.
+
+f: x/sqrt(x^2+1)
+d: 1/((x^2+1)sqrt(x^2+1))
+dom: -2 2
+regel: Quotiëntregel, met de kettingregel voor de wortel
+s: $u = x \Rightarrow u' = 1$ en $v = \sqrt{x^2+1} \Rightarrow v' = \frac{x}{\sqrt{x^2+1}}$
+s: $f'(x) = \frac{\sqrt{x^2+1} - \frac{x^2}{\sqrt{x^2+1}}}{x^2+1}$
+s: Teller op gelijke noemer: $\frac{x^2+1-x^2}{\sqrt{x^2+1}} = \frac{1}{\sqrt{x^2+1}}$, dus $f'(x) = \frac{1}{(x^2+1)\sqrt{x^2+1}}$
+
+f: (x^2+1)^3 ln(x)
+d: 6x(x^2+1)^2 ln(x) + (x^2+1)^3/x
+dom: 0.3 3
+regel: Productregel, met de kettingregel voor $(x^2+1)^3$
+s: $u = (x^2+1)^3 \Rightarrow u' = 6x(x^2+1)^2$ en $v = \ln x \Rightarrow v' = \frac{1}{x}$
+s: $f'(x) = 6x(x^2+1)^2\ln x + \frac{(x^2+1)^3}{x}$
+
+@niveau 3
+f: sqrt(4x^2-1)/ln(x)
+d: (4x ln(x)/sqrt(4x^2-1) - sqrt(4x^2-1)/x)/ln(x)^2
+dom: 1.2 3
+regel: Quotiëntregel, met de kettingregel voor de wortel
+s: $u = \sqrt{4x^2-1} \Rightarrow u' = \frac{8x}{2\sqrt{4x^2-1}} = \frac{4x}{\sqrt{4x^2-1}}$ en $v = \ln x \Rightarrow v' = \frac{1}{x}$
+s: $f'(x) = \frac{\frac{4x}{\sqrt{4x^2-1}}\ln x - \sqrt{4x^2-1}\cdot\frac{1}{x}}{\ln^2 x}$
+
+f: ln(x + sqrt(x^2+1))
+d: 1/sqrt(x^2+1)
+dom: -2 2
+regel: Kettingregel: $(\ln u)' = \frac{u'}{u}$; vereenvoudig daarna.
+s: $u = x + \sqrt{x^2+1} \Rightarrow u' = 1 + \frac{x}{\sqrt{x^2+1}} = \frac{\sqrt{x^2+1} + x}{\sqrt{x^2+1}}$
+s: $f'(x) = \frac{u'}{u} = \frac{\sqrt{x^2+1} + x}{\sqrt{x^2+1}}\cdot\frac{1}{x + \sqrt{x^2+1}} = \frac{1}{\sqrt{x^2+1}}$
+
+f: ln(cos(x)^2)
+d: -2sin(x)/cos(x)
+dom: -1.2 1.2
+regel: Rekenregel $\ln(u^2) = 2\ln|u|$, daarna de kettingregel
+s: $\ln(\cos^2 x) = 2\ln|\cos x|$
+s: $f'(x) = 2\cdot\frac{-\sin x}{\cos x} = -2\tan x$
+
+f: e^x sin(x)cos(x)
+d: e^x(sin(x)cos(x) + cos(x)^2 - sin(x)^2)
+dom: -2 2
+regel: Productregel voor drie factoren: $(uvw)' = u'vw + uv'w + uvw'$
+s: $(e^x)' = e^x$, $(\sin x)' = \cos x$ en $(\cos x)' = -\sin x$
+s: $f'(x) = e^x\sin x\cos x + e^x\cos x\cos x - e^x\sin x\sin x$
+s: $= e^x\left(\sin x\cos x + \cos^2 x - \sin^2 x\right)$ (of ook $e^x\left(\frac12\sin(2x) + \cos(2x)\right)$)
+
+f: ln((x^2+1)/(x^2+4))
+d: 6x/((x^2+1)(x^2+4))
+dom: -2 2
+regel: Rekenregel $\ln\frac{a}{b} = \ln a - \ln b$, daarna de kettingregel
+s: $f(x) = \ln(x^2+1) - \ln(x^2+4)$
+s: $f'(x) = \frac{2x}{x^2+1} - \frac{2x}{x^2+4} = \frac{2x(x^2+4) - 2x(x^2+1)}{(x^2+1)(x^2+4)} = \frac{6x}{(x^2+1)(x^2+4)}$
+
+f: sqrt((1-x)/(1+x))
+d: -1/((1+x)sqrt(1-x^2))
+dom: -0.8 0.8
+regel: Kettingregel, met de quotiëntregel voor de binnenste functie
+s: $u = \frac{1-x}{1+x} \Rightarrow u' = \frac{-(1+x) - (1-x)}{(1+x)^2} = \frac{-2}{(1+x)^2}$
+s: $f'(x) = \frac{u'}{2\sqrt{u}} = \frac{-1}{(1+x)^2}\cdot\sqrt{\frac{1+x}{1-x}}$
+s: $= \frac{-1}{(1+x)\sqrt{1+x}\,\sqrt{1-x}} = -\frac{1}{(1+x)\sqrt{1-x^2}}$
+
+f: sin(x)^2 cos(2x)
+d: 2sin(x)cos(x)cos(2x) - 2sin(x)^2 sin(2x)
+dom: -2 2
+regel: Productregel, met de kettingregel voor beide factoren
+s: $u = \sin^2 x \Rightarrow u' = 2\sin x\cos x$ en $v = \cos(2x) \Rightarrow v' = -2\sin(2x)$
+s: $f'(x) = 2\sin x\cos x\cos(2x) - 2\sin^2 x\sin(2x)$
+
+f: (e^x - e^(-x))/(e^x + e^(-x))
+d: 4/(e^x + e^(-x))^2
+dom: -2 2
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = e^x - e^{-x} \Rightarrow u' = e^x + e^{-x}$ en $v = e^x + e^{-x} \Rightarrow v' = e^x - e^{-x}$
+s: $f'(x) = \frac{(e^x + e^{-x})^2 - (e^x - e^{-x})^2}{(e^x + e^{-x})^2}$
+s: Teller: $(e^{2x} + 2 + e^{-2x}) - (e^{2x} - 2 + e^{-2x}) = 4$, dus $f'(x) = \frac{4}{(e^x + e^{-x})^2}$
+
+f: cos(x)^2/(1 - sin(x))
+d: cos(x)
+dom: -1 1
+regel: Vereenvoudig eerst met $\cos^2 x = 1 - \sin^2 x$.
+s: $\frac{\cos^2 x}{1-\sin x} = \frac{1-\sin^2 x}{1-\sin x} = \frac{(1-\sin x)(1+\sin x)}{1-\sin x} = 1 + \sin x$
+s: $f'(x) = \cos x$
+
+f: sqrt(x) ln(x)^2
+d: ln(x)(ln(x) + 4)/(2sqrt(x))
+dom: 0.3 3
+regel: Productregel, met de kettingregel voor $\ln^2 x$
+s: $u = \sqrt{x} \Rightarrow u' = \frac{1}{2\sqrt{x}}$ en $v = \ln^2 x \Rightarrow v' = \frac{2\ln x}{x}$
+s: $f'(x) = \frac{\ln^2 x}{2\sqrt{x}} + \sqrt{x}\cdot\frac{2\ln x}{x} = \frac{\ln^2 x}{2\sqrt{x}} + \frac{2\ln x}{\sqrt{x}}$
+s: Op gelijke noemer: $\frac{\ln x\,(\ln x + 4)}{2\sqrt{x}}$
+
+// Enkel voor 8 uur: logaritmisch afleiden en cyclometrische combinaties
+@voor 8
+f: x^x
+d: x^x(ln(x) + 1)
+dom: 0.3 3
+regel: Logaritmisch afleiden: schrijf $x^x = e^{x\ln x}$.
+s: $x^x = e^{x\ln x}$
+s: $f'(x) = e^{x\ln x}\cdot(x\ln x)' = x^x\left(\ln x + x\cdot\frac{1}{x}\right) = x^x(\ln x + 1)$
+fout: x x^(x-1) | $x^x$ is geen gewone macht: ook de exponent hangt af van x. Schrijf $x^x = e^{x\ln x}$.
+fout: x^x ln(x) | Ook het grondtal hangt af van x. Schrijf $x^x = e^{x\ln x}$ en gebruik de kettingregel.
+
+f: x^(sin(x))
+d: x^(sin(x))(cos(x)ln(x) + sin(x)/x)
+dom: 0.3 3
+regel: Logaritmisch afleiden: schrijf $x^{\sin x} = e^{\sin x\,\ln x}$.
+s: $x^{\sin x} = e^{\sin x\,\ln x}$
+s: $(\sin x\ln x)' = \cos x\ln x + \frac{\sin x}{x}$
+s: $f'(x) = x^{\sin x}\left(\cos x\ln x + \frac{\sin x}{x}\right)$
+
+f: e^(Bgsin(x)) sqrt(1-x^2)
+d: e^(Bgsin(x))(1 - x/sqrt(1-x^2))
+dom: -0.9 0.9
+regel: Productregel, met de kettingregel voor beide factoren
+s: $u = e^{\operatorname{Bgsin} x} \Rightarrow u' = \frac{e^{\operatorname{Bgsin} x}}{\sqrt{1-x^2}}$ en $v = \sqrt{1-x^2} \Rightarrow v' = \frac{-x}{\sqrt{1-x^2}}$
+s: $f'(x) = e^{\operatorname{Bgsin} x} - \frac{x\,e^{\operatorname{Bgsin} x}}{\sqrt{1-x^2}} = e^{\operatorname{Bgsin} x}\left(1 - \frac{x}{\sqrt{1-x^2}}\right)$
+
+f: ln(x)^x
+d: ln(x)^x(ln(ln(x)) + 1/ln(x))
+dom: 1.5 4
+regel: Logaritmisch afleiden: schrijf $(\ln x)^x = e^{x\ln(\ln x)}$.
+s: $(\ln x)^x = e^{x\ln(\ln x)}$
+s: $\left(x\ln(\ln x)\right)' = \ln(\ln x) + x\cdot\frac{1}{x\ln x} = \ln(\ln x) + \frac{1}{\ln x}$
+s: $f'(x) = (\ln x)^x\left(\ln(\ln x) + \frac{1}{\ln x}\right)$
+
+f: Bgtan(tan(x)^2)
+d: 2tan(x)/(cos(x)^2(1 + tan(x)^4))
+dom: -1 1
+regel: Kettingregel in drie lagen
+s: $\left(\operatorname{Bgtan} u\right)' = \frac{u'}{1+u^2}$ met $u = \tan^2 x$
+s: $u' = 2\tan x\cdot\frac{1}{\cos^2 x}$ en $u^2 = \tan^4 x$
+s: $f'(x) = \frac{2\tan x}{\cos^2 x\,(1+\tan^4 x)}$
+</script>
+
+<script>
+// =====================================================================
+// FORMULE-LEZER EN NAKIJKMOTOR
+// Het antwoord wordt één keer ontleed tot een boom. Die boom wordt zowel
+// voor de live weergave als voor het nakijken gebruikt, zodat de leerling
+// altijd ziet hoe de app zijn antwoord leest.
+// =====================================================================
+const Wiskunde = (() => {
+    const FUNCTIES = {
+        sin:   { tex: '\\sin', f: Math.sin },
+        cos:   { tex: '\\cos', f: Math.cos },
+        tan:   { tex: '\\tan', f: Math.tan },
+        cot:   { tex: '\\cot', f: x => 1 / Math.tan(x) },
+        bgsin: { tex: '\\operatorname{Bgsin}', f: Math.asin, cyclo: true },
+        bgcos: { tex: '\\operatorname{Bgcos}', f: Math.acos, cyclo: true },
+        bgtan: { tex: '\\operatorname{Bgtan}', f: Math.atan, cyclo: true },
+        bgcot: { tex: '\\operatorname{Bgcot}', f: x => Math.PI / 2 - Math.atan(x), cyclo: true },
+        ln:    { tex: '\\ln', f: Math.log },
+        log:   { tex: '\\log', f: Math.log10 },
+        exp:   { tex: '\\exp', f: Math.exp },
+        sqrt:  { tex: null, f: Math.sqrt },
+        abs:   { tex: null, f: Math.abs }
+    };
+    const SYNONIEMEN = {
+        arcsin: 'bgsin', asin: 'bgsin', arccos: 'bgcos', acos: 'bgcos', arctan: 'bgtan', atan: 'bgtan', bgtg: 'bgtan',
+        arccot: 'bgcot', acot: 'bgcot', bgcotg: 'bgcot', tg: 'tan', cotg: 'cot', wortel: 'sqrt'
+    };
+    // Langste naam eerst, zodat "xcos" als x·cos en "exp" niet als e·x·p gelezen wordt.
+    const NAMEN = [...Object.keys(FUNCTIES), ...Object.keys(SYNONIEMEN), 'pi', 'x', 'e'].sort((a, b) => b.length - a.length);
+
+    class LeesFout extends Error {
+        constructor(boodschap, onvolledig) { super(boodschap); this.onvolledig = !!onvolledig; }
+    }
+
+    function voorbereid(invoer) {
+        let s = String(invoer == null ? '' : invoer);
+        s = s.replace(/^\s*(f\s*['’′]\s*\(\s*x\s*\)|f\s*['’′]|y\s*['’′])\s*=\s*/i, '');
+        s = s.replace(/[−–—]/g, '-').replace(/[·×∙⋅]/g, '*').replace(/÷/g, '/').replace(/π/g, 'pi').replace(/√/g, 'sqrt')
+             .replace(/²/g, '^2').replace(/³/g, '^3').replace(/\*\*/g, '^').replace(/,/g, '.')
+             .replace(/[\[{]/g, '(').replace(/[\]}]/g, ')');
+        return s;
+    }
+
+    function naamTekst(naam) {
+        const t = { bgsin: 'Bgsin', bgcos: 'Bgcos', bgtan: 'Bgtan', bgcot: 'Bgcot' };
+        return t[naam] || naam;
+    }
+
+    function tokens(s) {
+        const t = [];
+        let i = 0;
+        while (i < s.length) {
+            const c = s[i];
+            if (/\s/.test(c)) { i++; continue; }
+            if (/[0-9.]/.test(c)) {
+                const m = s.slice(i).match(/^(\d+\.?\d*|\.\d+)/);
+                if (!m) throw new LeesFout('Er staat een los punt of een losse komma in je antwoord.');
+                i += m[1].length;
+                if (s[i] === '.') throw new LeesFout('Een getal in je antwoord heeft twee kommatekens.');
+                t.push({ k: 'num', v: parseFloat(m[1]) });
+                continue;
+            }
+            if ('+-*/^'.includes(c)) { t.push({ k: 'op', v: c }); i++; continue; }
+            if (c === '(' || c === ')') { t.push({ k: c }); i++; continue; }
+            if (/[a-z]/i.test(c)) {
+                const rest = s.slice(i).toLowerCase();
+                const naam = NAMEN.find(n => rest.startsWith(n));
+                if (!naam) {
+                    const woord = rest.match(/^[a-z]+/)[0];
+                    if (woord === 'f') throw new LeesFout('Typ enkel het voorschrift van de afgeleide (wat na "f\'(x) =" komt).');
+                    throw new LeesFout(woord.length === 1
+                        ? `Ik ken «${woord}» niet. Gebruik x als veranderlijke.`
+                        : `Ik ken «${woord}» niet. Kijk bij "Hoe typ ik mijn antwoord?" welke functies je kan gebruiken.`);
+                }
+                i += naam.length;
+                if (naam === 'x') t.push({ k: 'x' });
+                else if (naam === 'e' || naam === 'pi') t.push({ k: 'const', v: naam });
+                else {
+                    const echt = SYNONIEMEN[naam] || naam;
+                    const tok = { k: 'fn', v: echt };
+                    if (echt === 'log' && s[i] === '_') {
+                        const m = s.slice(i + 1).match(/^\d+(\.\d+)?/);
+                        if (!m) throw new LeesFout('Schrijf het grondtal direct na log_, bijvoorbeeld log_2(x).');
+                        tok.grond = parseFloat(m[0]);
+                        if (tok.grond <= 0 || tok.grond === 1) throw new LeesFout('Het grondtal van een logaritme moet positief zijn en verschillend van 1.');
+                        i += 1 + m[0].length;
+                    }
+                    t.push(tok);
+                }
+                continue;
+            }
+            if ("'’′".includes(c)) throw new LeesFout('Typ enkel het voorschrift van de afgeleide, zonder accent.');
+            if (c === '=') throw new LeesFout('Typ enkel wat na "f\'(x) =" komt, zonder extra gelijkheidsteken.');
+            throw new LeesFout(`Het teken «${c}» kan ik niet lezen.`);
+        }
+        return t;
+    }
+
+    function ontleed(invoer) {
+        const s = voorbereid(invoer);
+        if (!s.trim()) throw new LeesFout('Er is nog geen antwoord.', true);
+        if (s.length > 400) throw new LeesFout('Je antwoord is te lang.');
+        const t = tokens(s);
+        let i = 0;
+        const kijk = () => t[i];
+        const isOp = (tk, ...ops) => !!tk && tk.k === 'op' && ops.includes(tk.v);
+        const startFactor = tk => !!tk && ['num', 'x', 'const', 'fn', '('].includes(tk.k);
+
+        // som := metTeken (('+'|'-') metTeken)*
+        function som() {
+            let a = metTeken();
+            while (isOp(kijk(), '+', '-')) {
+                const o = t[i++].v;
+                const b = metTeken();
+                a = { t: o === '+' ? 'add' : 'sub', a, b };
+            }
+            return a;
+        }
+        // Een minteken vooraan geldt voor de hele term: -2x/3 = -(2x/3).
+        function metTeken() {
+            if (isOp(kijk(), '-')) { i++; return { t: 'neg', a: metTeken() }; }
+            if (isOp(kijk(), '+')) { i++; return metTeken(); }
+            return product();
+        }
+        // product := macht (('*'|'/') macht | macht)*  — een weggelaten maalteken telt als gewoon maal
+        function product() {
+            let a = macht();
+            for (;;) {
+                const tk = kijk();
+                if (isOp(tk, '*', '/')) {
+                    i++;
+                    let negatief = false;
+                    while (isOp(kijk(), '-', '+')) { if (t[i].v === '-') negatief = !negatief; i++; }
+                    let b = macht();
+                    if (negatief) b = { t: 'neg', a: b };
+                    a = { t: tk.v === '*' ? 'mul' : 'div', a, b };
+                } else if (startFactor(tk)) {
+                    const b = macht();
+                    a = { t: 'mul', a, b, imp: true };
+                } else break;
+            }
+            return a;
+        }
+        function macht() {
+            const grond = basis();
+            if (isOp(kijk(), '^')) { i++; return { t: 'pow', a: grond, b: exponent() }; }
+            return grond;
+        }
+        function exponent() {
+            if (isOp(kijk(), '-')) { i++; return { t: 'neg', a: exponent() }; }
+            if (isOp(kijk(), '+')) { i++; return exponent(); }
+            return macht();
+        }
+        function korteExponent(naam) {
+            if (isOp(kijk(), '-')) { i++; return { t: 'neg', a: korteExponent(naam) }; }
+            const tk = kijk();
+            if (tk && (tk.k === 'num' || tk.k === '(')) return basis();
+            throw new LeesFout(`Na ${naamTekst(naam)}^ verwacht ik een getal, bijvoorbeeld ${naamTekst(naam)}^2(x).`, !tk);
+        }
+        function basis() {
+            const tk = t[i++];
+            if (!tk) throw new LeesFout('Je antwoord stopt te vroeg: er ontbreekt nog iets op het einde.', true);
+            if (tk.k === 'num') return { t: 'num', v: tk.v };
+            if (tk.k === 'x') return { t: 'x' };
+            if (tk.k === 'const') return { t: 'const', v: tk.v };
+            if (tk.k === '(') {
+                if (kijk() && kijk().k === ')') throw new LeesFout('Er staan lege haakjes () in je antwoord.');
+                const e = som();
+                const sl = t[i++];
+                if (!sl) throw new LeesFout('Er ontbreekt nog een sluitend haakje ).', true);
+                if (sl.k !== ')') throw new LeesFout('Er klopt iets niet met de haakjes.');
+                return e;
+            }
+            if (tk.k === 'fn') {
+                const naam = tk.v;
+                let exp = null;
+                if (isOp(kijk(), '^') && naam !== 'sqrt' && naam !== 'abs') { i++; exp = korteExponent(naam); }
+                let arg;
+                if (!kijk()) throw new LeesFout(`Na ${naamTekst(naam)} moet nog iets komen, bijvoorbeeld ${naamTekst(naam)}(x).`, true);
+                if (kijk().k === '(') arg = basis();
+                else arg = macht();
+                let knoop = { t: 'fn', v: naam, a: arg };
+                if (tk.grond) knoop.grond = tk.grond;
+                if (exp) knoop = { t: 'pow', a: knoop, b: exp };
+                return knoop;
+            }
+            if (tk.k === ')') throw new LeesFout('Er staat een haakje ) te veel of op een verkeerde plaats.');
+            if (tk.k === 'op') throw new LeesFout(`Het teken ${tk.v} staat op een plaats waar ik een getal, x of een functie verwacht.`);
+            throw new LeesFout('Dit kan ik niet lezen.');
+        }
+
+        const boom = som();
+        if (i < t.length) {
+            if (t[i].k === ')') throw new LeesFout('Er staat een haakje ) te veel.');
+            throw new LeesFout('Ik begrijp je antwoord niet helemaal. Controleer de tekens.');
+        }
+        return boom;
+    }
+
+    // Voor de live weergave tijdens het typen: een onaf antwoord tijdelijk aanvullen
+    // (sluithaakjes toevoegen, een laatste losse bewerking of functienaam weglaten).
+    function leesVoorbeeld(invoer) {
+        try { return { boom: ontleed(invoer) }; }
+        catch (e) {
+            if (!(e instanceof LeesFout)) throw e;
+            if (e.onvolledig) {
+                let s = voorbereid(invoer), ingekort = false;
+                for (let k = 0; k < 6; k++) {
+                    const t = s.replace(/[+\-*/^\s(]+$/, '').replace(/(bgsin|bgcos|bgtan|bgcot|arcsin|arccos|arctan|sqrt|sin|cos|tan|cot|ln|log(_\d*)?|exp|abs)$/i, '');
+                    if (t === s) break;
+                    s = t; ingekort = true;
+                }
+                const open = (s.match(/\(/g) || []).length - (s.match(/\)/g) || []).length;
+                if (s.trim() && open >= 0) {
+                    try { return { boom: ontleed(s + ')'.repeat(open)), aangevuld: open > 0 && !ingekort, bezig: ingekort }; }
+                    catch (e2) { /* toon de originele melding */ }
+                }
+            }
+            return { fout: e.message, onvolledig: e.onvolledig };
+        }
+    }
+
+    // ---------- waarde berekenen ----------
+    function machtWaarde(a, b) {
+        if (a < 0 && !Number.isInteger(b)) {
+            for (const q of [3, 5, 7, 9]) {
+                const p = b * q;
+                if (Math.abs(p - Math.round(p)) < 1e-9) return Math.pow(-Math.pow(-a, 1 / q), Math.round(p));
+            }
+            return NaN;
+        }
+        return Math.pow(a, b);
+    }
+    function waarde(n, x) {
+        switch (n.t) {
+            case 'num': return n.v;
+            case 'x': return x;
+            case 'const': return n.v === 'e' ? Math.E : Math.PI;
+            case 'neg': return -waarde(n.a, x);
+            case 'add': return waarde(n.a, x) + waarde(n.b, x);
+            case 'sub': return waarde(n.a, x) - waarde(n.b, x);
+            case 'mul': return waarde(n.a, x) * waarde(n.b, x);
+            case 'div': return waarde(n.a, x) / waarde(n.b, x);
+            case 'pow': return machtWaarde(waarde(n.a, x), waarde(n.b, x));
+            case 'fn': {
+                const a = waarde(n.a, x);
+                if (n.v === 'log' && n.grond) return Math.log(a) / Math.log(n.grond);
+                return FUNCTIES[n.v].f(a);
+            }
+        }
+        return NaN;
+    }
+
+    // ---------- LaTeX maken ----------
+    function getal(v) {
+        if (Number.isInteger(v)) return String(v);
+        return String(+v.toPrecision(12)).replace('.', '{,}');
+    }
+    // Gewone haakjes, behalve rond hoge inhoud (breuken, wortels): daar groeien ze mee.
+    const haak = s => /\\frac|\\sqrt|\\left/.test(s) ? '\\left(' + s + '\\right)' : '(' + s + ')';
+    const factor = n => ['add', 'sub', 'neg'].includes(n.t) ? haak(tex(n)) : tex(n);
+    const fnNaam = n => (n.v === 'log' && n.grond) ? '\\log_{' + getal(n.grond) + '}' : FUNCTIES[n.v].tex;
+    function tex(n) {
+        switch (n.t) {
+            case 'num': return getal(n.v);
+            case 'x': return 'x';
+            case 'const': return n.v === 'e' ? 'e' : '\\pi';
+            case 'add': return tex(n.a) + ' + ' + (n.b.t === 'neg' ? haak(tex(n.b)) : tex(n.b));
+            case 'sub': return tex(n.a) + ' - ' + (['add', 'sub', 'neg'].includes(n.b.t) ? haak(tex(n.b)) : tex(n.b));
+            case 'neg': return '-' + (['add', 'sub', 'neg'].includes(n.a.t) ? haak(tex(n.a)) : tex(n.a));
+            case 'mul': {
+                const A = factor(n.a), B = factor(n.b);
+                if (!n.imp) return A + ' \\cdot ' + B;
+                const punt = /^[0-9]/.test(B) || (n.b.t === 'div' && n.a.t === 'num') || (n.b.t === 'pow' && n.b.a.t === 'num');
+                return A + (punt ? ' \\cdot ' : ' ') + B;
+            }
+            case 'div': return '\\frac{' + tex(n.a) + '}{' + tex(n.b) + '}';
+            case 'pow': {
+                if (n.a.t === 'fn' && !['sqrt', 'abs'].includes(n.a.v) && n.b.t === 'num' && Number.isInteger(n.b.v) && n.b.v > 0)
+                    return fnNaam(n.a) + '^{' + getal(n.b.v) + '}' + haak(tex(n.a.a));
+                const atoom = ['x', 'const'].includes(n.a.t) || (n.a.t === 'num' && Number.isInteger(n.a.v)) || (n.a.t === 'fn' && ['sqrt', 'abs'].includes(n.a.v));
+                return (atoom ? tex(n.a) : haak(tex(n.a))) + '^{' + tex(n.b) + '}';
+            }
+            case 'fn': {
+                if (n.v === 'sqrt') return '\\sqrt{' + tex(n.a) + '}';
+                if (n.v === 'abs') return '\\left|' + tex(n.a) + '\\right|';
+                return fnNaam(n) + haak(tex(n.a));
+            }
+        }
+        return '?';
+    }
+    function texVan(invoer) {
+        try { return tex(ontleed(invoer)); }
+        catch (e) { console.warn('Kan niet omzetten naar LaTeX:', invoer, e.message); return '\\text{?}'; }
+    }
+    // In uitwerkingen mag [[...]] gebruikt worden: dat wordt in invoer-notatie gelezen en als formule getoond.
+    const vulIn = regel => String(regel).replace(/\[\[(.+?)\]\]/g, (_, e) => texVan(e));
+
+    function bevatCyclo(n) {
+        if (!n || typeof n !== 'object') return false;
+        if (n.t === 'fn' && FUNCTIES[n.v].cyclo) return true;
+        return bevatCyclo(n.a) || bevatCyclo(n.b);
+    }
+
+    // ---------- nakijken ----------
+    function punten(dom, aantal = 12) {
+        const [a, b] = dom, p = [];
+        for (let k = 0; k < aantal; k++) p.push(a + (b - a) * (k + 0.5 + 0.35 * Math.sin(k * 12.9898 + 1.7)) / aantal);
+        return p;
+    }
+    const dichtbij = (u, c, tol = 1e-6) => Math.abs(u - c) <= tol * Math.max(1, Math.abs(c), Math.abs(u));
+
+    function vergelijk(u, c, dom) {
+        let geldig = 0, gelijk = 0, bijna = 0, userOngeldig = false;
+        const ratios = [];
+        for (const x of punten(dom, 12)) {
+            const vc = waarde(c, x);
+            if (!Number.isFinite(vc) || Math.abs(vc) > 1e7) continue;
+            geldig++;
+            const vu = waarde(u, x);
+            if (!Number.isFinite(vu)) { userOngeldig = true; continue; }
+            if (dichtbij(vu, vc)) gelijk++;
+            if (dichtbij(vu, vc, 5e-3)) bijna++;
+            ratios.push(Math.abs(vc) > 1e-9 ? vu / vc : (Math.abs(vu) < 1e-9 ? 1 : NaN));
+        }
+        return { gelijk: geldig >= 4 && gelijk === geldig, bijna: geldig >= 4 && bijna === geldig, geldig, ratios, userOngeldig };
+    }
+    function constanteFactor(ratios) {
+        if (ratios.length < 4 || ratios.some(r => !Number.isFinite(r))) return null;
+        const r0 = ratios[0];
+        if (Math.abs(r0) < 1e-9) return null;
+        return ratios.every(r => Math.abs(r - r0) <= 1e-6 * Math.max(1, Math.abs(r0))) ? r0 : null;
+    }
+
+    // ---------- soorten fouten (voor de leerkrachtfeedback en het rapport) ----------
+    const FOUTSOORTEN = {
+        ketting:      { label: 'Kettingregel: afgeleide van de binnenste functie vergeten', tip: 'Schrijf bij een samengestelde functie eerst de binnenste functie u en haar afgeleide u′ op. Vermenigvuldig op het einde altijd met u′.' },
+        invullen:     { label: 'Fout bij het invullen in de formule', tip: 'Vul de binnenste functie volledig en met haakjes in, bijvoorbeeld u² = (3x)² = 9x².' },
+        product:      { label: 'Productregel niet juist toegepast', tip: 'Bij een product geldt (u·v)′ = u′v + uv′. Schrijf u, u′, v en v′ eerst apart op en vul dan pas in.' },
+        quotient:     { label: 'Quotiëntregel niet juist toegepast', tip: 'Onthoud: (u/v)′ = (u′v − uv′)/v². Let op de volgorde in de teller en vergeet het kwadraat in de noemer niet.' },
+        teken:        { label: 'Tekenfout', tip: 'Let goed op mintekens: (cos x)′ = −sin x, en een minteken voor haakjes verandert elk teken binnen de haakjes.' },
+        macht:        { label: 'Machtsregel fout toegepast', tip: '(xⁿ)′ = n·xⁿ⁻¹: de exponent komt vooraan en daalt met 1, ook bij negatieve en gebroken exponenten.' },
+        wortel:       { label: 'Afgeleide van de wortel fout', tip: '(√u)′ = u′/(2√u). Je kan de wortel ook schrijven als macht met exponent ½.' },
+        exponentieel: { label: 'Exponentiële functie fout afgeleid', tip: 'Staat de x in de exponent, dan is het een exponentiële functie: (aᵘ)′ = aᵘ·ln a·u′ en (eᵘ)′ = eᵘ·u′.' },
+        logaritme:    { label: 'Afgeleide van de logaritme fout', tip: '(ln u)′ = u′/u en (logₐ u)′ = u′/(u·ln a).' },
+        constante:    { label: 'Afgeleide van een constante', tip: 'De afgeleide van een constante term is 0. Een constante factor blijft wel staan.' },
+        factor:       { label: 'Er ontbreekt een factor (of er staat er één te veel)', tip: 'Controleer of je alle factoren meeneemt: de exponent die vooraan komt en de afgeleide van de binnenste functie.' },
+        term:         { label: 'Er ontbreekt een term', tip: 'Leid elke term apart af (somregel) en controleer daarna elk teken.' },
+        afronding:    { label: 'Afgerond getal gebruikt', tip: 'Werk met exacte getallen zoals 1/3, ln 2 of √2 en rond niet af.' },
+        domein:       { label: 'Je antwoord bestaat niet overal', tip: 'Controleer de wortels, logaritmen en noemers in je antwoord.' },
+        functie:      { label: 'Functie in plaats van afgeleide', tip: "Lees de opgave goed: gevraagd is de afgeleide f′(x), niet f(x)." },
+        overgeslagen: { label: 'Geen antwoord gegeven', tip: 'Schrijf altijd iets op. Begin met de regel die je nodig hebt, dan kom je vaak al een eind ver.' },
+        onbekend:     { label: 'Rekenfout', tip: 'Vergelijk je berekening stap voor stap met de uitwerking om te zien waar het misloopt.' }
+    };
+    // Soort fout afleiden uit de tekst van een veelgemaakte fout in de oefeningenbank.
+    function codeVoorTekst(t) {
+        const s = String(t).toLowerCase();
+        if (/log_|\\log|\\frac\{1\}\{\\ln/.test(s)) return 'logaritme';
+        if (/geen macht van x|geen gewone macht|grondtal|factor ln|\\ln a/.test(s)) return 'exponentieel';
+        if (/binnenste|afgeleide van de exponent|vergeet je de afgeleide|leid eerst de macht|kettingregel/.test(s)) return 'ketting';
+        if (/productregel/.test(s)) return 'product';
+        if (/quotiëntregel|noemer|volgorde/.test(s)) return 'quotient';
+        if (/afgeleide van −x/.test(s)) return 'macht';
+        if (/constante/.test(s)) return 'constante';
+        if (/exponent daalt|exponent met 1|factor ½/.test(s)) return 'macht';
+        if (/u\^2 = |u² = /.test(s)) return 'invullen';
+        if (/minteken|teken/.test(s)) return 'teken';
+        if (/, niet 0/.test(s)) return 'term';
+        if (/\\ln x|ln\(x\)/.test(s)) return 'logaritme';
+        return 'onbekend';
+    }
+
+    // ---------- symbolisch afleiden, ook "met een typische fout" ----------
+    const N = v => ({ t: 'num', v });
+    const EEN = N(1), NUL = N(0);
+    const mul = (a, b) => ({ t: 'mul', a, b, imp: true });
+    const dv = (a, b) => ({ t: 'div', a, b });
+    const opt = (a, b) => ({ t: 'add', a, b });
+    const aft = (a, b) => ({ t: 'sub', a, b });
+    const tgst = a => ({ t: 'neg', a });
+    const mcht = (a, b) => ({ t: 'pow', a, b });
+    const fn = (v, a, grond) => grond ? { t: 'fn', v, a, grond } : { t: 'fn', v, a };
+    const isNum = (n, v) => n && n.t === 'num' && (v === undefined || n.v === v);
+    function hangtAf(n) {
+        if (!n || typeof n !== 'object') return false;
+        if (n.t === 'x') return true;
+        return hangtAf(n.a) || hangtAf(n.b);
+    }
+    // mut: Map van knoop -> soort fout die bij die knoop gemaakt wordt (of null voor de juiste afgeleide)
+    function afleiden(n, mut) {
+        if (!hangtAf(n)) return NUL;
+        // Bij één knoop kunnen meerdere fouten tegelijk gemaakt worden, bv. 'teken|binnenste'.
+        const soorten = mut && mut.get(n) ? String(mut.get(n)).split('|') : [];
+        const is = s => soorten.includes(s);
+        switch (n.t) {
+            case 'x': return EEN;
+            case 'neg': return tgst(afleiden(n.a, mut));
+            case 'add': case 'sub': {
+                let da = afleiden(n.a, mut), db = afleiden(n.b, mut);
+                if (is('constante')) { if (!hangtAf(n.a)) da = n.a; else db = n.b; }
+                return { t: n.t, a: da, b: db };
+            }
+            case 'mul': {
+                const { a, b } = n;
+                if (!hangtAf(a)) return mul(a, afleiden(b, mut));
+                if (!hangtAf(b)) return mul(afleiden(a, mut), b);
+                const da = afleiden(a, mut), db = afleiden(b, mut);
+                if (is('uv')) return mul(da, db);
+                if (is('enkelUv')) return mul(da, b);
+                if (is('enkelVu')) return mul(a, db);
+                if (is('minProduct')) return aft(mul(da, b), mul(a, db));
+                return opt(mul(da, b), mul(a, db));
+            }
+            case 'div': {
+                const { a, b } = n;
+                if (!hangtAf(b)) return dv(afleiden(a, mut), b);
+                const db = afleiden(b, mut);
+                if (!hangtAf(a)) {
+                    if (is('eenOverV')) return dv(a, db);
+                    if (is('quotKwadraat')) return tgst(dv(mul(a, db), b));
+                    return tgst(dv(mul(a, db), mcht(b, N(2))));
+                }
+                const da = afleiden(a, mut);
+                if (is('quotUV')) return dv(da, db);
+                if (is('quotVolgorde')) return dv(aft(mul(a, db), mul(da, b)), mcht(b, N(2)));
+                if (is('quotKwadraat')) return dv(aft(mul(da, b), mul(a, db)), b);
+                if (is('quotPlus')) return dv(opt(mul(da, b), mul(a, db)), mcht(b, N(2)));
+                return dv(aft(mul(da, b), mul(a, db)), mcht(b, N(2)));
+            }
+            case 'pow': {
+                const { a, b } = n;
+                if (!hangtAf(b)) {          // macht u^n
+                    const da = is('binnenste') ? EEN : afleiden(a, mut);
+                    if (is('exponentNiet')) return mul(mul(b, mcht(a, b)), da);
+                    if (is('exponentOp')) return mul(mul(b, mcht(a, opt(b, EEN))), da);
+                    if (is('geenN')) return mul(mcht(a, aft(b, EEN)), da);
+                    return mul(mul(b, mcht(a, aft(b, EEN))), da);
+                }
+                if (!hangtAf(a)) {          // exponentiële functie a^u
+                    if (is('alsMacht')) return mul(b, mcht(a, aft(b, EEN)));
+                    const db = is('binnenste') ? EEN : afleiden(b, mut);
+                    if (is('geenLn') || (a.t === 'const' && a.v === 'e')) return mul(mcht(a, b), db);
+                    return mul(mul(mcht(a, b), fn('ln', a)), db);
+                }
+                if (is('alsMacht')) return mul(mul(b, mcht(a, aft(b, EEN))), afleiden(a, mut));
+                if (is('alsExpo')) return mul(mul(mcht(a, b), fn('ln', a)), afleiden(b, mut));
+                return mul(mcht(a, b), opt(mul(afleiden(b, mut), fn('ln', a)), dv(mul(b, afleiden(a, mut)), a)));
+            }
+            case 'fn': {
+                const u = n.a;
+                const du = is('binnenste') ? EEN : afleiden(u, mut);
+                const kw = mcht(u, N(2));
+                let buiten;
+                switch (n.v) {
+                    case 'sin': buiten = fn('cos', u); break;
+                    case 'cos': buiten = tgst(fn('sin', u)); break;
+                    case 'tan': buiten = dv(EEN, mcht(fn('cos', u), N(2))); break;
+                    case 'cot': buiten = tgst(dv(EEN, mcht(fn('sin', u), N(2)))); break;
+                    case 'ln': buiten = dv(EEN, u); break;
+                    case 'log': buiten = dv(EEN, mul(u, fn('ln', N(n.grond || 10)))); break;
+                    case 'exp': buiten = fn('exp', u); break;
+                    case 'sqrt': buiten = dv(EEN, mul(N(2), fn('sqrt', u))); break;
+                    case 'abs': buiten = dv(u, fn('abs', u)); break;
+                    case 'bgsin': buiten = dv(EEN, fn('sqrt', aft(EEN, kw))); break;
+                    case 'bgcos': buiten = tgst(dv(EEN, fn('sqrt', aft(EEN, kw)))); break;
+                    case 'bgtan': buiten = dv(EEN, opt(EEN, kw)); break;
+                    case 'bgcot': buiten = tgst(dv(EEN, opt(EEN, kw))); break;
+                    default: return N(NaN);
+                }
+                if (is('teken')) buiten = tgst(buiten);
+                if (is('wortel2')) buiten = dv(EEN, fn('sqrt', u));
+                if (is('lnDoorX')) buiten = dv(EEN, { t: 'x' });
+                return mul(buiten, du);
+            }
+        }
+        return N(NaN);
+    }
+
+    // Kleine vereenvoudiging, enkel om formules in de feedback mooi te tonen.
+    function rationaal(v) {
+        if (!Number.isFinite(v)) return null;
+        for (let q = 1; q <= 100; q++) { const p = Math.round(v * q); if (Math.abs(p / q - v) < 1e-9 * Math.max(1, Math.abs(v))) return [p, q]; }
+        return null;
+    }
+    function alsGetal(v) {
+        const r = rationaal(v);
+        if (!r) return null;
+        const [p, q] = r;
+        const a = q === 1 ? N(Math.abs(p)) : dv(N(Math.abs(p)), N(q));
+        return p < 0 ? tgst(a) : a;
+    }
+    function enkelGetallen(n) {
+        if (!n || typeof n !== 'object') return true;
+        if (n.t === 'num') return true;
+        if (['neg', 'add', 'sub', 'mul', 'div'].includes(n.t)) return enkelGetallen(n.a) && enkelGetallen(n.b);
+        if (n.t === 'pow') return enkelGetallen(n.a) && enkelGetallen(n.b) && Number.isInteger(waarde(n.b, 0));
+        return false;
+    }
+    function vereenvoudig(n) {
+        if (!n || typeof n !== 'object') return n;
+        if (n.t !== 'num' && enkelGetallen(n)) { const g = alsGetal(waarde(n, 0)); if (g) return g; }
+        const a = n.a ? vereenvoudig(n.a) : n.a, b = n.b ? vereenvoudig(n.b) : n.b;
+        switch (n.t) {
+            case 'neg': if (a.t === 'neg') return a.a; if (isNum(a, 0)) return NUL; return tgst(a);
+            case 'add': if (isNum(a, 0)) return b; if (isNum(b, 0)) return a; if (b.t === 'neg') return aft(a, b.a); return opt(a, b);
+            case 'sub': if (isNum(b, 0)) return a; if (isNum(a, 0)) return tgst(b); if (b.t === 'neg') return opt(a, b.a); return aft(a, b);
+            case 'mul':
+                if (isNum(a, 0) || isNum(b, 0)) return NUL;
+                if (isNum(a, 1)) return b;
+                if (isNum(b, 1)) return a;
+                if (a.t === 'neg') return vereenvoudig(tgst(mul(a.a, b)));
+                if (b.t === 'neg') return vereenvoudig(tgst(mul(a, b.a)));
+                if (b.t === 'num' && a.t !== 'num') return vereenvoudig(mul(b, a));
+                if (a.t === 'num' && b.t === 'mul' && b.a.t === 'num') return mul(N(a.v * b.a.v), b.b);
+                if (b.t === 'div' && isNum(b.a, 1)) return dv(a, b.b);
+                if (a.t === 'div' && isNum(a.a, 1)) return dv(b, a.b);
+                return mul(a, b);
+            case 'div': if (isNum(a, 0)) return NUL; if (isNum(b, 1)) return a; if (a.t === 'neg') return tgst(dv(a.a, b)); return dv(a, b);
+            case 'pow': if (isNum(b, 0)) return EEN; if (isNum(b, 1)) return a; return mcht(a, b);
+            case 'fn': return fn(n.v, a, n.grond);
+        }
+        return n;
+    }
+    const mooi = n => tex(vereenvoudig(n));
+    const grootte = n => (!n || typeof n !== 'object') ? 0 : 1 + grootte(n.a) + grootte(n.b);
+
+    // Alle typische fouten die bij deze functie mogelijk zijn: [knoop, soort]
+    function kandidaten(f) {
+        const lijst = [], triviaal = u => u.t === 'x';
+        (function loop(n) {
+            if (!n || typeof n !== 'object' || !hangtAf(n)) return;
+            switch (n.t) {
+                case 'add': case 'sub':
+                    if ((!hangtAf(n.a) && !isNum(n.a, 0)) || (!hangtAf(n.b) && !isNum(n.b, 0))) lijst.push([n, 'constante']);
+                    break;
+                case 'mul':
+                    if (hangtAf(n.a) && hangtAf(n.b)) ['uv', 'enkelUv', 'enkelVu', 'minProduct'].forEach(s => lijst.push([n, s]));
+                    break;
+                case 'div':
+                    if (hangtAf(n.b)) (hangtAf(n.a) ? ['quotUV', 'quotVolgorde', 'quotKwadraat', 'quotPlus'] : ['eenOverV', 'quotKwadraat']).forEach(s => lijst.push([n, s]));
+                    break;
+                case 'pow':
+                    if (!hangtAf(n.b)) { if (!triviaal(n.a)) lijst.push([n, 'binnenste']); ['exponentNiet', 'exponentOp', 'geenN'].forEach(s => lijst.push([n, s])); }
+                    else if (!hangtAf(n.a)) { if (!triviaal(n.b)) lijst.push([n, 'binnenste']); lijst.push([n, 'alsMacht']); if (!(n.a.t === 'const' && n.a.v === 'e')) lijst.push([n, 'geenLn']); }
+                    else ['alsMacht', 'alsExpo'].forEach(s => lijst.push([n, s]));
+                    break;
+                case 'fn':
+                    if (!triviaal(n.a)) lijst.push([n, 'binnenste']);
+                    if (['cos', 'cot', 'bgcos', 'bgcot'].includes(n.v)) lijst.push([n, 'teken']);
+                    if (n.v === 'sqrt') lijst.push([n, 'wortel2']);
+                    if (n.v === 'ln' && !triviaal(n.a)) lijst.push([n, 'lnDoorX']);
+                    break;
+            }
+            loop(n.a); loop(n.b);
+        })(f);
+        return lijst;
+    }
+    const CODE_VAN = { binnenste: 'ketting', lnDoorX: 'ketting', teken: 'teken', wortel2: 'wortel', uv: 'product', enkelUv: 'product', enkelVu: 'product',
+        minProduct: 'product', quotUV: 'quotient', quotVolgorde: 'quotient', quotKwadraat: 'quotient', quotPlus: 'quotient', eenOverV: 'quotient',
+        exponentNiet: 'macht', exponentOp: 'macht', geenN: 'macht', alsMacht: 'exponentieel', alsExpo: 'exponentieel', geenLn: 'exponentieel', constante: 'constante' };
+    const TEKENREGEL = { cos: "(\\cos u)' = -\\sin u\\cdot u'", cot: "(\\cot u)' = -\\frac{u'}{\\sin^2 u}",
+        bgcos: "(\\operatorname{Bgcos} u)' = \\frac{-u'}{\\sqrt{1-u^2}}", bgcot: "(\\operatorname{Bgcot} u)' = \\frac{-u'}{1+u^2}" };
+    function beschrijf({ node: n, soort }) {
+        const kort = (s, max = 70) => s.length <= max;
+        switch (soort) {
+            case 'binnenste': {
+                const expo = n.t === 'pow' && hangtAf(n.b);
+                const u = expo ? n.b : n.a, duT = mooi(afleiden(u, null));
+                return `Bij $${mooi(n)}$ ben je de afgeleide van ${expo ? 'de exponent' : 'de binnenste functie'} $${mooi(u)}$ vergeten (kettingregel). Je moet nog vermenigvuldigen met $\\left(${mooi(u)}\\right)'${kort(duT) ? ' = ' + duT : ''}$.`;
+            }
+            case 'lnDoorX': return `Bij $${mooi(n)}$ deelde je door $x$ in plaats van door de binnenste functie $${mooi(n.a)}$: $(\\ln u)' = \\frac{u'}{u}$.`;
+            case 'teken': return `Bij $${mooi(n)}$ ben je het minteken vergeten: $${TEKENREGEL[n.v]}$.`;
+            case 'wortel2': return `Bij $${mooi(n)}$ vergat je de factor 2 in de noemer: $\\left(\\sqrt{u}\\right)' = \\frac{u'}{2\\sqrt{u}}$.`;
+            case 'uv': return `Bij het product van $${mooi(n.a)}$ en $${mooi(n.b)}$ vermenigvuldigde je gewoon de twee afgeleiden. Dat mag niet: $(u\\cdot v)' = u'v + uv'$ (productregel).`;
+            case 'enkelUv': case 'enkelVu': {
+                const vergeten = soort === 'enkelUv' ? mooi(mul(n.a, afleiden(n.b, null))) : mooi(mul(afleiden(n.a, null), n.b));
+                return `Bij het product van $${mooi(n.a)}$ en $${mooi(n.b)}$ schreef je maar één term van de productregel $(u\\cdot v)' = u'v + uv'$. Je vergat de term ${soort === 'enkelUv' ? "$u\\cdot v'$" : "$u'\\cdot v$"}${kort(vergeten) ? ' $= ' + vergeten + '$' : ''}.`;
+            }
+            case 'minProduct': return `Bij het product van $${mooi(n.a)}$ en $${mooi(n.b)}$ schreef je een minteken. In de productregel staat een plusteken: $(u\\cdot v)' = u'v + uv'$.`;
+            case 'quotUV': return `Bij de breuk $${mooi(n)}$ deelde je de afgeleide van de teller door de afgeleide van de noemer. Dat mag niet: $\\left(\\frac{u}{v}\\right)' = \\frac{u'v - uv'}{v^2}$ (quotiëntregel).`;
+            case 'quotVolgorde': return `Bij de breuk $${mooi(n)}$ wisselde je in de teller de volgorde om. In de quotiëntregel staat $u'v - uv'$ (eerst de afgeleide van de teller), anders klopt het teken niet.`;
+            case 'quotKwadraat': return `Bij de breuk $${mooi(n)}$ vergat je het kwadraat in de noemer: de noemer wordt $\\left(${mooi(n.b)}\\right)^2$.`;
+            case 'quotPlus': return `Bij de breuk $${mooi(n)}$ schreef je een plusteken in de teller. In de quotiëntregel staat een minteken: $u'v - uv'$.`;
+            case 'eenOverV': return `Bij $${mooi(n)}$ deelde je door de afgeleide van de noemer. Dat mag niet: $\\left(\\frac{1}{v}\\right)' = -\\frac{v'}{v^2}$.`;
+            case 'exponentNiet': return `Bij de macht $${mooi(n)}$ moet de exponent met 1 dalen: $\\left(u^n\\right)' = n\\,u^{n-1}\\cdot u'$. Jij liet de exponent $${mooi(n.b)}$ staan.`;
+            case 'exponentOp': return `Bij de macht $${mooi(n)}$ wordt de nieuwe exponent $${mooi(n.b)} - 1 = ${mooi(aft(n.b, EEN))}$. Jij telde er 1 bij op in plaats van 1 af te trekken.`;
+            case 'geenN': return `Bij de macht $${mooi(n)}$ vergat je de exponent $${mooi(n.b)}$ als factor vooraan te zetten: $\\left(u^n\\right)' = n\\,u^{n-1}\\cdot u'$.`;
+            case 'alsMacht':
+                if (!hangtAf(n.a)) return `$${mooi(n)}$ is geen macht van $x$: de $x$ staat in de exponent. Gebruik $\\left(a^u\\right)' = a^u\\ln a\\cdot u'$ (en voor grondtal $e$: $\\left(e^u\\right)' = e^u\\cdot u'$).`;
+                return `Bij $${mooi(n)}$ hangen grondtal én exponent af van $x$, dus je mag de machtsregel niet gebruiken. Schrijf $${mooi(n)} = e^{${mooi(mul(n.b, fn('ln', n.a)))}}$ en gebruik de kettingregel.`;
+            case 'alsExpo': return `Bij $${mooi(n)}$ hangen grondtal én exponent af van $x$, dus het is geen gewone exponentiële functie. Schrijf $${mooi(n)} = e^{${mooi(mul(n.b, fn('ln', n.a)))}}$ en gebruik de kettingregel.`;
+            case 'geenLn': return `Bij $${mooi(n)}$ vergat je de factor $\\ln ${mooi(n.a)}$: $\\left(a^u\\right)' = a^u\\ln a\\cdot u'$. Enkel bij grondtal $e$ valt die factor weg.`;
+            case 'constante': return `De afgeleide van een constante is $0$, maar jij liet $${mooi(!hangtAf(n.a) ? n.a : n.b)}$ staan.`;
+        }
+        return '';
+    }
+    function mutaties(oef) {
+        if (oef._mutaties) return oef._mutaties;
+        const enkel = [];
+        // Minder waarschijnlijke verklaringen pas als laatste proberen: een vergeten minteken bij cos e.d. gaat voor een
+        // "minteken in de product-/quotiëntregel", en "afgeleide van een constante laten staan" komt helemaal achteraan.
+        const laatst = s => s === 'constante' ? 2 : (s === 'minProduct' || s === 'quotPlus') ? 1 : 0;
+        for (const [node, soort] of kandidaten(oef.fBoom).sort((p, q) => laatst(p[1]) - laatst(q[1]))) {
+            const d = afleiden(oef.fBoom, new Map([[node, soort]]));
+            if (vergelijk(d, oef.dBoom, oef.dom).gelijk) continue;            // geen echte fout bij deze functie
+            if (enkel.some(e => vergelijk(d, e.d, oef.dom).gelijk)) continue;  // al gekend
+            enkel.push({ node, soort, d });
+        }
+        const paren = [];
+        const k = enkel.slice(0, 30);
+        for (let i = 0; i < k.length; i++) for (let j = i + 1; j < k.length; j++) {
+            const kaart = k[i].node === k[j].node
+                ? new Map([[k[i].node, k[i].soort + '|' + k[j].soort]])
+                : new Map([[k[i].node, k[i].soort], [k[j].node, k[j].soort]]);
+            paren.push({ fouten: [k[i], k[j]], d: afleiden(oef.fBoom, kaart) });
+        }
+        return (oef._mutaties = { enkel, paren });
+    }
+    function mutatieAnalyse(boom, oef) {
+        if (!oef.fBoom) return null;
+        const m = mutaties(oef);
+        for (const e of m.enkel) if (vergelijk(boom, e.d, oef.dom).gelijk) return { codes: [CODE_VAN[e.soort]], delen: [beschrijf(e)] };
+        for (const p of m.paren) {
+            if (vergelijk(boom, p.d, oef.dom).gelijk && !vergelijk(p.d, oef.dBoom, oef.dom).gelijk)
+                return { codes: p.fouten.map(e => CODE_VAN[e.soort]), delen: p.fouten.map(beschrijf) };
+        }
+        return null;
+    }
+
+    // Ontbrekende term of factor zoeken in de oplossing uit de sleutel.
+    function termen(n, teken = 1, uit = []) {
+        if (n.t === 'add') { termen(n.a, teken, uit); termen(n.b, teken, uit); }
+        else if (n.t === 'sub') { termen(n.a, teken, uit); termen(n.b, -teken, uit); }
+        else uit.push(teken === 1 ? n : tgst(n));
+        return uit;
+    }
+    function factoren(n, uit = []) {
+        if (n.t === 'mul') { factoren(n.a, uit); factoren(n.b, uit); } else uit.push(n);
+        return uit;
+    }
+    function structuurAnalyse(boom, oef) {
+        const d = oef.dBoom, dom = oef.dom;
+        const ts = termen(d);
+        if (ts.length >= 2 && ts.length <= 8) {
+            for (let k = 0; k < ts.length; k++) {
+                const rest = ts.filter((_, j) => j !== k).reduce((s, t) => opt(s, t));
+                if (vergelijk(boom, rest, dom).gelijk) return { code: 'term', tekst: `Er ontbreekt een term in je antwoord: $${mooi(ts[k])}$.` };
+                if (vergelijk(boom, opt(rest, tgst(ts[k])), dom).gelijk) return { code: 'teken', tekst: `De term $${mooi(ts[k])}$ staat in jouw antwoord met het verkeerde teken.` };
+            }
+        }
+        let kern = d, negatief = false;
+        if (kern.t === 'neg') { kern = kern.a; negatief = true; }
+        const fs = factoren(kern);
+        if (fs.length >= 2 && fs.length <= 6) {
+            for (let k = 0; k < fs.length; k++) {
+                if (fs[k].t === 'num') continue;
+                const rest = fs.filter((_, j) => j !== k).reduce((s, t) => mul(s, t));
+                if (vergelijk(boom, negatief ? tgst(rest) : rest, dom).gelijk) return { code: 'factor', tekst: `Er ontbreekt een factor $${mooi(fs[k])}$ in je antwoord.` };
+            }
+        }
+        return null;
+    }
+
+    // oef: { fBoom, dBoom, dom, fouten: [{ boom, tekst, code }] }
+    // Resultaat: { status: 'juist'|'fout'|'onleesbaar', boom, boodschap, code, codes, delen, onvereenvoudigd }
+    function beoordeel(invoer, oef) {
+        let boom;
+        try { boom = ontleed(invoer); }
+        catch (e) { if (e instanceof LeesFout) return { status: 'onleesbaar', boodschap: e.message }; throw e; }
+        const v = vergelijk(boom, oef.dBoom, oef.dom);
+        if (v.gelijk) return { status: 'juist', boom, onvereenvoudigd: grootte(boom) > 1.6 * grootte(oef.dBoom) + 4 };
+        const fout = (code, boodschap, extra) => Object.assign({ status: 'fout', boom, code, codes: [code], boodschap }, extra || {});
+        for (const fo of oef.fouten || []) {
+            if (vergelijk(boom, fo.boom, oef.dom).gelijk) return fout(fo.code || codeVoorTekst(fo.tekst), fo.tekst);
+        }
+        if (oef.fBoom && vergelijk(boom, oef.fBoom, oef.dom).gelijk)
+            return fout('functie', "Dit is de functie f(x) zelf. Je moet de afgeleide f'(x) berekenen.");
+        if (v.userOngeldig)
+            return fout('domein', "Je antwoord bestaat niet voor alle x waar f'(x) wel bestaat (bv. een wortel of logaritme van een negatief getal, of delen door 0).");
+        const m = mutatieAnalyse(boom, oef);
+        if (m) return fout(m.codes[0], m.delen.length === 1 ? m.delen[0] : 'Je maakte twee fouten: ' + m.delen.join(' '), { codes: m.codes, delen: m.delen });
+        const r = constanteFactor(v.ratios);
+        if (r !== null && Math.abs(r + 1) < 1e-6)
+            return fout('teken', 'Bijna! Je antwoord is precies het tegengestelde van de afgeleide. Ergens staat een minteken te veel of te weinig.');
+        if (v.bijna)
+            return fout('afronding', 'Je antwoord ligt heel dicht bij de afgeleide, maar is niet exact. Gebruik exacte waarden (zoals 1/3, ln(2) of sqrt(2)) in plaats van afgeronde kommagetallen.');
+        const s = structuurAnalyse(boom, oef);
+        if (s) return fout(s.code, s.tekst);
+        if (r !== null) {
+            const rg = alsGetal(r), ig = alsGetal(1 / r);
+            let zin = 'Je antwoord heeft de goede vorm, maar verschilt een constante factor van de juiste afgeleide.';
+            if (r > 0 && r < 1 && ig) zin = `Je antwoord heeft de goede vorm, maar is maar $${tex(rg || ig)}$ keer de juiste afgeleide: er ontbreekt een factor $${tex(ig)}$.`;
+            else if (r > 1 && rg) zin = `Je antwoord heeft de goede vorm, maar is $${tex(rg)}$ keer te groot: er staat ergens een factor $${tex(rg)}$ te veel.`;
+            else if (r < 0) zin = 'Je antwoord heeft de goede vorm, maar zowel het teken als een constante factor kloppen niet.';
+            return fout('factor', zin + ' Kijk vooral naar de afgeleide van de binnenste functie en naar de exponent die vooraan komt.');
+        }
+        return fout('onbekend', null);
+    }
+
+    // Controle van de oplossingssleutel: vergelijkt d met de numerieke afgeleide van f.
+    function controleerAfgeleide(fBoom, dBoom, dom) {
+        let ok = 0;
+        const problemen = [];
+        for (const x of punten(dom, 14)) {
+            const h = 1e-5 * Math.max(1, Math.abs(x));
+            const f1 = waarde(fBoom, x + h), f0 = waarde(fBoom, x - h), d = waarde(dBoom, x);
+            if (![f1, f0, d].every(Number.isFinite) || Math.abs(d) > 1e7) continue;
+            const num = (f1 - f0) / (2 * h);
+            if (Math.abs(num - d) > 1e-4 * Math.max(1, Math.abs(d))) problemen.push(`x = ${x.toFixed(3)}: numeriek ${num.toPrecision(6)}, sleutel ${d.toPrecision(6)}`);
+            else ok++;
+        }
+        return { ok, problemen };
+    }
+
+    return { ontleed, leesVoorbeeld, waarde, tex, texVan, vulIn, bevatCyclo, punten, vergelijk, beoordeel, controleerAfgeleide, LeesFout, FUNCTIES,
+             FOUTSOORTEN, codeVoorTekst, afleiden, vereenvoudig, mooi, kandidaten, mutaties };
+})();
+</script>
+
+<script>
+// =====================================================================
+// GENERATOREN: sjablonen die met willekeurige getallen telkens een nieuwe
+// oefening maken (met uitwerking en typische fouten). Elke gemaakte
+// oefening wordt vóór gebruik nog numeriek gecontroleerd.
+// =====================================================================
+const Generatoren = (() => {
+    const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+    const rnz = (a, b) => { let v; do { v = ri(a, b); } while (v === 0); return v; };
+    const kies = arr => arr[Math.floor(Math.random() * arr.length)];
+    // c maal s in invoer-notatie: co(1,'x') = 'x', co(-1,'x') = '-x', co(3,'x^2') = '3x^2'
+    const co = (c, s) => c === 1 ? s : c === -1 ? '-' + s : (/^[0-9]/.test(s) ? c + '*' + s : c + s);
+    const plus = s => { s = String(s); return s.startsWith('-') ? ' - ' + s.slice(1) : ' + ' + s; };
+    const xm = n => n === 0 ? '1' : n === 1 ? 'x' : 'x^' + n;
+    const mon = (c, n) => n === 0 ? String(c) : co(c, xm(n));
+    const lin = (a, b) => co(a, 'x') + (b === 0 ? '' : plus(b));
+    const par = a => a < 0 ? `(${a})` : String(a);
+    const T = s => '[[' + s + ']]';
+
+    const lijst = [
+        { id: 'veelterm', cat: 'basis', niveau: 1, voor: [5, 8], maak() {
+            const n = ri(3, 6), m = ri(2, n - 1), a = rnz(-5, 5), b = rnz(-6, 6), c = rnz(-9, 9), k = rnz(-9, 9);
+            const f = mon(a, n) + plus(mon(b, m)) + plus(mon(c, 1)) + plus(k);
+            const d = mon(a * n, n - 1) + plus(mon(b * m, m - 1)) + plus(c);
+            return { f, d, dom: [-2, 2], regel: "Somregel en machtsregel: $(x^n)' = n\\,x^{n-1}$",
+                s: ['Leid elke term apart af met de machtsregel. Een constante factor blijft staan.',
+                    `$\\left(${T(mon(a, n))}\\right)' = ${T(mon(a * n, n - 1))}$, $\\;\\left(${T(mon(b, m))}\\right)' = ${T(mon(b * m, m - 1))}$ en $\\left(${T(mon(c, 1))}\\right)' = ${c}$`,
+                    `De afgeleide van de constante $${k}$ is $0$.`],
+                fout: [`${d}${plus(k)} | De afgeleide van een constante is 0.`] };
+        } },
+        { id: 'machten', cat: 'basis', niveau: 2, voor: [5, 8], maak() {
+            const a = rnz(-6, 6), n = ri(1, 3), b = ri(2, 8), p = -a * n;
+            const f = `${a}/${xm(n)}` + plus(co(b, 'sqrt(x)'));
+            const t2 = b % 2 === 0 ? (b === 2 ? '1/sqrt(x)' : `${b / 2}/sqrt(x)`) : `${b}/(2sqrt(x))`;
+            const d = `${p}/${xm(n + 1)}` + plus(t2);
+            return { f, d, dom: [0.3, 3], regel: 'Schrijf elke term als macht van $x$ en gebruik de machtsregel.',
+                s: [`Als machten: $${T(co(a, `x^(-${n})`) + plus(co(b, 'x^(1/2)')))}$`,
+                    `$\\left(${T(co(a, `x^(-${n})`))}\\right)' = ${T(co(p, `x^(-${n + 1})`))} = ${T(`${p}/${xm(n + 1)}`)}$`,
+                    `$\\left(${T(co(b, 'x^(1/2)'))}\\right)' = ${T(`${b}/2 x^(-1/2)`)} = ${T(t2)}$`],
+                fout: [`${p}/${xm(n)}${plus(t2)} | Bij $x^{-${n}}$ daalt de exponent met 1: hij wordt $-${n + 1}$.`] };
+        } },
+        { id: 'linmacht', cat: 'ketting', niveau: 1, voor: [5, 8], maak() {
+            const a = kies([2, 3, 4, 5, -2, -3]), b = rnz(-5, 5), n = ri(3, 7), u = lin(a, b);
+            const d = `${n * a}(${u})^${n - 1}`;
+            return { f: `(${u})^${n}`, d, dom: [-0.5, 0.5], regel: "Kettingregel: $\\left(u^n\\right)' = n\\,u^{n-1}\\cdot u'$",
+                s: [`Buitenste functie: $u^{${n}}$, binnenste functie: $u = ${T(u)} \\Rightarrow u' = ${a}$`,
+                    `$f'(x) = ${n}\\left(${T(u)}\\right)^{${n - 1}}\\cdot ${par(a)} = ${T(d)}$`],
+                fout: [`${n}(${u})^${n - 1} | Vergeet de afgeleide van de binnenste functie niet: $\\left(${T(u)}\\right)' = ${a}$.`] };
+        } },
+        { id: 'kwadmacht', cat: 'ketting', niveau: 2, voor: [5, 8], maak() {
+            const a = kies([1, 2, 3, -1, -2]), c = rnz(-5, 5), n = ri(2, 5);
+            const u = mon(a, 2) + plus(c), du = mon(2 * a, 1);
+            const pw = n - 1 === 1 ? '' : `^${n - 1}`;
+            const d = `${2 * a * n}x(${u})${pw}`;
+            return { f: `(${u})^${n}`, d, dom: [-1.5, 1.5], regel: "Kettingregel: $\\left(u^n\\right)' = n\\,u^{n-1}\\cdot u'$",
+                s: [`$u = ${T(u)} \\Rightarrow u' = ${T(du)}$`,
+                    `$f'(x) = ${n}\\left(${T(u)}\\right)${pw ? `^{${n - 1}}` : ''}\\cdot ${T(du)} = ${T(d)}$`],
+                fout: [`${n}(${u})${pw} | Vergeet de afgeleide van de binnenste functie niet: $\\left(${T(u)}\\right)' = ${T(du)}$.`] };
+        } },
+        { id: 'wortel', cat: 'ketting', niveau: 2, voor: [5, 8], maak() {
+            const a = ri(1, 3), b = ri(1, 5), c = ri(1, 6);
+            const u = mon(a, 2) + plus(mon(b, 1)) + plus(c), du = mon(2 * a, 1) + plus(b);
+            const d = `(${du})/(2sqrt(${u}))`;
+            return { f: `sqrt(${u})`, d, dom: [0.1, 3], regel: "Kettingregel: $\\left(\\sqrt{u}\\right)' = \\frac{u'}{2\\sqrt{u}}$",
+                s: [`$u = ${T(u)} \\Rightarrow u' = ${T(du)}$`, `$f'(x) = \\frac{u'}{2\\sqrt{u}} = ${T(d)}$`],
+                fout: [`1/(2sqrt(${u})) | Vergeet de afgeleide van de binnenste functie niet: $\\left(${T(u)}\\right)' = ${T(du)}$.`] };
+        } },
+        { id: 'explin', cat: 'explog', niveau: 1, voor: [5, 8], maak() {
+            const c = kies([1, 2, 3, 5, -1, -2]), a = kies([2, 3, 4, 5, -1, -2, -3]), b = kies([0, rnz(-4, 4)]);
+            const ex = lin(a, b), E = `e^(${ex})`, d = co(c * a, E);
+            return { f: co(c, E), d, dom: [-1, 1], regel: "Kettingregel: $\\left(e^u\\right)' = e^u\\cdot u'$",
+                s: [`$u = ${T(ex)} \\Rightarrow u' = ${a}$`, `$f'(x) = ${T(co(c, E))}\\cdot ${par(a)} = ${T(d)}$`],
+                fout: [`${co(c, E)} | Vergeet de afgeleide van de exponent niet: $\\left(${T(ex)}\\right)' = ${a}$.`] };
+        } },
+        { id: 'lnkwad', cat: 'explog', niveau: 1, voor: [5, 8], maak() {
+            const a = ri(1, 4), b = ri(1, 9), u = mon(a, 2) + plus(b), du = mon(2 * a, 1), d = `${du}/(${u})`;
+            return { f: `ln(${u})`, d, dom: [-2, 2], regel: "Kettingregel: $(\\ln u)' = \\frac{u'}{u}$",
+                s: [`$u = ${T(u)} \\Rightarrow u' = ${T(du)}$`, `$f'(x) = \\frac{u'}{u} = ${T(d)}$`],
+                fout: [`1/(${u}) | Vergeet de afgeleide van de binnenste functie niet: $\\left(${T(u)}\\right)' = ${T(du)}$.`] };
+        } },
+        { id: 'goniolin', cat: 'gonio', niveau: 1, voor: [5, 8], maak() {
+            const c = kies([1, 2, 3, 4, -1, -2]), b = kies([0, rnz(-3, 3)]);
+            const a = b === 0 ? kies([2, 3, 4, 5]) : kies([2, 3, 4, 5, -2, -3]);
+            const arg = lin(a, b);
+            if (Math.random() < 0.5) {
+                const d = co(c * a, `cos(${arg})`);
+                return { f: co(c, `sin(${arg})`), d, dom: [-2, 2], regel: "Kettingregel: $(\\sin u)' = \\cos u\\cdot u'$",
+                    s: [`$u = ${T(arg)} \\Rightarrow u' = ${a}$`, `$f'(x) = ${T(co(c, `cos(${arg})`))}\\cdot ${par(a)} = ${T(d)}$`],
+                    fout: [`${co(c, `cos(${arg})`)} | Vergeet de afgeleide van de binnenste functie niet: $\\left(${T(arg)}\\right)' = ${a}$.`] };
+            }
+            const d = co(-c * a, `sin(${arg})`);
+            return { f: co(c, `cos(${arg})`), d, dom: [-2, 2], regel: "Kettingregel: $(\\cos u)' = -\\sin u\\cdot u'$",
+                s: [`$u = ${T(arg)} \\Rightarrow u' = ${a}$`, `$f'(x) = ${T(co(-c, `sin(${arg})`))}\\cdot ${par(a)} = ${T(d)}$`],
+                fout: [`${co(c * a, `sin(${arg})`)} | Let op: $(\\cos u)' = -\\sin u\\cdot u'$ (met minteken).`,
+                       `${co(-c, `sin(${arg})`)} | Vergeet de afgeleide van de binnenste functie niet: $\\left(${T(arg)}\\right)' = ${a}$.`] };
+        } },
+        { id: 'goniokwad', cat: 'gonio', niveau: 2, voor: [5, 8], maak() {
+            const soort = kies(['sin', 'cos', 'tan']);
+            if (soort === 'tan') {
+                const a = ri(1, 3), u = mon(a, 2), du = mon(2 * a, 1), r = +Math.sqrt(1.2 / a).toFixed(2);
+                const d = `${du}/cos(${u})^2`;
+                return { f: `tan(${u})`, d, dom: [-r, r], regel: "Kettingregel: $(\\tan u)' = \\frac{u'}{\\cos^2 u}$",
+                    s: [`$u = ${T(u)} \\Rightarrow u' = ${T(du)}$`, `$f'(x) = ${T(d)}$`],
+                    fout: [`1/cos(${u})^2 | Vergeet de afgeleide van de binnenste functie niet: $\\left(${T(u)}\\right)' = ${T(du)}$.`] };
+            }
+            const a = ri(2, 5), arg = `${a}x`, S = `sin(${arg})`, C = `cos(${arg})`;
+            if (soort === 'sin') {
+                const d = `${2 * a}${S}${C}`;
+                return { f: `${S}^2`, d, dom: [-2, 2], regel: "Kettingregel: $\\left(u^2\\right)' = 2u\\cdot u'$ met $u = \\sin(" + a + "x)$",
+                    s: [`$u = ${T(S)} \\Rightarrow u' = ${T(`${a}${C}`)}$`, `$f'(x) = 2${T(S)}\\cdot ${T(`${a}${C}`)} = ${T(d)}$`],
+                    fout: [`2${S} | Vergeet de afgeleide van de binnenste functie niet: $\\left(${T(S)}\\right)' = ${T(`${a}${C}`)}$.`,
+                           `2${S}${C} | Bij $${T(S)}$ vergeet je de afgeleide van $${a}x$.`] };
+            }
+            const d = `-${2 * a}${C}${S}`;
+            return { f: `${C}^2`, d, dom: [-2, 2], regel: "Kettingregel: $\\left(u^2\\right)' = 2u\\cdot u'$ met $u = \\cos(" + a + "x)$",
+                s: [`$u = ${T(C)} \\Rightarrow u' = ${T(`-${a}${S}`)}$`, `$f'(x) = 2${T(C)}\\cdot\\left(${T(`-${a}${S}`)}\\right) = ${T(d)}$`],
+                fout: [`2${C} | Vergeet de afgeleide van de binnenste functie niet: $\\left(${T(C)}\\right)' = ${T(`-${a}${S}`)}$.`,
+                       `-2${C}${S} | Bij $${T(C)}$ vergeet je de afgeleide van $${a}x$.`] };
+        } },
+        { id: 'prodexp', cat: 'explog', niveau: 2, voor: [5, 8], maak() {
+            const n = ri(1, 4), a = kies([1, 2, 3, -1, -2]), ex = co(a, 'x'), E = `e^(${ex})`;
+            const du = mon(n, n - 1), d = `(${du}${plus(co(a, xm(n)))})${E}`;
+            const term1 = n === 1 ? E : `${du} ${E}`;
+            return { f: `${xm(n)} ${E}`, d, dom: [-1, 1], regel: 'Productregel, met de kettingregel voor $e^{' + (a === 1 ? '' : a === -1 ? '-' : a) + 'x}$',
+                s: [`$u = ${T(xm(n))} \\Rightarrow u' = ${T(du)}$ en $v = ${T(E)} \\Rightarrow v' = ${T(co(a, E))}$`,
+                    `$f'(x) = ${T(term1 + plus(co(a, xm(n)) + ' ' + E))}$`,
+                    `$= ${T(d)}$`],
+                fout: [`${du}*${co(a, E)} | $(u\\cdot v)' \\neq u'\\cdot v'$. Gebruik de productregel.`] };
+        } },
+        { id: 'quotlin', cat: 'prodquot', niveau: 1, voor: [5, 8], maak() {
+            let a, b, c, k, num;
+            do { a = kies([1, 2, 3, -1, -2]); b = rnz(-6, 6); c = kies([1, 2, 3, -1]); k = rnz(-6, 6); num = a * k - b * c; } while (num === 0);
+            const U = lin(a, b), V = lin(c, k), x0 = -k / c, d = `${num}/(${V})^2`;
+            return { f: `(${U})/(${V})`, d, dom: [x0 + 0.4, x0 + 3], regel: "Quotiëntregel: $\\left(\\frac{u}{v}\\right)' = \\frac{u'v - uv'}{v^2}$",
+                s: [`$u = ${T(U)} \\Rightarrow u' = ${a}$ en $v = ${T(V)} \\Rightarrow v' = ${c}$`,
+                    `$f'(x) = \\frac{${par(a)}\\left(${T(V)}\\right) - \\left(${T(U)}\\right)\\cdot ${par(c)}}{\\left(${T(V)}\\right)^2} = ${T(d)}$`],
+                fout: [`${num}/(${V}) | Vergeet het kwadraat in de noemer niet: $\\left(\\frac{u}{v}\\right)' = \\frac{u'v-uv'}{v^2}$.`,
+                       `${-num}/(${V})^2 | In de teller van de quotiëntregel staat $u'v - uv'$: let op de volgorde.`,
+                       `${a}/${par(c)} | $\\left(\\frac{u}{v}\\right)' \\neq \\frac{u'}{v'}$. Gebruik de quotiëntregel.`] };
+        } },
+        { id: 'prodveelterm', cat: 'prodquot', niveau: 1, voor: [5, 8], maak() {
+            const a = kies([1, 2, 3, -1, -2]), b = rnz(-5, 5), c = kies([1, 2, 3, -1, -2]), k = rnz(-5, 5);
+            const U = lin(a, b), V = mon(c, 2) + plus(k), dV = mon(2 * c, 1);
+            const d = mon(3 * a * c, 2) + plus(mon(2 * b * c, 1)) + plus(a * k);
+            return { f: `(${U})(${V})`, d, dom: [-2, 2], regel: "Productregel: $(u\\cdot v)' = u'v + uv'$",
+                s: [`$u = ${T(U)} \\Rightarrow u' = ${a}$ en $v = ${T(V)} \\Rightarrow v' = ${T(dV)}$`,
+                    `$f'(x) = ${par(a)}\\left(${T(V)}\\right) + \\left(${T(U)}\\right)\\cdot ${T(dV)}$`,
+                    `Uitwerken: $f'(x) = ${T(d)}$`],
+                fout: [`${a}*${dV} | $(u\\cdot v)' \\neq u'\\cdot v'$. Gebruik de productregel.`] };
+        } },
+        { id: 'quotkwad', cat: 'prodquot', niveau: 2, voor: [5, 8], maak() {
+            const a = kies([1, 2, 3, -1, -2]), b = rnz(-5, 5), c = ri(1, 5);
+            const U = lin(a, b), V = `x^2 + ${c}`;
+            const num = mon(-a, 2) + plus(mon(-2 * b, 1)) + plus(a * c), d = `(${num})/(${V})^2`;
+            return { f: `(${U})/(${V})`, d, dom: [-2, 2], regel: "Quotiëntregel: $\\left(\\frac{u}{v}\\right)' = \\frac{u'v - uv'}{v^2}$",
+                s: [`$u = ${T(U)} \\Rightarrow u' = ${a}$ en $v = ${T(V)} \\Rightarrow v' = 2x$`,
+                    `$f'(x) = \\frac{${par(a)}\\left(${T(V)}\\right) - \\left(${T(U)}\\right)\\cdot 2x}{\\left(${T(V)}\\right)^2}$`,
+                    `Teller uitwerken: $f'(x) = ${T(d)}$`],
+                fout: [`(${num})/(${V}) | Vergeet het kwadraat in de noemer niet: $\\left(\\frac{u}{v}\\right)' = \\frac{u'v-uv'}{v^2}$.`,
+                       `${a}/(2x) | $\\left(\\frac{u}{v}\\right)' \\neq \\frac{u'}{v'}$. Gebruik de quotiëntregel.`] };
+        } },
+        { id: 'prodgonio', cat: 'gonio', niveau: 2, voor: [5, 8], maak() {
+            const n = ri(1, 3), a = ri(1, 4), fn = kies(['sin', 'cos']), arg = co(a, 'x');
+            const A = `${fn}(${arg})`;
+            const dA = fn === 'sin' ? co(a, `cos(${arg})`) : co(-a, `sin(${arg})`);
+            const eerste = n === 1 ? A : `${mon(n, n - 1)} ${A}`;
+            const tweede = fn === 'sin' ? `${co(a, xm(n))} cos(${arg})` : `${co(-a, xm(n))} sin(${arg})`;
+            const d = eerste + plus(tweede);
+            return { f: `${xm(n)} ${A}`, d, dom: [-2, 2], regel: "Productregel: $(u\\cdot v)' = u'v + uv'$",
+                s: [`$u = ${T(xm(n))} \\Rightarrow u' = ${T(mon(n, n - 1))}$ en $v = ${T(A)} \\Rightarrow v' = ${T(dA)}$`,
+                    `$f'(x) = ${T(d)}$`],
+                fout: [`${mon(n, n - 1)}*${dA} | $(u\\cdot v)' \\neq u'\\cdot v'$. Gebruik de productregel.`] };
+        } },
+        { id: 'expgrondtal', cat: 'explog', niveau: 2, voor: [5, 8], maak() {
+            const a = kies([2, 3, 5, 10]), b = kies([1, 2, 3, -1, -2]), c = kies([0, rnz(-3, 3)]);
+            const ex = lin(b, c), P = `${a}^(${ex})`, d = `${co(b, `ln(${a})`)} ${P}`;
+            return { f: P, d, dom: [-1, 1.5], regel: "Kettingregel: $\\left(a^u\\right)' = a^u\\ln a\\cdot u'$",
+                s: [`$u = ${T(ex)} \\Rightarrow u' = ${b}$`, `$f'(x) = ${T(P)}\\cdot\\ln ${a}\\cdot ${par(b)} = ${T(d)}$`],
+                fout: [`${b}*${P} | Vergeet de factor $\\ln ${a}$ niet: $(a^u)' = a^u\\ln a\\cdot u'$.`,
+                       `(${ex})*${a}^(${ex} - 1) | Dit is geen macht van x: de x staat in de exponent. Gebruik $(a^u)' = a^u\\ln a\\cdot u'$.`] };
+        } },
+        { id: 'loggrondtal', cat: 'explog', niveau: 2, voor: [5, 8], maak() {
+            const a = kies([2, 3, 5, 10]), b = ri(1, 3), c = ri(1, 6);
+            const u = mon(b, 2) + plus(c), du = mon(2 * b, 1);
+            const L = a === 10 ? `log(${u})` : `log_${a}(${u})`;
+            const d = `${du}/((${u})ln(${a}))`;
+            return { f: L, d, dom: [-2, 2], regel: "Kettingregel: $\\left(\\log_a u\\right)' = \\frac{u'}{u\\ln a}$" + (a === 10 ? ' (log heeft grondtal 10)' : ''),
+                s: [`$u = ${T(u)} \\Rightarrow u' = ${T(du)}$`, `$f'(x) = \\frac{u'}{u\\ln ${a}} = ${T(d)}$`],
+                fout: [`${du}/(${u}) | Vergeet de factor $\\frac{1}{\\ln ${a}}$ niet: $(\\log_a u)' = \\frac{u'}{u\\ln a}$.`] };
+        } },
+        { id: 'cyclobasis', cat: 'cyclo', niveau: 1, voor: [8], maak() {
+            const soort = kies(['sin', 'cos', 'tan', 'cot']);
+            if (soort === 'sin' || soort === 'cos') {
+                const a = ri(2, 5), r = +(0.8 / a).toFixed(3), teken = soort === 'cos' ? '-' : '';
+                const N = soort === 'sin' ? 'Bgsin' : 'Bgcos', d = `${teken}${a}/sqrt(1 - ${a * a}x^2)`;
+                return { f: `${N}(${a}x)`, d, dom: [-r, r],
+                    regel: `Kettingregel: $\\left(\\operatorname{${N}} u\\right)' = \\frac{${teken}u'}{\\sqrt{1-u^2}}$`,
+                    s: [`$u = ${a}x \\Rightarrow u' = ${a}$ en $u^2 = ${a * a}x^2$`, `$f'(x) = ${T(d)}$`],
+                    fout: [`${teken}1/sqrt(1 - ${a * a}x^2) | Vergeet de afgeleide van de binnenste functie niet: $(${a}x)' = ${a}$.`,
+                           `${teken}${a}/sqrt(1 - ${a}x^2) | Let op: $u^2 = (${a}x)^2 = ${a * a}x^2$.`] };
+            }
+            if (soort === 'tan') {
+                const a = kies([2, 3, -2]), b = rnz(-3, 3), u = lin(a, b), d = `${a}/(1 + (${u})^2)`;
+                return { f: `Bgtan(${u})`, d, dom: [-2, 2], regel: "Kettingregel: $\\left(\\operatorname{Bgtan} u\\right)' = \\frac{u'}{1+u^2}$",
+                    s: [`$u = ${T(u)} \\Rightarrow u' = ${a}$`, `$f'(x) = ${T(d)}$`],
+                    fout: [`1/(1 + (${u})^2) | Vergeet de afgeleide van de binnenste functie niet: $\\left(${T(u)}\\right)' = ${a}$.`] };
+            }
+            const a = ri(2, 5), d = `-${a}/(1 + ${a * a}x^2)`;
+            return { f: `Bgcot(${a}x)`, d, dom: [-2, 2], regel: "Kettingregel: $\\left(\\operatorname{Bgcot} u\\right)' = \\frac{-u'}{1+u^2}$",
+                s: [`$u = ${a}x \\Rightarrow u' = ${a}$ en $u^2 = ${a * a}x^2$`, `$f'(x) = ${T(d)}$`],
+                fout: [`${a}/(1 + ${a * a}x^2) | Let op: $\\left(\\operatorname{Bgcot} u\\right)' = \\frac{-u'}{1+u^2}$ (met minteken).`] };
+        } },
+        { id: 'cycloprod', cat: 'cyclo', niveau: 2, voor: [8], maak() {
+            const soort = kies(['tan', 'sin', 'macht']);
+            if (soort === 'macht') {
+                const n = ri(2, 4), pw = n - 1 === 1 ? '' : `^${n - 1}`, d = `${n}Bgtan(x)${pw}/(1 + x^2)`;
+                return { f: `Bgtan(x)^${n}`, d, dom: [-2, 2], regel: "Kettingregel: $\\left(u^n\\right)' = n\\,u^{n-1}\\cdot u'$ met $u = \\operatorname{Bgtan} x$",
+                    s: [`$u = \\operatorname{Bgtan} x \\Rightarrow u' = \\frac{1}{1+x^2}$`, `$f'(x) = ${T(d)}$`],
+                    fout: [`${n}Bgtan(x)${pw} | Vergeet de afgeleide van de binnenste functie niet: $(\\operatorname{Bgtan} x)' = \\frac{1}{1+x^2}$.`] };
+            }
+            const n = ri(1, 3), N = soort === 'tan' ? 'Bgtan' : 'Bgsin';
+            const dN = soort === 'tan' ? '1/(1 + x^2)' : '1/sqrt(1 - x^2)';
+            const eerste = n === 1 ? `${N}(x)` : `${mon(n, n - 1)} ${N}(x)`;
+            const d = eerste + ' + ' + (soort === 'tan' ? `${xm(n)}/(1 + x^2)` : `${xm(n)}/sqrt(1 - x^2)`);
+            return { f: `${xm(n)} ${N}(x)`, d, dom: soort === 'tan' ? [-2, 2] : [-0.9, 0.9], regel: "Productregel: $(u\\cdot v)' = u'v + uv'$",
+                s: [`$u = ${T(xm(n))} \\Rightarrow u' = ${T(mon(n, n - 1))}$ en $v = ${T(N + '(x)')} \\Rightarrow v' = ${T(dN)}$`, `$f'(x) = ${T(d)}$`],
+                fout: [`${mon(n, n - 1)}*${dN} | $(u\\cdot v)' \\neq u'\\cdot v'$. Gebruik de productregel.`] };
+        } }
+    ];
+    return { lijst };
+})();
+</script>
+
+<script>
+// =====================================================================
+// APP: menu, oefenen, toets en rapport
+// =====================================================================
+const Afgeleiden = (() => {
+    'use strict';
+    const W = Wiskunde;
+
+    // ---------- hulpfuncties ----------
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const kies = arr => arr[Math.floor(Math.random() * arr.length)];
+    function schud(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+        return a;
+    }
+    function wiskunde(tex, groot = false) {
+        if (window.katex) {
+            try { return katex.renderToString(tex, { throwOnError: false, displayMode: groot, strict: 'ignore' }); }
+            catch (e) { /* val terug op gewone tekst */ }
+        }
+        return '<code>' + esc(tex) + '</code>';
+    }
+    // Tekst met $...$ (LaTeX) en [[...]] (invoer-notatie) omzetten naar HTML.
+    function rijkeTekst(regel) {
+        return W.vulIn(regel).split('$').map((d, i) => i % 2 ? wiskunde('\\displaystyle ' + d) : esc(d)).join('');
+    }
+    const isAanraak = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+
+    // ---------- hoofdstukken en niveaus ----------
+    const HOOFDSTUKKEN = [
+        { id: 'basis', naam: 'Rekenregels, veeltermen en machten', uitleg: 'som, veelvoud, xⁿ, wortels als machten' },
+        { id: 'prodquot', naam: 'Product- en quotiëntregel', uitleg: 'veeltermen en rationale functies' },
+        { id: 'ketting', naam: 'Kettingregel', uitleg: 'machten en wortels van functies' },
+        { id: 'gonio', naam: 'Goniometrische functies', uitleg: 'sin, cos, tan en cot' },
+        { id: 'explog', naam: 'Exponentiële en logaritmische functies', uitleg: 'eˣ, aˣ, ln, log' },
+        { id: 'cyclo', naam: 'Cyclometrische functies', uitleg: 'Bgsin, Bgcos, Bgtan, Bgcot', enkel8: true },
+        { id: 'mix', naam: 'Gemengde uitdagingen', uitleg: 'alles door elkaar, vaak in meerdere stappen' }
+    ];
+    const NIVEAUS = { 1: 'Basis', 2: 'Gemiddeld', 3: 'Uitdaging' };
+    // Verdeling bij "Gemengd": 8 uur krijgt vooral moeilijke, maar ook af en toe makkelijke oefeningen.
+    const MENGING = { 5: { 1: 0.35, 2: 0.45, 3: 0.20 }, 8: { 1: 0.15, 2: 0.40, 3: 0.45 } };
+    const KANS_GENERATOR = 0.3;
+    const hoofdstukNaam = id => (HOOFDSTUKKEN.find(h => h.id === id) || { naam: id }).naam;
+    const sterren = n => '★'.repeat(n) + ' ' + NIVEAUS[n];
+
+    // ---------- oefeningenbank inlezen en controleren ----------
+    function leesBank() {
+        const ruw = [];
+        document.querySelectorAll('script.oefendata').forEach(blok => {
+            const std = { cat: 'basis', niveau: '1', voor: '5 8' };
+            let huidig = null;
+            blok.textContent.split(/\r?\n/).forEach(r => {
+                const regel = r.trim();
+                if (!regel || regel.startsWith('//')) return;
+                if (regel.startsWith('@')) {
+                    const m = regel.match(/^@(\w+)\s+(.+)$/);
+                    if (m) std[m[1]] = m[2].trim();
+                    return;
+                }
+                const m = regel.match(/^(\w+)\s*:\s*(.*)$/);
+                if (!m) { console.warn('Onbekende regel in de oefeningenbank:', regel); return; }
+                const [, k, v] = m;
+                if (k === 'f') { huidig = { cat: std.cat, niveau: std.niveau, voor: std.voor, f: v, s: [], fout: [] }; ruw.push(huidig); return; }
+                if (!huidig) return;
+                if (k === 's') huidig.s.push(v);
+                else if (k === 'fout') huidig.fout.push(v);
+                else huidig[k] = v;
+            });
+        });
+        return ruw;
+    }
+
+    function bouwOefening(r, id, gen) {
+        const voor = Array.isArray(r.voor) ? r.voor : String(r.voor).split(/[\s,]+/).filter(Boolean).map(Number);
+        const dom = Array.isArray(r.dom) ? r.dom : String(r.dom || '0.3 2.5').trim().split(/\s+/).map(Number);
+        const o = { id, gen: !!gen, cat: r.cat, niveau: +r.niveau, voor, f: r.f, d: r.d, dom,
+                    regel: r.regel || '', stappen: r.s || [], fouten: [], problemen: [], waarschuwingen: [] };
+        try { o.fBoom = W.ontleed(r.f); } catch (e) { o.problemen.push('f onleesbaar: ' + e.message); }
+        try { o.dBoom = W.ontleed(r.d); } catch (e) { o.problemen.push('d onleesbaar: ' + e.message); }
+        for (const fo of r.fout || []) {
+            const i = fo.indexOf('|');
+            if (i < 0) { o.waarschuwingen.push('fout zonder |: ' + fo); continue; }
+            try { const tekst = fo.slice(i + 1).trim(); o.fouten.push({ boom: W.ontleed(fo.slice(0, i)), tekst, bron: fo.slice(0, i).trim(), code: W.codeVoorTekst(tekst) }); }
+            catch (e) { o.waarschuwingen.push('fout onleesbaar: ' + fo); }
+        }
+        if (dom.length !== 2 || dom.some(v => !Number.isFinite(v)) || dom[0] >= dom[1]) o.problemen.push('ongeldig domein: ' + r.dom);
+        if (o.fBoom && o.dBoom && !o.problemen.length) {
+            const c = W.controleerAfgeleide(o.fBoom, o.dBoom, dom);
+            if (c.problemen.length) o.problemen.push('oplossing klopt niet (' + c.problemen[0] + ')');
+            if (c.ok < 6) o.problemen.push('te weinig geldige testpunten (' + c.ok + ')');
+            o.fouten = o.fouten.filter(fo => {
+                const gelijk = W.vergelijk(fo.boom, o.dBoom, dom).gelijk;
+                if (gelijk) o.waarschuwingen.push('"fout" is eigenlijk juist: ' + fo.bron);
+                return !gelijk;
+            });
+            if (voor.includes(5) && (W.bevatCyclo(o.fBoom) || W.bevatCyclo(o.dBoom))) o.problemen.push('cyclometrische functie in een oefening voor 5 uur');
+            o.fTex = W.tex(o.fBoom);
+            o.dTex = W.tex(o.dBoom);
+        }
+        if (!HOOFDSTUKKEN.some(h => h.id === o.cat)) o.problemen.push('onbekend hoofdstuk: ' + o.cat);
+        if (![1, 2, 3].includes(o.niveau)) o.problemen.push('onbekend niveau: ' + r.niveau);
+        if (!voor.length || voor.some(v => v !== 5 && v !== 8)) o.problemen.push('onbekende richting: ' + r.voor);
+        return o;
+    }
+
+    const BANK = [], AFGEKEURD = [];
+    function laadBank() {
+        BANK.length = 0; AFGEKEURD.length = 0;
+        leesBank().forEach((r, i) => {
+            const o = bouwOefening(r, 'h' + (i + 1), false);
+            (o.problemen.length ? AFGEKEURD : BANK).push(o);
+            if (o.waarschuwingen.length) console.warn('Waarschuwing bij', o.f, o.waarschuwingen);
+        });
+        if (AFGEKEURD.length) console.warn('Afgekeurde oefeningen (worden niet gebruikt):', AFGEKEURD.map(o => o.f + ' → ' + o.problemen.join('; ')));
+    }
+
+    let genTeller = 0;
+    function maakGegenereerd(g) {
+        for (let poging = 0; poging < 8; poging++) {
+            let r;
+            try { r = g.maak(); } catch (e) { console.warn('Generator', g.id, e); continue; }
+            const o = bouwOefening({ ...r, cat: g.cat, niveau: g.niveau, voor: g.voor }, 'g' + (++genTeller) + '-' + g.id, true);
+            if (!o.problemen.length) return o;
+            console.warn('Generator', g.id, 'maakte een ongeldige oefening:', r.f, o.problemen);
+        }
+        return null;
+    }
+
+    // ---------- instellingen ----------
+    const STANDAARD = { richting: 8, cats: HOOFDSTUKKEN.map(h => h.id), niveau: 'mix', toetsN: 10, naam: '', eigenKlavier: false };
+    const S = Object.assign({}, STANDAARD);
+    try {
+        const b = JSON.parse(localStorage.getItem('afgeleiden.v2') || 'null');
+        if (b && typeof b === 'object') {
+            if (b.richting === 5 || b.richting === 8) S.richting = b.richting;
+            if (Array.isArray(b.cats)) S.cats = b.cats.filter(c => HOOFDSTUKKEN.some(h => h.id === c));
+            if (['mix', '1', '2', '3'].includes(b.niveau)) S.niveau = b.niveau;
+            if ([5, 10, 15, 20].includes(b.toetsN)) S.toetsN = b.toetsN;
+            if (typeof b.naam === 'string') S.naam = b.naam.slice(0, 40);
+            S.eigenKlavier = !!b.eigenKlavier;
+        }
+    } catch (e) { /* geen opslag beschikbaar */ }
+    function bewaar() { try { localStorage.setItem('afgeleiden.v2', JSON.stringify(S)); } catch (e) { /* geen opslag */ } }
+
+    // ---------- selectie ----------
+    const actieveCats = () => S.cats.filter(c => HOOFDSTUKKEN.some(h => h.id === c && !(h.enkel8 && S.richting === 5)));
+    // Veiligheidsnet: in 5 uur komt nooit een cyclometrische functie voor.
+    // Welke soorten functies komen in een oefening (of haar afgeleide) voor? Zo krijgt een leerling die enkel
+    // "exponentiële en logaritmische functies" aanvinkt geen oefening met sin of cos.
+    function nodigeHoofdstukken(o) {
+        if (o._nodig) return o._nodig;
+        const heeft = (n, test) => !!n && typeof n === 'object' && (test(n) || heeft(n.a, test) || heeft(n.b, test));
+        const metX = n => heeft(n, k => k.t === 'x');
+        const gonio = n => n.t === 'fn' && ['sin', 'cos', 'tan', 'cot'].includes(n.v);
+        const explog = n => (n.t === 'fn' && ['ln', 'log', 'exp'].includes(n.v)) || (n.t === 'const' && n.v === 'e') || (n.t === 'pow' && metX(n.b));
+        const cyclo = n => n.t === 'fn' && W.FUNCTIES[n.v].cyclo;
+        const nodig = [];
+        [['gonio', gonio], ['explog', explog], ['cyclo', cyclo]].forEach(([cat, test]) => {
+            if (cat !== o.cat && (heeft(o.fBoom, test) || heeft(o.dBoom, test))) nodig.push(cat);
+        });
+        return (o._nodig = nodig);
+    }
+    // De gemengde uitdagingen volgen de andere aangevinkte hoofdstukken; staat "gemengd" alleen aangevinkt, dan mag alles.
+    function hoofdstukkenOk(o) {
+        const act = actieveCats();
+        if (o.cat === 'mix' && act.every(c => c === 'mix')) return true;
+        return nodigeHoofdstukken(o).every(c => act.includes(c));
+    }
+    const magGebruiken = o => o.voor.includes(S.richting) && !(S.richting === 5 && (W.bevatCyclo(o.fBoom) || W.bevatCyclo(o.dBoom))) && hoofdstukkenOk(o);
+    const vaste = (niveau, cats = actieveCats()) => BANK.filter(o => magGebruiken(o) && cats.includes(o.cat) && (niveau == null || o.niveau === niveau));
+    const gens = (niveau, cats = actieveCats()) => Generatoren.lijst.filter(g => g.voor.includes(S.richting) && cats.includes(g.cat) && (niveau == null || g.niveau === niveau));
+    function niveausBeschikbaar() {
+        const lv = S.niveau === 'mix' ? [1, 2, 3] : [+S.niveau];
+        return lv.filter(l => vaste(l).length || gens(l).length);
+    }
+    function kiesNiveau(lv) {
+        if (lv.length === 1) return lv[0];
+        const w = MENGING[S.richting];
+        let r = Math.random() * lv.reduce((s, l) => s + w[l], 0);
+        for (const l of lv) { r -= w[l]; if (r <= 0) return l; }
+        return lv[lv.length - 1];
+    }
+    function maakVoor(o) {
+        if (!o) return null;
+        if (S.richting === 5 && (W.bevatCyclo(o.fBoom) || W.bevatCyclo(o.dBoom))) return null;
+        if (!hoofdstukkenOk(o)) return null;
+        return o;
+    }
+
+    // ---------- gedeelde stukken ----------
+    function typHulpHTML() {
+        const voorbeelden = ['3x^2 - 5x + 1', '2x cos(x^2)', 'e^(2x)', 'sqrt(x^2+1)', 'ln(x^2+1)', 'log_2(x)', 'sin(x)^2', 'sin^2(x)', '1/(2x)', '1/2x', '-x^2'];
+        if (S.richting === 8) voorbeelden.push('Bgsin(2x)', 'Bgtan(x)^2');
+        const rijen = voorbeelden.map(v => `<tr><td><code>${esc(v)}</code></td><td>${wiskunde(W.texVan(v))}</td></tr>`).join('');
+        return `<details class="uitleg geen-print"><summary>❓ Hoe typ ik mijn antwoord?</summary><div class="inhoud">
+            <p>Typ met het schermtoetsenbord of met je eigen toetsenbord. Onder het invoervak zie je meteen hoe de app je antwoord leest: kijk dat altijd even na.</p>
+            <table class="typtabel"><tr><td class="grijs klein">Je typt</td><td class="grijs klein">De app leest</td></tr>${rijen}</table>
+            <p>Een maalteken mag je weglaten: <code>2x</code>, <code>x sin(x)</code> en <code>(x+1)(x-1)</code> werken. Zet haakjes rond tellers en noemers: <code>1/(2x)</code> is iets anders dan <code>1/2x</code>.
+            Je antwoord hoeft niet vereenvoudigd te zijn: elke juiste vorm wordt goedgekeurd. Je mag ook een komma gebruiken (<code>0,5</code>).</p>
+            </div></details>`;
+    }
+
+    function opgaveHTML(o) {
+        return `<div class="opgave">
+            <div class="opgave-labels"><span class="label">${esc(hoofdstukNaam(o.cat))}</span><span class="label n${o.niveau}">${sterren(o.niveau)}</span>${o.gen ? '<span class="label">nieuw gegenereerd</span>' : ''}</div>
+            <div class="opgave-vraag">Bereken de afgeleide van</div>
+            <div class="formule-groot">${wiskunde('f(x) = ' + o.fTex, true)}</div>
+        </div>`;
+    }
+
+    function klavierHTML() {
+        const k = (label, ins, cls = '', aria = label) => `<button type="button" class="toets-k ${cls}" data-ins="${esc(ins)}" aria-label="${esc(aria)}">${label}</button>`;
+        const a = (label, actie, cls, aria) => `<button type="button" class="toets-k ${cls}" data-k="${actie}" aria-label="${aria}">${label}</button>`;
+        const rijen = [
+            [k('7', '7'), k('8', '8'), k('9', '9'), k('+', '+'), k('−', '-', '', 'min'), k('x', 'x'), k('(', '('), k(')', ')')],
+            [k('4', '4'), k('5', '5'), k('6', '6'), k('·', '*', '', 'maal'), k('/', '/', '', 'gedeeld door'), k('^', '^', '', 'tot de macht'), k('x²', '^2', '', 'kwadraat'), k('eˣ', 'e^(', 'fn', 'e tot de macht')],
+            [k('1', '1'), k('2', '2'), k('3', '3'), k('√', 'sqrt(', 'fn', 'vierkantswortel'), k('ln', 'ln(', 'fn'), k('sin', 'sin(', 'fn'), k('cos', 'cos(', 'fn'), k('tan', 'tan(', 'fn')],
+            [k('0', '0'), k(',', ',', '', 'komma'), k('π', 'pi', '', 'pi'), a('←', 'links', 'nav', 'cursor naar links'), a('→', 'rechts', 'nav', 'cursor naar rechts'), a('⌫', 'wis', 'wis', 'wis het teken voor de cursor'), a('C', 'leeg', 'wis', 'alles wissen'), k('log', 'log(', 'fn')]
+        ];
+        let html = rijen.map(r => `<div class="klavier-rij">${r.join('')}</div>`).join('');
+        if (S.richting === 8) html += `<div class="klavier-rij bg">${['Bgsin', 'Bgcos', 'Bgtan', 'Bgcot'].map(n => k(n, n + '(', 'fn bgk')).join('')}</div>`;
+        const wissel = isAanraak ? `<button type="button" class="linkknop" data-actie="klavier-wissel">${S.eigenKlavier ? 'Schermtoetsenbord gebruiken' : '⌨ Eigen toetsenbord gebruiken'}</button>` : '';
+        return `<div class="klavier geen-print" id="klavier">${html}<div class="klavier-voet"><span>Tip: met Enter controleer je je antwoord.</span>${wissel}</div></div>`;
+    }
+
+    function invoerHTML(uit = false) {
+        const im = isAanraak && !S.eigenKlavier ? 'inputmode="none"' : '';
+        return `<div class="invoer-rij"><label for="antwoord">f′(x) =</label>
+            <input id="antwoord" class="invoer" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="typ hier de afgeleide" ${im} ${uit ? 'disabled' : ''}></div>
+            <div class="voorbeeld" id="voorbeeld" aria-live="polite"></div>
+            ${uit ? '' : klavierHTML()}`;
+    }
+
+    function uitwerkingHTML(o, aantal = Infinity) {
+        let html = '', n = 0;
+        if (o.regel && n < aantal) { html += `<p class="regel">💡 ${rijkeTekst(o.regel)}</p>`; n++; }
+        const stappen = [];
+        for (const s of o.stappen) { if (n >= aantal) break; stappen.push(`<li>${rijkeTekst(s)}</li>`); n++; }
+        if (n < aantal) { stappen.push(`<li class="eind">Eindoplossing: ${wiskunde("\\displaystyle f'(x) = " + o.dTex)}</li>`); n++; }
+        if (stappen.length) html += `<ol class="stappen">${stappen.join('')}</ol>`;
+        return html;
+    }
+    const aantalHintDelen = o => (o.regel ? 1 : 0) + o.stappen.length + 1;
+    const uitwerkingKnop = (o, open = false) => `<details class="uitwerking-details"${open ? ' open' : ''}><summary>📖 Bekijk de uitwerking stap voor stap</summary><div class="hulp">${uitwerkingHTML(o)}</div></details>`;
+
+    // ---------- feedback van de leerkracht ----------
+    const LOF = ['Goed gedaan!', 'Prima!', 'Knap gewerkt!', 'Helemaal juist!', 'Mooi zo!'];
+    const soortVan = c => W.FOUTSOORTEN[c] || W.FOUTSOORTEN.onbekend;
+    // r = resultaat van Wiskunde.beoordeel (of { status: 'fout', code: 'overgeslagen' })
+    // opties: metJij (antwoord van de leerling tonen), metSleutel (juiste antwoord tonen), slot (extra zin op het einde)
+    function leerkrachtHTML(r, o, opties = {}) {
+        const { metJij = true, metSleutel = false, slot = '' } = opties;
+        if (r.status === 'juist') {
+            const zin = r.onvereenvoudigd ? 'Je antwoord is juist, maar je kan het nog eenvoudiger schrijven. Vergelijk met de oplossing uit de sleutel.' : 'Je antwoord is juist.';
+            return `<div class="leerkracht goed"><div class="lk-kop">✍ ${kies(LOF)}</div><p>${zin}</p>
+                ${metSleutel ? `<div class="lk-rij"><span class="lk-wie">Sleutel:</span> <span class="lk-juist">${wiskunde("f'(x) = " + o.dTex, true)}</span></div>` : ''}${slot ? `<p>${slot}</p>` : ''}</div>`;
+        }
+        const codes = [...new Set(r.codes && r.codes.length ? r.codes : [r.code || 'onbekend'])];
+        let uitleg;
+        if (r.delen && r.delen.length > 1) uitleg = '<p>Je maakte twee fouten:</p><ol class="lk-lijst">' + r.delen.map(d => `<li>${rijkeTekst(d)}</li>`).join('') + '</ol>';
+        else if (r.boodschap) uitleg = `<p>${rijkeTekst(r.boodschap)}</p>`;
+        else if (r.code === 'overgeslagen') uitleg = '<p>Je hebt deze vraag overgeslagen. Bekijk de uitwerking en probeer de oefening later nog eens in de oefenzone.</p>';
+        else uitleg = `<p>Ik zie niet meteen één duidelijke fout. ${metSleutel ? 'Vergelijk je berekening stap voor stap met de uitwerking.' : 'Vraag een stap van de uitwerking en vergelijk die met je eigen berekening.'}</p>`;
+        const jij = metJij && r.boom ? `<div class="lk-rij"><span class="lk-wie">Jij schreef:</span> <span class="lk-omcirkeld">${wiskunde("f'(x) = " + W.tex(r.boom), true)}</span></div>` : '';
+        const juist = metSleutel ? `<div class="lk-rij"><span class="lk-wie">Juist is:</span> <span class="lk-juist">${wiskunde("f'(x) = " + o.dTex, true)}</span></div>` : '';
+        return `<div class="leerkracht"><div class="lk-kop">✍ Feedback van je leerkracht</div>
+            <div class="lk-fout">Gemaakte fout: <b>${esc(codes.map(c => soortVan(c).label).join(' + '))}</b></div>
+            ${uitleg}${jij}${juist}
+            <p class="lk-tip">💡 Tip: ${esc(soortVan(codes[0]).tip)}</p>${slot ? `<p>${slot}</p>` : ''}</div>`;
+    }
+    function zetFeedback(html) {
+        const fb = document.getElementById('feedback');
+        if (!fb) return;
+        fb.innerHTML = html;
+        if (html && fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
+    }
+
+    // ---------- menu ----------
+    function menuHTML() {
+        const cats = HOOFDSTUKKEN.filter(h => !(h.enkel8 && S.richting === 5));
+        const act = actieveCats();
+        const lv = niveausBeschikbaar();
+        const kan = act.length > 0 && lv.length > 0;
+        const w = MENGING[S.richting];
+        const mengTekst = `${Math.round(w[1] * 100)}% ★ · ${Math.round(w[2] * 100)}% ★★ · ${Math.round(w[3] * 100)}% ★★★`;
+        const niveauKeuzes = [['mix', 'Gemengd', mengTekst], ['1', 'Basis', '★'], ['2', 'Gemiddeld', '★★'], ['3', 'Uitdaging', '★★★']];
+        const aantal = vaste(S.niveau === 'mix' ? null : +S.niveau).length;
+        const metGen = gens(S.niveau === 'mix' ? null : +S.niveau).length > 0;
+        let melding = '';
+        if (!act.length) melding = 'Duid minstens één hoofdstuk aan.';
+        else if (!lv.length) melding = 'In de gekozen hoofdstukken zijn er geen oefeningen van dit niveau. Kies een ander niveau of meer hoofdstukken.';
+        return `<div class="kaart">
+          <div class="kop"><h1>6do afgeleiden en de kettingregel</h1><p>3de graad ASO · kies je richting, de hoofdstukken en het niveau</p></div>
+          <div class="kaart-binnen">
+            <div class="menu-blok"><h2>1. Richting</h2>
+              <div class="keuze-rij">
+                <button class="keuze ${S.richting === 5 ? 'aan' : ''}" data-richting="5">5 uur wiskunde<small>zonder cyclometrische functies</small></button>
+                <button class="keuze ${S.richting === 8 ? 'aan' : ''}" data-richting="8">8 uur wiskunde<small>ook cyclometrische functies</small></button>
+              </div>
+            </div>
+            <div class="menu-blok"><h2>2. Hoofdstukken</h2>
+              <div class="hoofdstuk-lijst">
+                ${cats.map(h => {
+                    const aan = act.includes(h.id);
+                    const n = vaste(null, [h.id]).length;
+                    return `<label class="hoofdstuk ${aan ? 'aan' : ''}"><input type="checkbox" data-cat="${h.id}" ${aan ? 'checked' : ''}>
+                        <div><b>${esc(h.naam)}</b><span>${esc(h.uitleg)} · ${n} oefeningen${gens(null, [h.id]).length ? ' + willekeurige' : ''}</span></div></label>`;
+                }).join('')}
+              </div>
+              <div class="snel"><button class="linkknop" data-alle="1">Alles aanduiden</button><button class="linkknop" data-alle="0">Niets aanduiden</button></div>
+            </div>
+            <div class="menu-blok"><h2>3. Niveau</h2>
+              <div class="keuze-rij">
+                ${niveauKeuzes.map(([id, naam, sub]) => `<button class="keuze ${S.niveau === id ? 'aan' : ''}" data-niveau="${id}">${naam}<small>${sub}</small></button>`).join('')}
+              </div>
+            </div>
+            ${melding ? `<div class="melding">${melding}</div>` : ''}
+            <div class="start-grid">
+              <div class="start-blok oefen"><h2>📘 Oefenen</h2>
+                <p>Zoveel oefeningen als je wil. Elke oefening kan je stap voor stap laten oplossen, en bij een fout krijg je feedback van je leerkracht.</p>
+                <button class="knop knop-groen knop-groot" id="start-oefen" ${kan ? '' : 'disabled'}>Start met oefenen</button>
+              </div>
+              <div class="start-blok toets"><h2>📝 Toets</h2>
+                <p>Zonder hints. Na elke vraag zie je of je juist was, op het einde krijg je een rapport dat je als PDF kan downloaden.</p>
+                <div class="veld-rij">
+                  <label class="veld">Naam (niet verplicht)<input id="naam" maxlength="40" value="${esc(S.naam)}" autocomplete="off"></label>
+                  <label class="veld">Aantal vragen<select id="toetsN">${[5, 10, 15, 20].map(n => `<option value="${n}" ${S.toetsN === n ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+                </div>
+                <button class="knop knop-rood knop-groot" id="start-toets" ${kan ? '' : 'disabled'}>Start de toets</button>
+              </div>
+            </div>
+            <p class="klein grijs" style="text-align:center;margin:14px 0 0">${aantal} uitgewerkte oefeningen in je keuze${metGen ? ', aangevuld met oefeningen die telkens nieuw gemaakt worden' : ''}.</p>
+            ${typHulpHTML()}
+          </div>
+        </div>`;
+    }
+
+    // ---------- toestand ----------
+    let scherm = 'menu';
+    let OEF = null;    // lopende oefensessie
+    let TOETS = null;  // lopende toets
+
+    // ---------- live weergave en schermtoetsenbord ----------
+    function opInvoer() {
+        const inp = document.getElementById('antwoord'), vb = document.getElementById('voorbeeld');
+        if (!inp || !vb) return;
+        const v = inp.value;
+        if (!v.trim()) { vb.innerHTML = '<span class="grijs klein">Hier zie je hoe de app je antwoord leest.</span>'; return; }
+        const r = W.leesVoorbeeld(v);
+        if (r.boom) vb.innerHTML = wiskunde("f'(x) = " + W.tex(r.boom), true)
+            + (r.aangevuld ? '<span class="grijs klein">(er ontbreekt nog een sluitend haakje)</span>' : r.bezig ? '<span class="grijs klein">(je antwoord is nog niet af)</span>' : '');
+        else vb.innerHTML = `<span class="${r.onvolledig ? 'grijs klein' : 'lees-fout'}">${esc(r.fout)}</span>`;
+    }
+    const magFocussen = () => !isAanraak || !S.eigenKlavier;
+    function klavierActie(knop) {
+        const inp = document.getElementById('antwoord');
+        if (!inp || inp.disabled) return;
+        const v = inp.value;
+        let s = inp.selectionStart == null ? v.length : inp.selectionStart;
+        let e = inp.selectionEnd == null ? s : inp.selectionEnd;
+        if (knop.dataset.ins != null) {
+            const t = knop.dataset.ins;
+            inp.value = v.slice(0, s) + t + v.slice(e);
+            s = e = s + t.length;
+        } else {
+            switch (knop.dataset.k) {
+                case 'links': s = e = Math.max(0, s === e ? s - 1 : s); break;
+                case 'rechts': s = e = Math.min(v.length, s === e ? e + 1 : e); break;
+                case 'leeg': inp.value = ''; s = e = 0; break;
+                case 'wis':
+                    if (s !== e) { inp.value = v.slice(0, s) + v.slice(e); e = s; }
+                    else if (s > 0) {
+                        const m = v.slice(0, s).match(/(bgsin\(|bgcos\(|bgtan\(|bgcot\(|sqrt\(|sin\(|cos\(|tan\(|log\(|ln\(|e\^\(|pi)$/i);
+                        const n = m ? m[0].length : 1;
+                        inp.value = v.slice(0, s - n) + v.slice(s);
+                        s = e = s - n;
+                    }
+                    break;
+            }
+        }
+        if (magFocussen()) inp.focus({ preventScroll: true });
+        try { inp.setSelectionRange(s, e); } catch (err) { /* sommige browsers */ }
+        inp.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    function wisselKlavier() {
+        S.eigenKlavier = !S.eigenKlavier; bewaar();
+        const inp = document.getElementById('antwoord');
+        if (inp) {
+            if (S.eigenKlavier) inp.removeAttribute('inputmode'); else inp.setAttribute('inputmode', 'none');
+            inp.blur(); inp.focus();
+        }
+        const knop = document.querySelector('[data-actie="klavier-wissel"]');
+        if (knop) knop.textContent = S.eigenKlavier ? 'Schermtoetsenbord gebruiken' : '⌨ Eigen toetsenbord gebruiken';
+    }
+    function toonFeedback(soort, html) {
+        const fb = document.getElementById('feedback');
+        if (!fb) return;
+        const ico = { juist: '✔', fout: '✘', info: 'ℹ' }[soort];
+        fb.innerHTML = html ? `<div class="feedback ${soort}"><div class="ico">${ico}</div><div>${html}</div></div>` : '';
+        if (html && fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
+    }
+
+    // ---------- oefenen ----------
+    function startOefenen() {
+        OEF = { stapels: {}, huidig: null, juist: 0, reeks: 0, status: null };
+        volgendeOefening(true);
+    }
+    function trekOefening() {
+        const lv = niveausBeschikbaar();
+        for (let poging = 0; poging < 12; poging++) {
+            const n = kiesNiveau(lv);
+            const g = gens(n), v = vaste(n);
+            if (g.length && (!v.length || Math.random() < KANS_GENERATOR)) {
+                const o = maakVoor(maakGegenereerd(kies(g)));
+                if (o) return o;
+            }
+            if (v.length) {
+                let st = OEF.stapels[n];
+                if (!st || !st.length) st = OEF.stapels[n] = schud(v);
+                let o = st.pop();
+                if (o && OEF.huidig && o.id === OEF.huidig.id && st.length) { st.unshift(o); o = st.pop(); }
+                if (o) return o;
+            }
+        }
+        return null;
+    }
+    function volgendeOefening(eerste) {
+        if (!eerste && OEF.status && !OEF.status.opgelost) OEF.reeks = 0;
+        const o = trekOefening();
+        if (!o) { scherm = 'menu'; toon(); alert('Er zijn geen oefeningen gevonden voor deze keuze.'); return; }
+        OEF.huidig = o;
+        OEF.status = { opgelost: false, fout: false, hint: 0, uitwerking: false };
+        scherm = 'oefen';
+        toon();
+    }
+    const tellerTekst = () => `✔ ${OEF.juist} opgelost · 🔥 reeks ${OEF.reeks}`;
+    function oefenHTML() {
+        return `<div class="kaart">
+          <div class="balk oefen"><button class="terug" data-actie="menu">← Menu</button><h2>Oefenen · ${S.richting} uur</h2><span class="teller" id="teller">${tellerTekst()}</span></div>
+          <div class="kaart-binnen">
+            ${opgaveHTML(OEF.huidig)}
+            ${invoerHTML()}
+            <div class="actie-rij">
+              <button class="knop knop-groen" data-actie="controleer">Controleer</button>
+              <button class="knop knop-blauw-licht" data-actie="hint" id="hintknop">🪜 Stap voor stap</button>
+              <button class="knop knop-donker" data-actie="volgende" id="volgendeknop">Volgende →</button>
+            </div>
+            <div id="feedback"></div>
+            <div id="hulp"></div>
+            ${typHulpHTML()}
+          </div>
+        </div>`;
+    }
+    function controleerOefening() {
+        const inp = document.getElementById('antwoord'), o = OEF.huidig, st = OEF.status;
+        if (!inp.value.trim()) return toonFeedback('info', 'Typ eerst je antwoord in het vak.');
+        const r = W.beoordeel(inp.value, o);
+        if (r.status === 'onleesbaar') return toonFeedback('info', 'Ik kan je antwoord nog niet lezen: ' + esc(r.boodschap));
+        if (r.status === 'juist') {
+            if (!st.opgelost) {
+                st.opgelost = true;
+                OEF.juist++;
+                if (!st.fout && !st.uitwerking) OEF.reeks++;
+            }
+            zetFeedback(leerkrachtHTML(r, o, { metSleutel: true, slot: 'Klik op “Volgende” voor een nieuwe oefening.' }) + uitwerkingKnop(o));
+            const vk = document.getElementById('volgendeknop');
+            if (vk && !isAanraak) vk.focus();
+        } else {
+            st.fout = true;
+            OEF.reeks = 0;
+            zetFeedback(leerkrachtHTML(r, o, { slot: 'Pas je antwoord aan en controleer opnieuw, of klik op “🪜 Stap voor stap”.' }));
+        }
+        const t = document.getElementById('teller');
+        if (t) t.textContent = tellerTekst();
+    }
+    function toonHint(alles) {
+        const o = OEF.huidig, st = OEF.status, max = aantalHintDelen(o);
+        st.hint = alles ? max : Math.min(max, st.hint + 1);
+        if (st.hint >= max) st.uitwerking = true;
+        document.getElementById('hulp').innerHTML = `<div class="hulp"><h3>${st.hint >= max ? 'Volledige uitwerking' : 'Stap ' + st.hint + ' van ' + max}</h3>${uitwerkingHTML(o, st.hint)}
+            ${st.hint < max ? '<p class="klein" style="margin:10px 0 0"><button class="linkknop" data-actie="alles">Toon meteen de volledige uitwerking</button></p>' : ''}</div>`;
+        const hk = document.getElementById('hintknop');
+        if (hk) { hk.textContent = st.hint >= max ? '✔ Volledig uitgewerkt' : `🪜 Volgende stap (${st.hint + 1}/${max})`; hk.disabled = st.hint >= max; }
+        if (!alles) document.getElementById('hulp').scrollIntoView({ block: 'nearest' });
+    }
+
+    // ---------- toets ----------
+    function stelToetsSamen(n) {
+        const lv = niveausBeschikbaar(), cats = actieveCats();
+        const gekozen = [], gebruikt = new Set(), perCat = {};
+        for (let i = 0; i < n; i++) {
+            let o = null;
+            for (let poging = 0; poging < 25 && !o; poging++) {
+                const niv = kiesNiveau(lv);
+                const kand = schud(cats.filter(c => vaste(niv, [c]).some(x => !gebruikt.has(x.id)) || gens(niv, [c]).length));
+                if (!kand.length) continue;
+                kand.sort((a, b) => (perCat[a] || 0) - (perCat[b] || 0));   // spreiden over de hoofdstukken
+                const cat = kand[0];
+                const v = vaste(niv, [cat]).filter(x => !gebruikt.has(x.id)), g = gens(niv, [cat]);
+                if (g.length && (!v.length || Math.random() < KANS_GENERATOR)) o = maakVoor(maakGegenereerd(kies(g)));
+                else if (v.length) o = kies(v);
+                if (o && gebruikt.has('f:' + o.f)) o = null;
+                if (o) perCat[cat] = (perCat[cat] || 0) + 1;
+            }
+            if (!o) break;
+            gebruikt.add(o.id); gebruikt.add('f:' + o.f);
+            gekozen.push(o);
+        }
+        // Rustig beginnen: van makkelijk naar moeilijk.
+        return gekozen.map((o, k) => [o, k]).sort((a, b) => a[0].niveau - b[0].niveau || a[1] - b[1]).map(x => x[0]);
+    }
+    function startToets() {
+        const vragen = stelToetsSamen(S.toetsN);
+        if (!vragen.length) { alert('Er zijn geen oefeningen gevonden voor deze keuze.'); return; }
+        TOETS = { vragen, i: 0, fase: 'antwoord', antwoorden: [], naam: S.naam.trim(), start: new Date(), invoer: '', minder: vragen.length < S.toetsN,
+                  instellingen: { richting: S.richting, niveau: S.niveau, cats: actieveCats() } };
+        scherm = 'toets';
+        toon();
+    }
+    function toetsHTML() {
+        const T = TOETS, o = T.vragen[T.i], klaar = T.fase === 'feedback', a = T.antwoorden[T.i];
+        const fb = klaar ? leerkrachtHTML(a.resultaat, o, { metSleutel: true }) + uitwerkingKnop(o) : '';
+        const laatste = T.i === T.vragen.length - 1;
+        const knoppen = klaar
+            ? `<button class="knop knop-donker knop-groot" data-actie="volgende-vraag" id="volgendevraag">${laatste ? 'Bekijk je rapport' : 'Volgende vraag →'}</button>`
+            : '<button class="knop knop-rood knop-groot" data-actie="controleer-toets">Controleer</button><button class="knop knop-licht" data-actie="overslaan">Overslaan</button>';
+        return `<div class="kaart">
+          <div class="balk toets"><button class="terug" data-actie="stop">✕ Stoppen</button><h2>Toets · vraag ${T.i + 1} van ${T.vragen.length}</h2><span class="teller">${T.antwoorden.filter(x => x && x.juist).length} juist</span></div>
+          <div class="voortgang"><div style="width:${Math.round(100 * (T.i + (klaar ? 1 : 0)) / T.vragen.length)}%"></div></div>
+          <div class="kaart-binnen">
+            ${T.minder && T.i === 0 && !klaar ? `<div class="melding" style="margin:0 0 12px">Voor deze keuze zijn er maar ${T.vragen.length} verschillende oefeningen, dus de toets telt ${T.vragen.length} vragen. Kies meer hoofdstukken of een ander niveau voor een langere toets.</div>` : ''}
+            ${opgaveHTML(o)}
+            ${invoerHTML(klaar)}
+            <div id="feedback">${fb}</div>
+            <div class="actie-rij">${knoppen}</div>
+          </div>
+        </div>`;
+    }
+    function controleerToets() {
+        const T = TOETS, inp = document.getElementById('antwoord'), o = T.vragen[T.i];
+        if (!inp.value.trim()) return toonFeedback('info', 'Typ eerst je antwoord, of kies “Overslaan”.');
+        const r = W.beoordeel(inp.value, o);
+        if (r.status === 'onleesbaar') return toonFeedback('info', 'Ik kan je antwoord nog niet lezen: ' + esc(r.boodschap) + ' Pas het aan en controleer opnieuw.');
+        T.antwoorden[T.i] = { invoer: inp.value, tex: W.tex(r.boom), juist: r.status === 'juist', boodschap: r.boodschap, resultaat: r };
+        T.invoer = inp.value;
+        T.fase = 'feedback';
+        toon(false);
+    }
+    function overslaan() {
+        const T = TOETS;
+        T.antwoorden[T.i] = { invoer: '', tex: '', juist: false, overgeslagen: true, boodschap: null,
+                              resultaat: { status: 'fout', code: 'overgeslagen', codes: ['overgeslagen'], boodschap: null } };
+        T.invoer = '';
+        T.fase = 'feedback';
+        toon(false);
+    }
+    function volgendeVraag() {
+        const T = TOETS;
+        if (T.i >= T.vragen.length - 1) { scherm = 'rapport'; toon(); return; }
+        T.i++;
+        T.fase = 'antwoord';
+        T.invoer = '';
+        toon();
+    }
+    function stopToets() {
+        const T = TOETS, n = T.antwoorden.length;
+        if (!confirm(n ? 'Wil je de toets stoppen? Je krijgt een rapport van de vragen die je al beantwoord hebt.' : 'Wil je de toets stoppen?')) return;
+        if (!n) { scherm = 'menu'; toon(); return; }
+        T.vragen = T.vragen.slice(0, n);
+        scherm = 'rapport';
+        toon();
+    }
+
+    // ---------- rapport ----------
+    // Algemene feedback van de leerkracht bovenaan het rapport.
+    function samenvattingHTML(T) {
+        const n = T.antwoorden.length, juist = T.antwoorden.filter(a => a.juist).length;
+        const pct = n ? Math.round(100 * juist / n) : 0;
+        const voornaam = T.naam ? T.naam.split(/\s+/)[0] : '';
+        const aan = voornaam ? ', ' + esc(voornaam) : '';
+        let opening;
+        if (pct === 100) opening = `Schitterend${aan}! Alles juist. Je beheerst de rekenregels voor afgeleiden heel goed.`;
+        else if (pct >= 80) opening = `Heel goed gewerkt${aan}! Je beheerst de leerstof, op een paar kleine foutjes na.`;
+        else if (pct >= 60) opening = `Goed bezig${aan}. De basis zit er, maar er zijn nog een paar dingen die je moet verbeteren.`;
+        else if (pct >= 40) opening = `Dit is nog niet voldoende${aan}. Geen paniek: met wat extra oefening komt het zeker in orde.`;
+        else opening = `Dit loopt nog niet goed${aan}. Herhaal de rekenregels en oefen eerst rustig in de oefenzone, met de stap-voor-stap uitwerkingen.`;
+        const telling = {};
+        T.antwoorden.forEach(a => {
+            if (a.juist) return;
+            const r = a.resultaat || { code: 'onbekend' };
+            [...new Set(r.codes && r.codes.length ? r.codes : [r.code || 'onbekend'])].forEach(c => { telling[c] = (telling[c] || 0) + 1; });
+        });
+        const lijst = Object.entries(telling).sort((x, y) => y[1] - x[1]);
+        const foutLijst = lijst.length ? '<p>Dit ging er mis:</p><ul class="lk-lijst">' + lijst.map(([c, k]) => `<li>${k}× ${esc(soortVan(c).label)}</li>`).join('') + '</ul>' : '';
+        const advies = lijst.filter(([c]) => c !== 'onbekend').slice(0, 2).map(([c]) => soortVan(c).tip);
+        const zwak = [...new Set(T.vragen.filter((o, i) => T.antwoorden[i] && !T.antwoorden[i].juist).map(o => hoofdstukNaam(o.cat)))];
+        let slot = '';
+        if (zwak.length) slot = `<p>Oefen nog eens in de oefenzone: <b>${zwak.map(esc).join(', ')}</b>.</p>`;
+        else if (pct === 100 && T.instellingen.niveau !== '3') slot = '<p>Klaar voor meer? Probeer eens een toets op niveau Uitdaging!</p>';
+        return `<div class="leerkracht lk-groot ${pct >= 60 ? 'goed' : ''}">
+            <div class="lk-kop">✍ Feedback van je leerkracht</div>
+            <p>${opening}</p>
+            ${foutLijst}
+            ${advies.length ? '<p>Mijn advies:</p><ul class="lk-lijst">' + advies.map(t => `<li>${esc(t)}</li>`).join('') + '</ul>' : ''}
+            ${slot}
+        </div>`;
+    }
+    function rapportHTML() {
+        const T = TOETS, n = T.antwoorden.length, juist = T.antwoorden.filter(a => a.juist).length;
+        const pct = n ? Math.round(100 * juist / n) : 0;
+        const klas = pct >= 70 ? 'goed' : pct >= 50 ? 'matig' : 'zwak';
+        const st = T.instellingen;
+        const datum = T.start.toLocaleDateString('nl-BE', { day: 'numeric', month: 'long', year: 'numeric' }) + ', ' + T.start.toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
+        const niveau = st.niveau === 'mix' ? 'gemengd niveau' : 'niveau ' + NIVEAUS[st.niveau].toLowerCase();
+        const kaarten = T.vragen.slice(0, n).map((o, i) => {
+            const a = T.antwoorden[i];
+            return `<div class="vraag-kaart ${a.juist ? 'juist' : 'fout'}">
+                <div class="vraag-kop"><h3>Vraag ${i + 1} · <span class="grijs">${esc(hoofdstukNaam(o.cat))} · ${sterren(o.niveau)}</span></h3><span class="stempel">${a.juist ? 'JUIST' : a.overgeslagen ? 'OVERGESLAGEN' : 'FOUT'}</span></div>
+                <div class="formule-groot">${wiskunde('f(x) = ' + o.fTex, true)}</div>
+                <div class="antwoorden">
+                    <div><div class="tit">Jouw antwoord</div>${a.invoer ? wiskunde("f'(x) = " + a.tex, true) : '<i class="grijs">geen antwoord</i>'}</div>
+                    <div><div class="tit">Juiste antwoord</div>${wiskunde("f'(x) = " + o.dTex, true)}</div>
+                </div>
+                ${!a.juist ? leerkrachtHTML(a.resultaat || { status: 'fout', code: 'onbekend' }, o, { metJij: false })
+                           : (a.resultaat && a.resultaat.onvereenvoudigd ? leerkrachtHTML(a.resultaat, o) : '')}
+                <details><summary>📖 Bekijk de uitwerking stap voor stap</summary><div class="hulp" style="margin-top:8px">${uitwerkingHTML(o)}</div></details>
+            </div>`;
+        }).join('');
+        return `<div class="kaart"><div class="kaart-binnen">
+            <div class="rapport-kop"><h2>Toetsrapport</h2>
+              <div class="rapport-info">${T.naam ? '<b>' + esc(T.naam) + '</b> · ' : ''}${datum} · ${st.richting} uur wiskunde · ${niveau}<br>${st.cats.length === HOOFDSTUKKEN.filter(h => !(h.enkel8 && st.richting === 5)).length ? 'alle hoofdstukken' : st.cats.map(hoofdstukNaam).map(esc).join(' · ')}</div>
+              <div class="score ${klas}">${juist} / ${n} <span class="klein">(${pct}%)</span></div>
+            </div>
+            ${samenvattingHTML(T)}
+            ${kaarten}
+            <div class="actie-rij geen-print">
+              <button class="knop knop-licht" data-actie="pdf" id="pdfknop">⬇ Download als PDF</button>
+              <button class="knop knop-rood" data-actie="nieuwe-toets">Nieuwe toets</button>
+              <button class="knop knop-donker" data-actie="menu">Terug naar het menu</button>
+            </div>
+            <div class="rapport-credit">© T. Gaerdelen</div>
+        </div></div>`;
+    }
+    const openDetails = () => document.querySelectorAll('.vraag-kaart.fout details').forEach(d => { d.open = true; });
+
+    // ---------- rapport als PDF downloaden ----------
+    // De PDF-bibliotheek wordt pas geladen als iemand op de knop klikt, zodat de app snel start.
+    let pdfBibliotheek = null;
+    function laadPdfBibliotheek() {
+        if (window.html2pdf) return Promise.resolve();
+        if (pdfBibliotheek) return pdfBibliotheek;
+        pdfBibliotheek = new Promise((ok, nok) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+            s.onload = () => ok();
+            s.onerror = () => { pdfBibliotheek = null; nok(new Error('PDF-bibliotheek niet geladen')); };
+            document.head.appendChild(s);
+        });
+        return pdfBibliotheek;
+    }
+    // Rapport zonder knoppen; bij foute vragen staat de uitwerking open, bij juiste vragen valt ze weg.
+    function pdfInhoud() {
+        const doos = document.createElement('div');
+        doos.className = 'pdf-rapport';
+        doos.innerHTML = rapportHTML();
+        doos.querySelectorAll('.geen-print').forEach(e => e.remove());
+        doos.querySelectorAll('.vraag-kaart').forEach(k => {
+            const d = k.querySelector('details');
+            if (!d) return;
+            const h = d.querySelector('.hulp');
+            if (k.classList.contains('fout') && h) { h.insertAdjacentHTML('afterbegin', '<h3>Uitwerking stap voor stap</h3>'); d.replaceWith(h); }
+            else d.remove();
+        });
+        return doos;
+    }
+    function pdfNaam() {
+        const T = TOETS, d = T.start;
+        const datum = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const naam = (T.naam || '').replace(/[\\/:*?"<>|]+/g, '').trim() || 'leerling';
+        return `Toetsrapport 6do afgeleiden en de kettingregel - ${naam} - ${datum}.pdf`;
+    }
+    function pdfOpdracht() {
+        return html2pdf().set({
+            margin: [12, 10, 14, 10],
+            filename: pdfNaam(),
+            image: { type: 'jpeg', quality: 0.95 },
+            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            // Niet midden in een vraag, een feedbackkaart of een regel tekst naar een nieuwe pagina springen.
+            pagebreak: { mode: ['css'], avoid: ['.vraag-kaart', '.leerkracht', '.rapport-kop', '.antwoorden', '.formule-groot', '.lk-rij', 'li', 'p', 'h3'] }
+        }).from(pdfInhoud()).toPdf().get('pdf').then(pdf => {
+            const n = pdf.internal.getNumberOfPages();
+            for (let i = 1; i <= n; i++) {
+                pdf.setPage(i);
+                pdf.setFontSize(8);
+                pdf.setTextColor(148, 163, 184);
+                pdf.text(`pagina ${i} van ${n}`, 10, 290);
+                pdf.text('© T. Gaerdelen', 200, 290, { align: 'right' });
+            }
+        });
+    }
+    async function downloadPdf() {
+        const knop = document.getElementById('pdfknop'), tekst = knop ? knop.textContent : '';
+        if (knop) { knop.disabled = true; knop.textContent = 'PDF wordt gemaakt…'; }
+        try {
+            await laadPdfBibliotheek();
+            if (document.fonts && document.fonts.ready) await document.fonts.ready;
+            await pdfOpdracht().save();
+        } catch (e) {
+            console.warn('PDF maken mislukt', e);
+            alert('De PDF kon niet gemaakt worden (is er internet?). Het afdrukvenster wordt geopend: kies daar "Opslaan als PDF".');
+            openDetails();
+            window.print();
+        } finally {
+            if (knop) { knop.disabled = false; knop.textContent = tekst; }
+        }
+    }
+
+    // ---------- tekenen ----------
+    function toon(naarBoven = true) {
+        const app = document.getElementById('app');
+        app.innerHTML = scherm === 'menu' ? menuHTML() : scherm === 'oefen' ? oefenHTML() : scherm === 'toets' ? toetsHTML() : rapportHTML();
+        const inp = document.getElementById('antwoord');
+        if (inp) {
+            if (scherm === 'toets') inp.value = TOETS.fase === 'feedback' ? TOETS.invoer : '';
+            opInvoer();
+            if (!inp.disabled && magFocussen()) inp.focus({ preventScroll: true });
+        }
+        if (naarBoven) window.scrollTo(0, 0);
+        if (scherm === 'toets' && TOETS.fase === 'feedback') {
+            const fb = document.getElementById('feedback');
+            if (fb && fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
+            const b = document.getElementById('volgendevraag');
+            if (b && !isAanraak) b.focus({ preventScroll: true });
+        }
+    }
+
+    // ---------- bediening ----------
+    document.addEventListener('pointerdown', e => { if (e.target.closest('.toets-k')) e.preventDefault(); });
+    document.addEventListener('click', e => {
+        const knop = e.target.closest('button');
+        if (!knop || !document.getElementById('app').contains(knop)) return;
+        if (knop.classList.contains('toets-k')) { klavierActie(knop); return; }
+        if (knop.dataset.richting) { S.richting = +knop.dataset.richting; bewaar(); toon(false); return; }
+        if (knop.dataset.niveau) { S.niveau = knop.dataset.niveau; bewaar(); toon(false); return; }
+        if (knop.dataset.alle) { S.cats = knop.dataset.alle === '1' ? HOOFDSTUKKEN.map(h => h.id) : []; bewaar(); toon(false); return; }
+        if (knop.id === 'start-oefen') { startOefenen(); return; }
+        if (knop.id === 'start-toets') { startToets(); return; }
+        switch (knop.dataset.actie) {
+            case 'menu': scherm = 'menu'; toon(); break;
+            case 'controleer': controleerOefening(); break;
+            case 'hint': toonHint(false); break;
+            case 'alles': toonHint(true); break;
+            case 'volgende': volgendeOefening(false); break;
+            case 'controleer-toets': controleerToets(); break;
+            case 'overslaan': overslaan(); break;
+            case 'volgende-vraag': volgendeVraag(); break;
+            case 'stop': stopToets(); break;
+            case 'pdf': downloadPdf(); break;
+            case 'print': openDetails(); window.print(); break;
+            case 'nieuwe-toets': startToets(); break;
+            case 'klavier-wissel': wisselKlavier(); break;
+        }
+    });
+    document.addEventListener('change', e => {
+        const t = e.target;
+        if (t.matches('input[data-cat]')) {
+            const c = t.dataset.cat;
+            S.cats = t.checked ? [...new Set([...S.cats, c])] : S.cats.filter(x => x !== c);
+            bewaar(); toon(false);
+        } else if (t.id === 'toetsN') { S.toetsN = +t.value; bewaar(); }
+    });
+    document.addEventListener('input', e => {
+        if (e.target.id === 'antwoord') {
+            opInvoer();
+            const fb = document.getElementById('feedback');
+            if (fb && fb.querySelector('.feedback.info, .leerkracht:not(.goed)') && !(scherm === 'toets' && TOETS.fase === 'feedback')) fb.innerHTML = '';
+        } else if (e.target.id === 'naam') { S.naam = e.target.value.slice(0, 40); bewaar(); }
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key !== 'Enter') return;
+        if (e.target.id === 'antwoord') {
+            e.preventDefault();
+            if (scherm === 'oefen') { if (OEF.status.opgelost) volgendeOefening(false); else controleerOefening(); }
+            else if (scherm === 'toets' && TOETS.fase === 'antwoord') controleerToets();
+        } else if (scherm === 'toets' && TOETS && TOETS.fase === 'feedback' && e.target.tagName !== 'BUTTON') {
+            e.preventDefault();
+            volgendeVraag();
+        }
+    });
+    window.addEventListener('beforeprint', openDetails);
+
+    laadBank();
+    toon();
+
+    // Voor controle en testen in de console.
+    return { BANK, AFGEKEURD, S, bouwOefening, maakGegenereerd, stelToetsSamen, vaste, gens, actieveCats, niveausBeschikbaar,
+             laadPdfBibliotheek, pdfInhoud, pdfOpdracht, pdfNaam,
+             get scherm() { return scherm; }, get OEF() { return OEF; }, get TOETS() { return TOETS; } };
+})();
+</script>
+</body>
+</html>
