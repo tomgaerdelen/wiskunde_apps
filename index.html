@@ -291,7 +291,74 @@
       user-select: none;
       z-index: 90;
     }
+    .update-banner {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 12px 18px;
+      border-radius: 999px;
+      display: none;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
+      z-index: 10000;
+      font-size: 0.9rem;
+      max-width: calc(100vw - 32px);
+    }
+    .update-banner.show { display: flex; }
+    .update-banner button {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .update-banner button:hover { background: var(--primary-hover); }
   </style>
+ <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js');
+      });
+    }
+
+    let deferredPrompt = null;
+
+    function toonInstallKnop() {
+      const installBtn = document.getElementById('install-btn');
+      if (installBtn && deferredPrompt) {
+        installBtn.style.display = 'inline-flex';
+      }
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      toonInstallKnop();
+    });
+
+    window.addEventListener('DOMContentLoaded', toonInstallKnop);
+
+    async function installeerApp() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        const installBtn = document.getElementById('install-btn');
+        if (installBtn) installBtn.style.display = 'none';
+      }
+      deferredPrompt = null;
+    }
+  </script>
 </head>
 <body>
 
@@ -305,9 +372,14 @@
         <span>Kies je klas en start een interactieve module</span>
       </div>
     </div>
-    <div class="user-pill">
-      <span id="status-tekst">👤 Niet aangemeld</span>
-      <button onclick="openCodeModal(true)">Code / Klas</button>
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <button id="install-btn" style="display:none; align-items:center; gap:6px; background:#16a34a; color:white; border:none; padding:6px 14px; border-radius:999px; font-size:0.88rem; font-weight:600; cursor:pointer;" onclick="installeerApp()">
+        📱 Installeer App
+      </button>
+      <div class="user-pill">
+        <span id="status-tekst">👤 Niet aangemeld</span>
+        <button onclick="openCodeModal(true)">Code / Klas</button>
+      </div>
     </div>
   </div>
 </header>
@@ -333,7 +405,7 @@
     <label for="modal-klas">Klas</label>
     <select id="modal-klas"></select>
     <label for="modal-code">Persoonlijke leerlingcode</label>
-    <input id="modal-code" type="text" placeholder="bv. PULSAR947" style="text-transform: uppercase;" onkeydown="if(event.key==='Enter') bewaarLeerling();" />
+    <input id="modal-code" type="text" placeholder="bv. WOORD123" style="text-transform: uppercase;" onkeydown="if(event.key==='Enter') bewaarLeerling();" />
     <div id="modal-error" class="modal-error"></div>
     <div class="modal-actions">
       <button id="modal-annuleer" class="btn-cancel" onclick="sluitCodeModal()">Annuleren</button>
@@ -866,7 +938,74 @@ window.addEventListener("DOMContentLoaded", async () => {
     openCodeModal(false);
   }
 });
+
+function toonUpdateMelding() {
+  const banner = document.getElementById("update-banner");
+  if (banner) banner.classList.add("show");
+}
+
+function huidigeConfigHandtekening() {
+  return JSON.stringify({
+    l: typeof LOGO_CONFIG !== "undefined" ? LOGO_CONFIG : null,
+    k: typeof KLASSEN !== "undefined" ? KLASSEN : null,
+    a: typeof APPS !== "undefined" ? APPS : null,
+    c: typeof GELDIGE_CODES !== "undefined" ? GELDIGE_CODES : null
+  });
+}
+
+function handtekeningUitHtml(htmlTekst) {
+  try {
+    const start = htmlTekst.indexOf("/* START_CONFIG_DATA */");
+    const eind = htmlTekst.indexOf("/* END_CONFIG_DATA */");
+    if (start === -1 || eind === -1) return null;
+    const blok = htmlTekst.slice(start, eind);
+    return JSON.stringify({
+      l: JSON.parse(blok.match(/const LOGO_CONFIG\s*=\s*(\{[\s\S]*?\});/)[1]),
+      k: JSON.parse(blok.match(/const KLASSEN\s*=\s*(\[[\s\S]*?\]);/)[1]),
+      a: JSON.parse(blok.match(/const APPS\s*=\s*(\[[\s\S]*?\]);/)[1]),
+      c: JSON.parse(blok.match(/const GELDIGE_CODES\s*=\s*(\[[\s\S]*?\]);/)[1])
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function controleerOpNieuweVersie() {
+  try {
+    const res = await fetch(`./index.html?t=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) return;
+    const onlineHandtekening = handtekeningUitHtml(await res.text());
+    if (onlineHandtekening && onlineHandtekening !== huidigeConfigHandtekening()) {
+      toonUpdateMelding();
+    }
+  } catch {
+    // Offline: stil overslaan
+  }
+}
+
+if ("serviceWorker" in navigator) {
+  const hadAlController = Boolean(navigator.serviceWorker.controller);
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (hadAlController) toonUpdateMelding();
+  });
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    controleerOpNieuweVersie();
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistration().then(reg => reg && reg.update());
+    }
+  }
+});
+
+setInterval(controleerOpNieuweVersie, 5 * 60 * 1000);
 </script>
+
+<div id="update-banner" class="update-banner" role="status" aria-live="polite">
+  <span>🔄 Er is een nieuwe versie beschikbaar.</span>
+  <button onclick="window.location.reload()">Vernieuwen</button>
+</div>
 
 </body>
 </html>
