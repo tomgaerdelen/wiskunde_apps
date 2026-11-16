@@ -284,6 +284,34 @@
 </style>
 </head>
 <body>
+
+<!-- PORTAAL-KOPPELING (zelfde blok in elke app): terug naar het portaal en de leerlingcode.
+     De apps vragen of bewaren geen naam; enkel de anonieme code van het portaal wordt getoond. -->
+<style>
+    .portaal-terug { display: inline-block; margin: 0 0 12px; padding: 6px 14px; border: 1px solid #cbd5e1; border-radius: 999px; background: #fff; color: #475569; font: 600 .85rem system-ui, -apple-system, 'Segoe UI', sans-serif; text-decoration: none; }
+    .portaal-terug:hover { background: #f1f5f9; color: #1e293b; }
+    .portaal-terug-rij { text-align: left; }
+    .leerling-code { position: fixed; left: 14px; bottom: 10px; font: 11px system-ui, -apple-system, 'Segoe UI', sans-serif; color: #94a3b8; background: rgba(255,255,255,.85); padding: 2px 8px; border-radius: 6px; pointer-events: none; z-index: 50; }
+    @media print { .portaal-terug-rij, .leerling-code { display: none !important; } }
+</style>
+<script>
+    // Anonieme leerlingcode en klas, zoals ingesteld in het portaal (index.html)
+    function leerlingCode() {
+        try { return (localStorage.getItem('wisk_leerling_code') || '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 20); } catch (e) { return ''; }
+    }
+    function portaalKlas() {
+        try { const k = (localStorage.getItem('wisk_leerling_klas') || '').trim(); return k === 'alle klassen' ? '' : k.replace(/[^\p{L}\p{N} _-]/gu, '').slice(0, 20); } catch (e) { return ''; }
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+        const code = leerlingCode();
+        if (!code || window.WiskundeTracker) return; // de tracker toont de code al zelf
+        const el = document.createElement('div');
+        el.className = 'leerling-code';
+        el.setAttribute('data-html2canvas-ignore', '');
+        el.textContent = code;
+        document.body.appendChild(el);
+    });
+</script>
 <div id="app"></div>
 <div class="maker-credit" data-html2canvas-ignore>© T. Gaerdelen</div>
 <div id="pdf-bron" class="pdf-bron" aria-hidden="true"></div>
@@ -3780,8 +3808,9 @@ const opslag = {
     schrijf(k, v) { try { localStorage.setItem('afg6_' + k, JSON.stringify(v)); } catch (e) { /* geen opslag beschikbaar */ } },
 };
 const APP = document.getElementById('app');
+try { localStorage.removeItem('afg6_naam'); localStorage.removeItem('afg6_klas'); } catch (e) { /* geen opslag */ } // vroeger bewaarde naam wissen
 const ST = {
-    scherm: 'menu', modus: opslag.lees('modus', 'oefen'), naam: opslag.lees('naam', ''), klas: opslag.lees('klas', ''),
+    scherm: 'menu', modus: opslag.lees('modus', 'oefen'), naam: '', klas: portaalKlas(),
     toetsCat: 'mix', toetsPunten: 20, toetsNiveau: 0, oefen: null, toets: null, log: [], sessieStart: new Date(), theorieCat: null, tvb: null,
 };
 let zaadTeller = 0;
@@ -3929,8 +3958,7 @@ function renderMenu() {
         return `<button class="cat ${aan ? 'aan' : ''}" data-act="cat" data-cat="${id}"><span class="ico" style="background:${kleur}">${esc(ico)}</span><span><b>${esc(naam)}</b><small>${so ? '§ ' + esc(so) + ' · ' : ''}${esc(kort)}</small>${st && st.n ? `<span class="stat">${st.n} geoefend · ${st.g} meteen juist</span>` : ''}</span></button>`;
     };
     const groep = h => CATS.filter(c => c.hfd === h).map(c => catKaart(c.id, c.naam, c.kort, c.ico, c.kleur, c.so)).join('');
-    let s = `<div class="kaart"><div class="kop"><h1>6doSW afgeleiden semester 1</h1><p>Oefenen en testen — limieten, afgeleiden, verloop, exponentiële, logaritmische en goniometrische functies</p></div><div class="kaart-binnen">
-        <div class="naam-rij"><label class="veld">Naam<input id="naam" value="${esc(ST.naam)}" placeholder="Voornaam Naam" autocomplete="name"></label><label class="veld">Klas<input id="klas" value="${esc(ST.klas)}" placeholder="bv. 6doSW"></label></div>
+    let s = `<div class="kaart"><div class="kop"><div class="portaal-terug-rij" data-html2canvas-ignore><a class="portaal-terug" href="index.html">← Alle apps</a></div><h1>6doSW afgeleiden semester 1</h1><p>Oefenen en testen — limieten, afgeleiden, verloop, exponentiële, logaritmische en goniometrische functies</p></div><div class="kaart-binnen">
         <div class="modus-grid">
             <button class="modus theorie ${m === 'theorie' ? 'aan' : ''}" data-act="modus" data-m="theorie"><b>📘 Theorie &amp; voorbeelden</b><span>De leerstof uit de cursus, met telkens nieuwe volledig uitgewerkte voorbeelden.</span></button>
             <button class="modus oefen ${m === 'oefen' ? 'aan' : ''}" data-act="modus" data-m="oefen"><b>✏️ Oefenen</b><span>Telkens nieuwe oefeningen per hoofdstuk, met hints, uitleg, uitwerking en feedback van je leerkracht.</span></button>
@@ -4194,7 +4222,7 @@ function toetsBlokken() {
     const zwak = Object.entries(per).filter(([, x]) => x.b / x.m < 0.6).sort((a, b) => a[1].b / a[1].m - b[1].b / b[1].m).map(([c]) => c);
     const codes = t.res.flat().filter(x => !x.ok).map(x => x.code);
     const op10 = fmtPt(Math.round(p * 100) / 10);
-    const B = [{ html: `<div class="rapport-kop-blok"><h2>Toets afgeleiden</h2><div class="rapport-info"><b>${esc(ST.naam || 'Naam niet ingevuld')}</b>${ST.klas ? ' · ' + esc(ST.klas) : ''} · ${vandaag()}</div><div class="rapport-info">Leerstof: ${esc(catNaam(t.cat))} · niveau: ${t.niveau ? NIVEAU[t.niveau] : 'gemengd'} · duur: ${duur} min</div><div class="score ${scoreKlasse(p)}">${fmtPt(t.behaald)} / ${fmtPt(t.totaal)} <span class="klein">(${Math.round(p * 100)} % · ${op10}/10)</span></div></div>` }];
+    const B = [{ html: `<div class="rapport-kop-blok"><h2>Toets afgeleiden</h2><div class="rapport-info">${ST.klas ? esc(ST.klas) + ' · ' : ''}${vandaag()}</div><div class="rapport-info">Leerstof: ${esc(catNaam(t.cat))} · niveau: ${t.niveau ? NIVEAU[t.niveau] : 'gemengd'} · duur: ${duur} min</div><div class="score ${scoreKlasse(p)}">${fmtPt(t.behaald)} / ${fmtPt(t.totaal)} <span class="klein">(${Math.round(p * 100)} % · ${op10}/10)</span></div></div>` }];
     B.push({ html: leerkrachtSamenvatting(p, codes, zwak) });
     B.push({ html: `<table class="samenvatting-tabel"><tr><th>Hoofdstuk</th><th>Punten</th><th>%</th></tr>${Object.entries(per).map(([c, x]) => `<tr><td>${esc(CAT[c].naam)}</td><td>${fmtPt(x.b)} / ${fmtPt(x.m)}</td><td>${Math.round(100 * x.b / x.m)} %</td></tr>`).join('')}</table>` });
     t.vragen.forEach((v, qi) => B.push(...vraagBlokken(v, `Vraag ${qi + 1}`, v.delen.map((d, di) => ({ d, w: t.waarden[qi][di], res: t.res[qi][di] })))));
@@ -4208,7 +4236,7 @@ function oefenBlokken() {
     const per = {};
     ST.log.forEach(l => { const c = l.inst.gen.cat; per[c] = per[c] || { n: 0, g: 0, h: 0, f: 0 }; per[c].n++; per[c][l.status]++; });
     const zwak = Object.entries(per).filter(([, x]) => x.g / x.n < 0.5).map(([c]) => c);
-    const B = [{ html: `<div class="rapport-kop-blok"><h2>Oefenrapport afgeleiden</h2><div class="rapport-info"><b>${esc(ST.naam || 'Naam niet ingevuld')}</b>${ST.klas ? ' · ' + esc(ST.klas) : ''} · ${vandaag()} · ${duur} min geoefend</div><div class="score goed" style="font-size:1.1rem">${ST.log.length} oefeningen: ${t.g} meteen juist · ${t.h} juist met hulp · ${t.f} met uitwerking</div></div>` }];
+    const B = [{ html: `<div class="rapport-kop-blok"><h2>Oefenrapport afgeleiden</h2><div class="rapport-info">${ST.klas ? esc(ST.klas) + ' · ' : ''}${vandaag()} · ${duur} min geoefend</div><div class="score goed" style="font-size:1.1rem">${ST.log.length} oefeningen: ${t.g} meteen juist · ${t.h} juist met hulp · ${t.f} met uitwerking</div></div>` }];
     B.push({ html: leerkrachtSamenvatting(ST.log.length ? t.g / ST.log.length : 0, ST.log.flatMap(l => l.codes), zwak, 'oefen') });
     B.push({ html: `<table class="samenvatting-tabel"><tr><th>Hoofdstuk</th><th>Oefeningen</th><th>Meteen juist</th><th>Met hulp</th><th>Met uitwerking</th></tr>${Object.entries(per).map(([c, x]) => `<tr><td>${esc(CAT[c].naam)}</td><td>${x.n}</td><td>${x.g}</td><td>${x.h}</td><td>${x.f}</td></tr>`).join('')}</table>` });
     const STAT = { g: ['juist', 'meteen juist'], h: ['deels', 'juist met hulp'], f: ['fout', 'met uitwerking / niet opgelost'] };
@@ -4277,6 +4305,7 @@ async function downloadPdf(blokken, bestandsnaam) {
             pdf.setFontSize(8); pdf.setTextColor(113, 128, 150);
             pdf.text(`Pagina ${p + 1} van ${paginas.length}`, 105, 290, { align: 'center' });
             pdf.text('© T. Gaerdelen', 198, 290, { align: 'right' });
+            if (leerlingCode()) pdf.text(leerlingCode(), 12, 290);
         }
         pdf.save(bestandsnaam);
         zet('Het rapport is gedownload (kijk bij je downloads).');
@@ -4288,7 +4317,7 @@ async function downloadPdf(blokken, bestandsnaam) {
         knoppen.forEach(k => { k.disabled = false; });
     }
 }
-const bestandsNaam = soort => `${soort}_Afgeleiden_${(ST.naam || 'leerling').trim().replace(/[^\p{L}\p{N}]+/gu, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`;
+const bestandsNaam = soort => `${soort}_Afgeleiden_${leerlingCode() || 'leerling'}_${new Date().toISOString().slice(0, 10)}.pdf`;
 
 // ===================== THEORIE =====================
 function renderTheorie() {
@@ -4317,8 +4346,6 @@ let laatsteVeld = null;
 APP.addEventListener('focusin', e => { if (e.target.matches('input.invoer')) laatsteVeld = e.target; });
 APP.addEventListener('input', e => {
     const inp = e.target;
-    if (inp.id === 'naam') { ST.naam = inp.value; opslag.schrijf('naam', inp.value); return; }
-    if (inp.id === 'klas') { ST.klas = inp.value; opslag.schrijf('klas', inp.value); return; }
     if (inp.matches('input.invoer')) {
         werkPreviewBij(inp);
         if (ST.scherm === 'toets') bewaarToetsWaarden();
