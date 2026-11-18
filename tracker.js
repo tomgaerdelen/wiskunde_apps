@@ -6,6 +6,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_O_SPCiTTcGwRXzkXROZrlg_yFz4O_5O";
 const HUIDIG_SCHOOLJAAR = "2026-2027";
 const BESCHIKBARE_KLASSEN = ["5duHT", "5doSW", "6doSW", "6doTW"]; // Reservelijst; normaal komen de klassen uit index.html
 const PORTAAL_URL = "./index.html"; // Het portaal staat naast de apps; daar staat de lijst met geldige codes
+const VERZEND_TIJD_ELKE = 300; // Oefentijd wordt per 5 minuten actieve tijd in één rij bewaard (zuinig met de database)
 // ============================================================================
 
 window.WiskundeTracker = (function () {
@@ -255,50 +256,67 @@ window.WiskundeTracker = (function () {
     }
   }
 
+  // De code staat klein en onopvallend linksonder (geen naam, enkel de anonieme code).
+  // Van code wisselen doet de leerling in het portaal.
   function updateStatusBadge() {
     if (!document.body) return;
     let badge = document.getElementById("wisk-status-badge");
+    const { code } = getLeerling();
+    if (!code) { if (badge) badge.remove(); return; }
     if (!badge) {
       badge = document.createElement("div");
       badge.id = "wisk-status-badge";
+      badge.setAttribute("data-html2canvas-ignore", "");
       badge.style.cssText = `
-        position: fixed; bottom: 12px; right: 12px; background: #f8fafc;
-        border: 1px solid #cbd5e1; border-radius: 999px; padding: 6px 14px;
-        font-family: system-ui, sans-serif; font-size: 0.8rem; color: #334155;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.08); z-index: 9999; display: flex; gap: 8px; align-items: center;
+        position: fixed; left: 14px; bottom: 10px; font: 11px system-ui, -apple-system, 'Segoe UI', sans-serif;
+        color: #94a3b8; background: rgba(255,255,255,.85); padding: 2px 8px; border-radius: 6px;
+        pointer-events: none; z-index: 50;
       `;
       document.body.appendChild(badge);
     }
-    const { code, klas } = getLeerling();
-    badge.innerHTML = `
-      <span>👤 <strong>${escapeHtml(code || "Niet aangemeld")}</strong> (${escapeHtml(klas || "-")})</span>
-      <button id="wisk-badge-edit" style="background:none; border:none; color:#2563eb; text-decoration:underline; cursor:pointer; font-size:0.8rem; padding:0;">Wijzigen</button>
-    `;
-    document.getElementById("wisk-badge-edit").onclick = () => toonCodeModal(true);
+    badge.textContent = code;
   }
 
   // --- 4. Data veilig versturen naar Supabase ---
-  async function verstuurLog(payload) {
+  // Korte, veilige tekst voor de database (geen lange of vreemde waarden)
+  function kort(waarde, max = 60) {
+    if (waarde === null || waarde === undefined || waarde === "") return null;
+    return String(waarde).slice(0, max);
+  }
+
+  // Details blijven bewust klein: enkel wat nodig is voor de foutenanalyse, nooit wat de leerling intypte.
+  function kleineDetails(details) {
+    try {
+      const json = JSON.stringify(details || {});
+      return json.length <= 400 ? JSON.parse(json) : {};
+    } catch (err) {
+      return {};
+    }
+  }
+
+  async function verstuurLog(payload, bijAfsluiten = false) {
     const gecontroleerd = await valideerOpgeslagenCode();
     if (!gecontroleerd) return;
 
     const { code, klas } = getLeerling();
     if (!code || !klas) return;
 
-    const veiligeDuur = Math.min(7200, Math.max(0, Math.round(payload.duur_seconden || 0)));
+    const veiligeDuur = Math.min(7200, Math.max(0, Math.round(Number(payload.duur_seconden) || 0)));
+    const score = payload.score_procent === null || payload.score_procent === undefined ? null
+      : Math.min(100, Math.max(0, Math.round(Number(payload.score_procent) || 0)));
 
     const rij = {
       schooljaar: config.schooljaar,
       klas: klas,
       leerling_code: code,
       app_id: config.appId,
-      module_id: payload.module_id || config.moduleId || null,
+      module_id: kort(payload.module_id || config.moduleId),
       event_type: payload.event_type,
       duur_seconden: veiligeDuur,
       is_correct: payload.is_correct ?? null,
-      score_procent: payload.score_procent ?? null,
-      fout_categorie: payload.fout_categorie || null,
-      details: payload.details || {}
+      score_procent: score,
+      fout_categorie: kort(payload.fout_categorie),
+      details: kleineDetails(payload.details)
     };
 
     try {
@@ -309,16 +327,28 @@ window.WiskundeTracker = (function () {
           "Content-Type": "application/json",
           "Prefer": "return=minimal"
         },
-        body: JSON.stringify(rij)
+        body: JSON.stringify(rij),
+        keepalive: bijAfsluiten // laat het verzoek afwerken als de pagina net gesloten wordt
       });
     } catch (err) {
       console.warn("Log kon niet worden verstuurd (offline?):", err);
     }
   }
 
-  // --- 5. Actieve oefentijd meten (hartslag elke 30s) ---
+  // --- 5. Actieve oefentijd meten ---
+  // Elke 30 seconden wordt gekeken of de leerling actief is. De actieve tijd wordt opgespaard en
+  // pas per 5 minuten (of bij het verlaten van de app) als één rij verstuurd.
+  let onverzondenTijd = 0;
+
+  function stuurTijd(bijAfsluiten = false) {
+    if (onverzondenTijd < 30) return;
+    const duur = onverzondenTijd;
+    onverzondenTijd = 0;
+    verstuurLog({ event_type: "sessie_tijd", duur_seconden: duur }, bijAfsluiten);
+  }
+
   function startTijdMeting() {
-    ["mousemove", "keydown", "click", "touchstart"].forEach((evt) => {
+    ["mousemove", "keydown", "click", "touchstart", "wheel", "scroll"].forEach((evt) => {
       window.addEventListener(evt, () => { laatsteActiviteit = Date.now(); }, { passive: true });
     });
 
@@ -328,12 +358,47 @@ window.WiskundeTracker = (function () {
       const { code } = getLeerling();
 
       if (tabZichtbaar && recentActief && code) {
-        verstuurLog({
-          event_type: "sessie_tijd",
-          duur_seconden: 30
-        });
+        onverzondenTijd += 30;
+        if (onverzondenTijd >= VERZEND_TIJD_ELKE) stuurTijd();
       }
     }, 30000);
+
+    // Bij het verlaten of verbergen van de app: de resterende tijd nog doorsturen
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") { stuurTijd(true); stuurTheorie(true); }
+    });
+    window.addEventListener("pagehide", () => { stuurTijd(true); stuurTheorie(true); });
+  }
+
+  // --- 6. Theorie bekeken ---
+  // De app geeft een functie die zegt welk theorie-onderdeel nu open staat (of null).
+  // Elke 5 seconden wordt gekeken; de leestijd telt alleen als de app zichtbaar is en de leerling
+  // de laatste 90 seconden nog iets deed (scrollen, klikken, ...). Eén rij per keer dat een
+  // onderdeel open stond (minstens 10 seconden), bij lang lezen per 10 minuten.
+  let theorieFunctie = null;
+  let theorieHuidig = null;
+  let theorieSeconden = 0;
+
+  function stuurTheorie(bijAfsluiten = false) {
+    if (theorieHuidig && theorieSeconden >= 10) {
+      verstuurLog({ event_type: "theorie_bekeken", module_id: theorieHuidig, duur_seconden: theorieSeconden }, bijAfsluiten);
+    }
+    theorieSeconden = 0;
+  }
+
+  function theorieTik() {
+    let nu = null;
+    try { nu = theorieFunctie ? theorieFunctie() : null; } catch (err) { nu = null; }
+    nu = nu ? String(nu) : null;
+    if (nu !== theorieHuidig) {
+      stuurTheorie();
+      theorieHuidig = nu;
+    }
+    const { code } = getLeerling();
+    if (nu && code && document.visibilityState === "visible" && (Date.now() - laatsteActiviteit) < 90000) {
+      theorieSeconden += 5;
+      if (theorieSeconden >= 600) stuurTheorie();
+    }
   }
 
   // --- Publieke functies voor jouw wiskunde-apps ---
@@ -356,6 +421,12 @@ window.WiskundeTracker = (function () {
       }
     },
 
+    volgTheorie(functie) {
+      if (typeof functie !== "function" || theorieFunctie) return;
+      theorieFunctie = functie;
+      setInterval(theorieTik, 5000);
+    },
+
     setModule(moduleId) {
       config.moduleId = moduleId;
     },
@@ -364,7 +435,7 @@ window.WiskundeTracker = (function () {
       opgaveStartTijd = Date.now();
     },
 
-    logOpgave({ isCorrect, foutCategorie = null, duurSeconden = null, details = {} }) {
+    logOpgave({ isCorrect, foutCategorie = null, duurSeconden = null, moduleId = null, details = {} }) {
       const berekendeDuur = duurSeconden !== null
         ? duurSeconden
         : Math.round((Date.now() - opgaveStartTijd) / 1000);
@@ -372,6 +443,7 @@ window.WiskundeTracker = (function () {
 
       return verstuurLog({
         event_type: "opgave_poging",
+        module_id: moduleId,
         duur_seconden: berekendeDuur,
         is_correct: Boolean(isCorrect),
         fout_categorie: isCorrect ? null : foutCategorie,
@@ -379,9 +451,10 @@ window.WiskundeTracker = (function () {
       });
     },
 
-    logToets({ scoreProcent, duurSeconden = 0, details = {} }) {
+    logToets({ scoreProcent, duurSeconden = 0, moduleId = null, details = {} }) {
       return verstuurLog({
         event_type: "toets_einde",
+        module_id: moduleId,
         duur_seconden: duurSeconden,
         score_procent: scoreProcent,
         details
