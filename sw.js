@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wiskunde-app-v3';
+const CACHE_NAME = 'wiskunde-app-v4';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
@@ -26,6 +26,21 @@ self.addEventListener('fetch', (e) => {
 
   const url = new URL(e.request.url);
   if (url.origin !== self.location.origin) return; // andere websites (KaTeX, Supabase, ...) niet aanraken
+
+  // Bibliotheken en lettertypes (map lib): die veranderen nooit, dus één keer ophalen en daarna
+  // uit de opslag van het toestel. Zo werken de apps ook zonder internet.
+  if (url.pathname.includes('/lib/')) {
+    e.respondWith(
+      caches.match(e.request).then((gevonden) => gevonden || fetch(e.request).then((response) => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
+        }
+        return response;
+      }))
+    );
+    return;
+  }
 
   const isPagina = e.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname.endsWith('/');
   const isScript = url.pathname.endsWith('.js');
