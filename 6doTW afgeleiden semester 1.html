@@ -4288,6 +4288,7 @@ const APPTEST = (() => {
 <script src="tracker.js"></script>
 <script>
   WiskundeTracker.init({ appId: "6doTW_afgeleiden_sem1" });
+  try { WiskundeTracker.volgTheorie(() => (ST.scherm === 'theorie' ? ST.theorieCat : null)); } catch (e) { /* theorie volgen mag de app nooit storen */ }
 </script>
 </body>
 </html>
