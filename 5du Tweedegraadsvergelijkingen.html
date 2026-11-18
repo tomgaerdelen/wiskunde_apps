@@ -3571,6 +3571,7 @@
 <script src="tracker.js"></script>
 <script>
   WiskundeTracker.init({ appId: "5du_tweedegraads" });
+  try { WiskundeTracker.volgTheorie(() => { const t = document.getElementById('theorie'); return t && t.classList.contains('active') && t.offsetParent !== null ? 'onvolledig' : null; }); } catch (e) { /* theorie volgen mag de app nooit storen */ }
 </script>
 </body>
 </html>
