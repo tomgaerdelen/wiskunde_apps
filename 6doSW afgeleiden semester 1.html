@@ -9,12 +9,11 @@
      Patrick Hand voor de (handgeschreven) feedback van de leerkracht.
      Zonder internet werkt de app ook, maar dan worden formules als tekst getoond
      en kan het rapport niet als PDF gedownload worden. -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="stylesheet" href="lib/katex/katex.min.css">
+<link rel="stylesheet" href="lib/patrick-hand/patrick-hand.css">
+<script src="lib/katex/katex.min.js"></script>
+<script defer src="lib/html2canvas-1.4.1.min.js"></script>
+<script defer src="lib/jspdf-2.5.1.umd.min.js"></script>
 <style>
     :root {
         --bg: #f1f5f9; --kaart: #ffffff; --rand: #e2e8f0; --tekst: #1e293b; --zacht: #64748b; --heel-zacht: #94a3b8;
@@ -301,6 +300,14 @@
     }
     function portaalKlas() {
         try { const k = (localStorage.getItem('wisk_leerling_klas') || '').trim(); return k === 'alle klassen' ? '' : k.replace(/[^\p{L}\p{N} _-]/gu, '').slice(0, 20); } catch (e) { return ''; }
+    }
+    // Resultaten doorgeven aan het dashboard (via tracker.js). Bewaart nooit wat de leerling intypte:
+    // enkel welke oefening, juist of fout, en de soort fout.
+    function portaalLogOpgave(juist, module, fout, details) {
+        try { if (window.WiskundeTracker) WiskundeTracker.logOpgave({ isCorrect: !!juist, moduleId: module, foutCategorie: fout || null, details: details || {} }); } catch (e) { /* loggen mag de app nooit storen */ }
+    }
+    function portaalLogToets(procent, duur, module, details) {
+        try { if (window.WiskundeTracker) WiskundeTracker.logToets({ scoreProcent: procent, duurSeconden: duur || 0, moduleId: module, details: details || {} }); } catch (e) { /* loggen mag de app nooit storen */ }
     }
     window.addEventListener('DOMContentLoaded', () => {
         const code = leerlingCode();
@@ -4018,6 +4025,12 @@ function logOefening(status) {
     if (o.gelogd) return;
     o.gelogd = true;
     ST.log.push({ inst: o.inst, status, pogingen: o.pogingen, hints: o.hints, uitwerking: o.uitwerking, waarden: o.staat.map(s => ({ ...s.waarden })), ok: o.staat.map(s => s.ok), codes: o.staat.flatMap(s => s.codes || []), tijd: new Date() });
+    // dashboard: één rij per oefening (g = meteen juist, h = juist met hulp, f = met uitwerking)
+    {
+        const gen = (o.inst && o.inst.gen) || {};
+        const codes = [...(o.codes || []), ...(o.fouten || []), ...(o.staat || []).flatMap(s => s.codes || [])].filter(c => typeof c === 'string' && c);
+        portaalLogOpgave(status === 'g', gen.cat, codes[0], { oef: gen.id, niv: gen.niveau, st: status, pog: o.pogingen, hints: o.hints });
+    }
     const s = opslag.lees('stat', {}), c = o.inst.gen.cat;
     s[c] = s[c] || { n: 0, g: 0 }; s[c].n++; if (status === 'g') s[c].g++;
     opslag.schrijf('stat', s);
@@ -4163,6 +4176,13 @@ function nakijkenToets() {
     }));
     t.behaald = t.res.flat().reduce((s, x) => s + x.score, 0);
     t.klaar = true; t.einde = new Date();
+    // dashboard: één rij per toets, met de score en een telling van de soorten fouten
+    {
+        const fouten = {};
+        t.res.flat().forEach(r => { const c = r && !r.ok && !r.leeg && (r.code || r.soort); if (typeof c === 'string' && c && (fouten[c] || Object.keys(fouten).length < 8)) fouten[c] = (fouten[c] || 0) + 1; });
+        const max = Number(t.totaal) || 0;
+        portaalLogToets(max ? 100 * t.behaald / max : 0, (t.einde - t.start) / 1000, String(t.cat), { punten: max, behaald: Math.round(t.behaald * 10) / 10, niv: t.niveau, vragen: t.vragen.length, fouten });
+    }
     ST.scherm = 'uitslag';
     render();
     window.scrollTo({ top: 0 });
@@ -4541,6 +4561,10 @@ const AFG = (() => {
     return { zelftest, GEN, TYPES, maakOefening, kiesToets, Expr, ST };
 })();
 
+</script>
+<script src="tracker.js"></script>
+<script>
+  WiskundeTracker.init({ appId: "6doSW_afgeleiden_sem1" });
 </script>
 </body>
 </html>
