@@ -6,10 +6,11 @@
 <title>6do afgeleiden en de kettingregel</title>
 <!-- Enige externe bibliotheek: KaTeX (vaste versie) voor de wiskundige weergave.
      Zonder internet werkt de app ook, maar dan worden formules als tekst getoond. -->
-<link rel="stylesheet" href="lib/katex/katex.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
 <!-- Handschrift-lettertype voor de feedback van de leerkracht (zonder internet: gewoon handschrift-lettertype van het toestel) -->
-<link rel="stylesheet" href="lib/patrick-hand/patrick-hand.css">
-<script src="lib/katex/katex.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
 <style>
     :root {
         --bg: #f1f5f9; --kaart: #ffffff; --rand: #e2e8f0; --tekst: #1e293b; --zacht: #64748b; --heel-zacht: #94a3b8;
@@ -217,42 +218,6 @@
 </style>
 </head>
 <body>
-
-<!-- PORTAAL-KOPPELING (zelfde blok in elke app): terug naar het portaal en de leerlingcode.
-     De apps vragen of bewaren geen naam; enkel de anonieme code van het portaal wordt getoond. -->
-<style>
-    .portaal-terug { display: inline-block; margin: 0 0 12px; padding: 6px 14px; border: 1px solid #cbd5e1; border-radius: 999px; background: #fff; color: #475569; font: 600 .85rem system-ui, -apple-system, 'Segoe UI', sans-serif; text-decoration: none; }
-    .portaal-terug:hover { background: #f1f5f9; color: #1e293b; }
-    .portaal-terug-rij { text-align: left; }
-    .leerling-code { position: fixed; left: 14px; bottom: 10px; font: 11px system-ui, -apple-system, 'Segoe UI', sans-serif; color: #94a3b8; background: rgba(255,255,255,.85); padding: 2px 8px; border-radius: 6px; pointer-events: none; z-index: 50; }
-    @media print { .portaal-terug-rij, .leerling-code { display: none !important; } }
-</style>
-<script>
-    // Anonieme leerlingcode en klas, zoals ingesteld in het portaal (index.html)
-    function leerlingCode() {
-        try { return (localStorage.getItem('wisk_leerling_code') || '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 20); } catch (e) { return ''; }
-    }
-    function portaalKlas() {
-        try { const k = (localStorage.getItem('wisk_leerling_klas') || '').trim(); return k === 'alle klassen' ? '' : k.replace(/[^\p{L}\p{N} _-]/gu, '').slice(0, 20); } catch (e) { return ''; }
-    }
-    // Resultaten doorgeven aan het dashboard (via tracker.js). Bewaart nooit wat de leerling intypte:
-    // enkel welke oefening, juist of fout, en de soort fout.
-    function portaalLogOpgave(juist, module, fout, details) {
-        try { if (window.WiskundeTracker) WiskundeTracker.logOpgave({ isCorrect: !!juist, moduleId: module, foutCategorie: fout || null, details: details || {} }); } catch (e) { /* loggen mag de app nooit storen */ }
-    }
-    function portaalLogToets(procent, duur, module, details) {
-        try { if (window.WiskundeTracker) WiskundeTracker.logToets({ scoreProcent: procent, duurSeconden: duur || 0, moduleId: module, details: details || {} }); } catch (e) { /* loggen mag de app nooit storen */ }
-    }
-    window.addEventListener('DOMContentLoaded', () => {
-        const code = leerlingCode();
-        if (!code || window.WiskundeTracker) return; // de tracker toont de code al zelf
-        const el = document.createElement('div');
-        el.className = 'leerling-code';
-        el.setAttribute('data-html2canvas-ignore', '');
-        el.textContent = code;
-        document.body.appendChild(el);
-    });
-</script>
 <div id="app"></div>
 <div class="maker-credit">© T. Gaerdelen</div>
 
@@ -536,6 +501,7 @@ fout: (2x-3)2x | $(u\cdot v)' \neq u'\cdot v'$. Gebruik de productregel.
 
 @niveau 3
 f: (3x+1)(x^2-x)(x+2)
+uit: product van drie functies (doet Tom niet)
 d: 12x^3 + 12x^2 - 10x - 2
 dom: -2 2
 regel: Productregel voor drie factoren: $(uvw)' = u'vw + uv'w + uvw'$
@@ -1466,6 +1432,7 @@ s: $\ln(\cos^2 x) = 2\ln|\cos x|$
 s: $f'(x) = 2\cdot\frac{-\sin x}{\cos x} = -2\tan x$
 
 f: e^x sin(x)cos(x)
+uit: product van drie functies (doet Tom niet)
 d: e^x(sin(x)cos(x) + cos(x)^2 - sin(x)^2)
 dom: -2 2
 regel: Productregel voor drie factoren: $(uvw)' = u'vw + uv'w + uvw'$
@@ -1559,6 +1526,220 @@ regel: Kettingregel in drie lagen
 s: $\left(\operatorname{Bgtan} u\right)' = \frac{u'}{1+u^2}$ met $u = \tan^2 x$
 s: $u' = 2\tan x\cdot\frac{1}{\cos^2 x}$ en $u^2 = \tan^4 x$
 s: $f'(x) = \frac{2\tan x}{\cos^2 x\,(1+\tan^4 x)}$
+</script>
+
+<script type="text/plain" class="oefendata">
+// ---------------- EXP, LOG EN GONIOMETRIE GEMENGD (kettingregel) — toegevoegd 2026-11-19 ----------------
+// Nieuwe oefeningen altijd achteraan toevoegen: de id's (h1, h2, ...) volgen de volgorde in het bestand.
+@cat expgonio
+@voor 5 8
+@niveau 1
+
+f: cos(5x^2 - 2x)
+d: -(10x - 2)sin(5x^2 - 2x)
+dom: -1 1
+regel: Kettingregel: $(\cos u)' = -\sin u\cdot u'$
+s: Buitenste functie: $\cos u$, binnenste functie: $u = 5x^2 - 2x \Rightarrow u' = 10x - 2$
+s: $f'(x) = -\sin(5x^2 - 2x)\cdot(10x - 2) = -(10x - 2)\sin(5x^2 - 2x)$
+fout: -sin(5x^2 - 2x) | Vergeet de afgeleide van de binnenste functie niet: $(5x^2-2x)' = 10x - 2$.
+fout: (10x - 2)sin(5x^2 - 2x) | Let op: $(\cos u)' = -\sin u\cdot u'$ (met minteken).
+
+f: sin(e^x)
+d: e^x cos(e^x)
+dom: -2 1
+regel: Kettingregel: $(\sin u)' = \cos u\cdot u'$
+s: $u = e^x \Rightarrow u' = e^x$
+s: $f'(x) = \cos(e^x)\cdot e^x = e^x\cos(e^x)$
+fout: cos(e^x) | Vergeet de afgeleide van de binnenste functie niet: $(e^x)' = e^x$.
+
+f: e^(cos(x))
+d: -sin(x) e^(cos(x))
+dom: -3 3
+regel: Kettingregel: $\left(e^u\right)' = e^u\cdot u'$
+s: $u = \cos x \Rightarrow u' = -\sin x$
+s: $f'(x) = e^{\cos x}\cdot(-\sin x) = -\sin x\, e^{\cos x}$
+fout: e^(cos(x)) | Vergeet de afgeleide van de exponent niet: $(\cos x)' = -\sin x$.
+fout: sin(x) e^(cos(x)) | Let op: $(\cos x)' = -\sin x$ (met minteken).
+
+f: ln(cos(2x))
+d: -2sin(2x)/cos(2x)
+dom: -0.7 0.7
+regel: Kettingregel: $(\ln u)' = \frac{u'}{u}$
+s: $u = \cos(2x) \Rightarrow u' = -\sin(2x)\cdot 2 = -2\sin(2x)$
+s: $f'(x) = \frac{-2\sin(2x)}{\cos(2x)} = -2\tan(2x)$
+fout: 1/cos(2x) | Vergeet de afgeleide van de binnenste functie niet: $(\cos(2x))' = -2\sin(2x)$.
+fout: -sin(2x)/cos(2x) | Bij $\cos(2x)$ vergeet je de afgeleide van $2x$ (kettingregel).
+
+f: tan(e^x)
+d: e^x/cos(e^x)^2
+dom: -2 0.3
+regel: Kettingregel: $(\tan u)' = \frac{u'}{\cos^2 u}$
+s: $u = e^x \Rightarrow u' = e^x$
+s: $f'(x) = \frac{1}{\cos^2(e^x)}\cdot e^x = \frac{e^x}{\cos^2(e^x)}$
+fout: 1/cos(e^x)^2 | Vergeet de afgeleide van de binnenste functie niet: $(e^x)' = e^x$.
+
+f: e^(tan(x))
+d: e^(tan(x))/cos(x)^2
+dom: -1 1
+regel: Kettingregel: $\left(e^u\right)' = e^u\cdot u'$
+s: $u = \tan x \Rightarrow u' = \frac{1}{\cos^2 x}$
+s: $f'(x) = e^{\tan x}\cdot\frac{1}{\cos^2 x} = \frac{e^{\tan x}}{\cos^2 x}$
+fout: e^(tan(x)) | Vergeet de afgeleide van de exponent niet: $(\tan x)' = \frac{1}{\cos^2 x}$.
+
+f: sin(ln(x))
+d: cos(ln(x))/x
+dom: 0.3 4
+regel: Kettingregel: $(\sin u)' = \cos u\cdot u'$
+s: $u = \ln x \Rightarrow u' = \frac{1}{x}$
+s: $f'(x) = \cos(\ln x)\cdot\frac{1}{x} = \frac{\cos(\ln x)}{x}$
+fout: cos(ln(x)) | Vergeet de afgeleide van de binnenste functie niet: $(\ln x)' = \frac{1}{x}$.
+
+@niveau 2
+f: cos(e^(2x))^2
+d: -4e^(2x)cos(e^(2x))sin(e^(2x))
+dom: -2 0.3
+regel: Kettingregel in drie lagen: kwadraat, cosinus, exponentiële functie
+s: Buitenste laag: $\left(u^2\right)' = 2u\cdot u'$ met $u = \cos(e^{2x})$
+s: Middelste laag: $\left(\cos(e^{2x})\right)' = -\sin(e^{2x})\cdot\left(e^{2x}\right)'$
+s: Binnenste laag: $\left(e^{2x}\right)' = 2e^{2x}$
+s: $f'(x) = 2\cos(e^{2x})\cdot\left(-\sin(e^{2x})\right)\cdot 2e^{2x} = -4e^{2x}\cos(e^{2x})\sin(e^{2x})$
+fout: 2cos(e^(2x)) | Leid ook de cosinus en de exponentiële functie af: dit is een kettingregel in drie lagen.
+fout: -2cos(e^(2x))sin(e^(2x)) | Vergeet de binnenste laag niet: $\left(e^{2x}\right)' = 2e^{2x}$.
+
+f: ln(tan(2x))
+d: 2/(sin(2x)cos(2x))
+dom: 0.1 0.7
+regel: Kettingregel: $(\ln u)' = \frac{u'}{u}$ met $u = \tan(2x)$
+s: $u = \tan(2x) \Rightarrow u' = \frac{2}{\cos^2(2x)}$
+s: $f'(x) = \frac{2}{\cos^2(2x)}\cdot\frac{1}{\tan(2x)} = \frac{2}{\cos^2(2x)}\cdot\frac{\cos(2x)}{\sin(2x)}$
+s: $= \frac{2}{\sin(2x)\cos(2x)}$ (of ook $\frac{4}{\sin(4x)}$)
+fout: 1/tan(2x) | Vergeet de afgeleide van de binnenste functie niet: $(\tan(2x))' = \frac{2}{\cos^2(2x)}$.
+fout: 1/(sin(2x)cos(2x)) | Bij $\tan(2x)$ vergeet je de afgeleide van $2x$ (kettingregel).
+
+f: e^(sin(x)^2)
+d: 2sin(x)cos(x)e^(sin(x)^2)
+dom: -3 3
+regel: Kettingregel: $\left(e^u\right)' = e^u\cdot u'$ met $u = \sin^2 x$
+s: $u = \sin^2 x \Rightarrow u' = 2\sin x\cdot\cos x$
+s: $f'(x) = e^{\sin^2 x}\cdot 2\sin x\cos x$
+fout: e^(sin(x)^2) | Vergeet de afgeleide van de exponent niet: $(\sin^2 x)' = 2\sin x\cos x$.
+fout: 2sin(x)e^(sin(x)^2) | Bij $\sin^2 x$ vergeet je de afgeleide van $\sin x$: $(\sin^2 x)' = 2\sin x\cdot\cos x$.
+
+f: ln(cos(x)^2 + 1)
+d: -2sin(x)cos(x)/(cos(x)^2 + 1)
+dom: -3 3
+regel: Kettingregel: $(\ln u)' = \frac{u'}{u}$
+s: $u = \cos^2 x + 1 \Rightarrow u' = 2\cos x\cdot(-\sin x) = -2\sin x\cos x$
+s: $f'(x) = \frac{-2\sin x\cos x}{\cos^2 x + 1}$
+fout: 1/(cos(x)^2 + 1) | Vergeet de afgeleide van de binnenste functie niet: $(\cos^2 x + 1)' = -2\sin x\cos x$.
+
+f: e^(2x) sin(3x)
+d: e^(2x)(2sin(3x) + 3cos(3x))
+dom: -1 1
+regel: Productregel $(u\cdot v)' = u'v + uv'$, met de kettingregel voor beide factoren
+s: $u = e^{2x} \Rightarrow u' = 2e^{2x}$ en $v = \sin(3x) \Rightarrow v' = 3\cos(3x)$
+s: $f'(x) = 2e^{2x}\sin(3x) + 3e^{2x}\cos(3x)$
+s: $= e^{2x}\left(2\sin(3x) + 3\cos(3x)\right)$
+fout: 6e^(2x)cos(3x) | $(u\cdot v)' \neq u'\cdot v'$. Gebruik de productregel.
+
+f: ln(x) cos(x)
+d: cos(x)/x - ln(x)sin(x)
+dom: 0.3 3
+regel: Productregel: $(u\cdot v)' = u'v + uv'$
+s: $u = \ln x \Rightarrow u' = \frac{1}{x}$ en $v = \cos x \Rightarrow v' = -\sin x$
+s: $f'(x) = \frac{1}{x}\cos x + \ln x\cdot(-\sin x) = \frac{\cos x}{x} - \ln x\,\sin x$
+fout: -sin(x)/x | $(u\cdot v)' \neq u'\cdot v'$. Gebruik de productregel.
+
+f: sin(x)/e^x
+d: (cos(x) - sin(x))/e^x
+dom: -2 2
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = \sin x \Rightarrow u' = \cos x$ en $v = e^x \Rightarrow v' = e^x$
+s: $f'(x) = \frac{\cos x\cdot e^x - \sin x\cdot e^x}{(e^x)^2} = \frac{e^x(\cos x - \sin x)}{e^{2x}}$
+s: $= \frac{\cos x - \sin x}{e^x}$
+fout: cos(x)/e^x | $\left(\frac{u}{v}\right)' \neq \frac{u'}{v'}$. Gebruik de quotiëntregel.
+
+f: tan(ln(x))
+d: 1/(x cos(ln(x))^2)
+dom: 0.3 3
+regel: Kettingregel: $(\tan u)' = \frac{u'}{\cos^2 u}$
+s: $u = \ln x \Rightarrow u' = \frac{1}{x}$
+s: $f'(x) = \frac{1}{\cos^2(\ln x)}\cdot\frac{1}{x} = \frac{1}{x\cos^2(\ln x)}$
+fout: 1/cos(ln(x))^2 | Vergeet de afgeleide van de binnenste functie niet: $(\ln x)' = \frac{1}{x}$.
+
+f: cos(x) e^(-x^2)
+d: -e^(-x^2)(sin(x) + 2x cos(x))
+dom: -2 2
+regel: Productregel, met de kettingregel voor $e^{-x^2}$
+s: $u = \cos x \Rightarrow u' = -\sin x$ en $v = e^{-x^2} \Rightarrow v' = -2x\,e^{-x^2}$
+s: $f'(x) = -\sin x\, e^{-x^2} - 2x\cos x\, e^{-x^2}$
+s: $= -e^{-x^2}\left(\sin x + 2x\cos x\right)$
+
+f: ln(1 + sin(x))
+d: cos(x)/(1 + sin(x))
+dom: -1.3 3
+regel: Kettingregel: $(\ln u)' = \frac{u'}{u}$
+s: $u = 1 + \sin x \Rightarrow u' = \cos x$
+s: $f'(x) = \frac{\cos x}{1 + \sin x}$
+fout: 1/(1 + sin(x)) | Vergeet de afgeleide van de binnenste functie niet: $(1+\sin x)' = \cos x$.
+
+@niveau 3
+f: sin(e^(x^2))^2
+d: 4x e^(x^2) sin(e^(x^2))cos(e^(x^2))
+dom: -1 0.9
+regel: Kettingregel in vier lagen: kwadraat, sinus, exponentiële functie, $x^2$
+s: Buitenste laag: $\left(u^2\right)' = 2u\cdot u'$ met $u = \sin\left(e^{x^2}\right)$
+s: $\left(\sin\left(e^{x^2}\right)\right)' = \cos\left(e^{x^2}\right)\cdot\left(e^{x^2}\right)'$ en $\left(e^{x^2}\right)' = 2x\,e^{x^2}$
+s: $f'(x) = 2\sin\left(e^{x^2}\right)\cdot\cos\left(e^{x^2}\right)\cdot 2x\,e^{x^2} = 4x\,e^{x^2}\sin\left(e^{x^2}\right)\cos\left(e^{x^2}\right)$
+fout: 2e^(x^2)sin(e^(x^2))cos(e^(x^2)) | Vergeet de binnenste laag niet: $(x^2)' = 2x$.
+
+f: ln(sin(x)/x)
+d: cos(x)/sin(x) - 1/x
+dom: 0.2 3
+regel: Rekenregel $\ln\frac{a}{b} = \ln a - \ln b$, daarna de kettingregel
+s: $\ln\frac{\sin x}{x} = \ln(\sin x) - \ln x$
+s: $f'(x) = \frac{\cos x}{\sin x} - \frac{1}{x}$ (en $\frac{\cos x}{\sin x} = \cot x$)
+
+f: ln(tan(x)^2)
+d: 2/(sin(x)cos(x))
+dom: 0.2 1.4
+regel: Rekenregel $\ln(u^2) = 2\ln u$ (hier is $\tan x > 0$), daarna de kettingregel
+s: $\ln(\tan^2 x) = 2\ln(\tan x)$
+s: $f'(x) = 2\cdot\frac{1}{\tan x}\cdot\frac{1}{\cos^2 x} = 2\cdot\frac{\cos x}{\sin x}\cdot\frac{1}{\cos^2 x}$
+s: $= \frac{2}{\sin x\cos x}$
+
+f: cos(ln(x^2 + 1))
+d: -2x sin(ln(x^2 + 1))/(x^2 + 1)
+dom: -2 2
+regel: Kettingregel in drie lagen: cosinus, logaritme, veelterm
+s: $(\cos u)' = -\sin u\cdot u'$ met $u = \ln(x^2+1)$
+s: $u' = \frac{2x}{x^2+1}$
+s: $f'(x) = -\sin\left(\ln(x^2+1)\right)\cdot\frac{2x}{x^2+1} = -\frac{2x\sin\left(\ln(x^2+1)\right)}{x^2+1}$
+fout: -sin(ln(x^2 + 1))/(x^2 + 1) | Vergeet de binnenste laag niet: $(x^2+1)' = 2x$.
+
+f: (sin(x) + cos(x))/e^x
+d: -2sin(x)/e^x
+dom: -2 2
+regel: Quotiëntregel: $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$
+s: $u = \sin x + \cos x \Rightarrow u' = \cos x - \sin x$ en $v = e^x \Rightarrow v' = e^x$
+s: $f'(x) = \frac{(\cos x - \sin x)e^x - (\sin x + \cos x)e^x}{e^{2x}}$
+s: Teller: $e^x(\cos x - \sin x - \sin x - \cos x) = -2\sin x\, e^x$, dus $f'(x) = \frac{-2\sin x}{e^x}$
+
+f: ln(e^(2x) + cos(x))
+d: (2e^(2x) - sin(x))/(e^(2x) + cos(x))
+dom: -1 1
+regel: Kettingregel: $(\ln u)' = \frac{u'}{u}$
+s: $u = e^{2x} + \cos x \Rightarrow u' = 2e^{2x} - \sin x$
+s: $f'(x) = \frac{2e^{2x} - \sin x}{e^{2x} + \cos x}$
+fout: 1/(e^(2x) + cos(x)) | Vergeet de afgeleide van de binnenste functie niet: $(e^{2x} + \cos x)' = 2e^{2x} - \sin x$.
+
+f: e^(sin(3x))cos(3x)
+d: 3e^(sin(3x))(cos(3x)^2 - sin(3x))
+dom: -1 1
+regel: Productregel, met de kettingregel voor $e^{\sin(3x)}$ en voor $\cos(3x)$
+s: $u = e^{\sin(3x)} \Rightarrow u' = 3\cos(3x)\,e^{\sin(3x)}$ en $v = \cos(3x) \Rightarrow v' = -3\sin(3x)$
+s: $f'(x) = 3\cos(3x)\,e^{\sin(3x)}\cdot\cos(3x) + e^{\sin(3x)}\cdot(-3\sin(3x))$
+s: $= 3e^{\sin(3x)}\left(\cos^2(3x) - \sin(3x)\right)$
 </script>
 
 <script>
@@ -2507,7 +2688,89 @@ const Generatoren = (() => {
             return { f: `${xm(n)} ${N}(x)`, d, dom: soort === 'tan' ? [-2, 2] : [-0.9, 0.9], regel: "Productregel: $(u\\cdot v)' = u'v + uv'$",
                 s: [`$u = ${T(xm(n))} \\Rightarrow u' = ${T(mon(n, n - 1))}$ en $v = ${T(N + '(x)')} \\Rightarrow v' = ${T(dN)}$`, `$f'(x) = ${T(d)}$`],
                 fout: [`${mon(n, n - 1)}*${dN} | $(u\\cdot v)' \\neq u'\\cdot v'$. Gebruik de productregel.`] };
-        } }
+        } },
+        // ---- exp, log en goniometrie gemengd (toegevoegd 2026-11-19) ----
+        { id: 'expgonio1', cat: 'expgonio', niveau: 1, voor: [5, 8], maak() {
+            const soort = kies(['trigveelterm', 'etrig', 'trige']);
+            if (soort === 'trigveelterm') {
+                const a = kies([2, 3, 4, 5, 6]), b = kies([1, 2, 3, -1, -2, -3]), fn = kies(['sin', 'cos']); // nooit exact de toetsvraag cos(7x^2 + 3x)
+                const u = mon(a, 2) + plus(mon(b, 1)), du = mon(2 * a, 1) + plus(b);
+                const d = fn === 'sin' ? `(${du})cos(${u})` : `-(${du})sin(${u})`;
+                return { f: `${fn}(${u})`, d, dom: [-1, 1],
+                    regel: fn === 'sin' ? "Kettingregel: $(\\sin u)' = \\cos u\\cdot u'$" : "Kettingregel: $(\\cos u)' = -\\sin u\\cdot u'$",
+                    s: [`Buitenste functie: $\\${fn} u$, binnenste functie: $u = ${T(u)} \\Rightarrow u' = ${T(du)}$`, `$f'(x) = ${T(d)}$`],
+                    fout: [`${fn === 'sin' ? 'cos' : '-sin'}(${u}) | Vergeet de afgeleide van de binnenste functie niet: $\\left(${T(u)}\\right)' = ${T(du)}$.`] };
+            }
+            if (soort === 'etrig') {
+                const a = kies([1, 2, 3, 4]), fn = kies(['sin', 'cos']), arg = co(a, 'x'), U = `${fn}(${arg})`;
+                const du = fn === 'sin' ? co(a, `cos(${arg})`) : co(-a, `sin(${arg})`);
+                const d = `${du} e^(${U})`;
+                return { f: `e^(${U})`, d, dom: [-2, 2], regel: "Kettingregel: $\\left(e^u\\right)' = e^u\\cdot u'$",
+                    s: [`$u = ${T(U)} \\Rightarrow u' = ${T(du)}$`, `$f'(x) = ${T(`e^(${U})`)}\\cdot ${T(du.startsWith('-') ? '(' + du + ')' : du)} = ${T(d)}$`],
+                    fout: [`e^(${U}) | Vergeet de afgeleide van de exponent niet: $\\left(${T(U)}\\right)' = ${T(du)}$.`] };
+            }
+            const a = kies([1, 2, 3, -1]), fn = kies(['sin', 'cos']), E = `e^(${co(a, 'x')})`, dE = co(a, E);
+            const d = fn === 'sin' ? `${dE} cos(${E})` : `${co(-a, E)} sin(${E})`;
+            return { f: `${fn}(${E})`, d, dom: a > 0 ? [-2, 0.4 / a] : [-0.4, 2],
+                regel: fn === 'sin' ? "Kettingregel: $(\\sin u)' = \\cos u\\cdot u'$" : "Kettingregel: $(\\cos u)' = -\\sin u\\cdot u'$",
+                s: [`$u = ${T(E)} \\Rightarrow u' = ${T(dE)}$`, `$f'(x) = ${T(d)}$`],
+                fout: [`${fn === 'sin' ? 'cos' : '-sin'}(${E}) | Vergeet de afgeleide van de binnenste functie niet: $\\left(${T(E)}\\right)' = ${T(dE)}$.`] };
+        } },
+        { id: 'expgonio2', cat: 'expgonio', niveau: 2, voor: [5, 8], maak() {
+            const soort = kies(['kwadraatE', 'lntrig', 'product']);
+            if (soort === 'kwadraatE') {
+                const fn = kies(['sin', 'cos']), a = fn === 'sin' ? kies([2, 3]) : kies([1, 2, 3]); // nooit exact de toetsvraag sin^2(e^x)
+                const E = `e^(${co(a, 'x')})`, S = `sin(${E})`, C = `cos(${E})`;
+                const U = fn === 'sin' ? S : C;
+                const d = fn === 'sin' ? `${co(2 * a, E)} ${S}${C}` : `${co(-2 * a, E)} ${C}${S}`;
+                return { f: `${U}^2`, d, dom: [-2, 0.3 / a], regel: 'Kettingregel in drie lagen: kwadraat, ' + (fn === 'sin' ? 'sinus' : 'cosinus') + ', exponentiële functie',
+                    s: [`Buitenste laag: $\\left(u^2\\right)' = 2u\\cdot u'$ met $u = ${T(U)}$`,
+                        `Middelste laag: $\\left(${T(U)}\\right)' = ${fn === 'sin' ? T(C) : T('-' + S)}\\cdot\\left(${T(E)}\\right)'$`,
+                        `Binnenste laag: $\\left(${T(E)}\\right)' = ${T(co(a, E))}$`,
+                        `$f'(x) = ${T(d)}$`],
+                    fout: [`2${U} | Leid ook de ${fn === 'sin' ? 'sinus' : 'cosinus'} en de exponentiële functie af: dit is een kettingregel in drie lagen.`,
+                           `${fn === 'sin' ? '2' + S + C : '-2' + C + S} | Vergeet de binnenste laag niet: $\\left(${T(E)}\\right)' = ${T(co(a, E))}$.`] };
+            }
+            if (soort === 'lntrig') {
+                const a = kies([1, 2, 3, 4]), fn = kies(['sin', 'cos']), arg = co(a, 'x'), U = `${fn}(${arg})`;
+                const du = fn === 'sin' ? co(a, `cos(${arg})`) : co(-a, `sin(${arg})`);
+                const d = `${du}/${U}`;
+                const dom = fn === 'sin' ? [+(0.15 / a).toFixed(3), +(2.8 / a).toFixed(3)] : [-+(1.3 / a).toFixed(3), +(1.3 / a).toFixed(3)];
+                return { f: `ln(${U})`, d, dom, regel: "Kettingregel: $(\\ln u)' = \\frac{u'}{u}$",
+                    s: [`$u = ${T(U)} \\Rightarrow u' = ${T(du)}$`, `$f'(x) = \\frac{u'}{u} = ${T(d)}$`],
+                    fout: [`1/${U} | Vergeet de afgeleide van de binnenste functie niet: $\\left(${T(U)}\\right)' = ${T(du)}$.`] };
+            }
+            const a = kies([1, 2, 3, -1]), b = kies([2, 3, 4]), fn = kies(['sin', 'cos']);
+            const E = `e^(${co(a, 'x')})`, bx = `${b}x`, S = `sin(${bx})`, C = `cos(${bx})`, V = fn === 'sin' ? S : C;
+            const dV = fn === 'sin' ? `${b}${C}` : `-${b}${S}`;
+            const haak = fn === 'sin' ? co(a, S) + plus(`${b}${C}`) : co(a, C) + plus(`-${b}${S}`);
+            const d = `${E}(${haak})`;
+            return { f: `${E} ${V}`, d, dom: [-1, 1], regel: "Productregel $(u\\cdot v)' = u'v + uv'$, met de kettingregel voor beide factoren",
+                s: [`$u = ${T(E)} \\Rightarrow u' = ${T(co(a, E))}$ en $v = ${T(V)} \\Rightarrow v' = ${T(dV)}$`,
+                    `$f'(x) = ${T(`${co(a, E)} ${V}`)} + ${T(E)}\\cdot ${T(dV.startsWith('-') ? '(' + dV + ')' : dV)}$`,
+                    `$= ${T(d)}$`],
+                fout: [`${a}*${E}*${dV.startsWith('-') ? '(' + dV + ')' : dV} | $(u\\cdot v)' \\neq u'\\cdot v'$. Gebruik de productregel.`] };
+        } },
+        { id: 'expgonio3', cat: 'expgonio', niveau: 3, voor: [5, 8], maak() {
+            if (Math.random() < 0.5) {
+                const a = kies([1, 2, 3]), fn = kies(['sin', 'cos']), u = mon(a, 2), du = mon(2 * a, 1), U = `${fn}(${u})`;
+                const dU = fn === 'sin' ? `${du} cos(${u})` : `-${du} sin(${u})`;
+                const d = `${dU} e^(${U})`;
+                return { f: `e^(${U})`, d, dom: [-1, 1], regel: 'Kettingregel in drie lagen: exponentiële functie, ' + (fn === 'sin' ? 'sinus' : 'cosinus') + ', veelterm',
+                    s: [`$\\left(e^v\\right)' = e^v\\cdot v'$ met $v = ${T(U)}$`,
+                        `$v' = ${fn === 'sin' ? T(`cos(${u})`) : T(`-sin(${u})`)}\\cdot\\left(${T(u)}\\right)' = ${T(dU)}$`,
+                        `$f'(x) = ${T(d)}$`],
+                    fout: [`${fn === 'sin' ? '' : '-'}${fn === 'sin' ? 'cos' : 'sin'}(${u}) e^(${U}) | Vergeet de binnenste laag niet: $\\left(${T(u)}\\right)' = ${T(du)}$.`] };
+            }
+            const a = kies([1, 2, 3]), fn = kies(['sin', 'cos']), L = `ln(${co(a, 'x')})`, S = `sin(${L})`, C = `cos(${L})`, U = fn === 'sin' ? S : C;
+            const d = fn === 'sin' ? `2${S}${C}/x` : `-2${C}${S}/x`;
+            return { f: `${U}^2`, d, dom: [0.3, 4], regel: 'Kettingregel in drie lagen: kwadraat, ' + (fn === 'sin' ? 'sinus' : 'cosinus') + ', logaritme',
+                s: [`Buitenste laag: $\\left(u^2\\right)' = 2u\\cdot u'$ met $u = ${T(U)}$`,
+                    `Middelste laag: $\\left(${T(U)}\\right)' = ${fn === 'sin' ? T(C) : T('-' + S)}\\cdot\\left(${T(L)}\\right)'$`,
+                    `Binnenste laag: $\\left(${T(L)}\\right)' = \\frac{${a === 1 ? '1' : a}}{${a === 1 ? 'x' : a + 'x'}} = \\frac{1}{x}$`,
+                    `$f'(x) = ${T(d)}$`],
+                fout: [`${fn === 'sin' ? '2' + S + C : '-2' + C + S} | Vergeet de binnenste laag niet: $\\left(${T(L)}\\right)' = \\frac{1}{x}$.`] };
+        } },
     ];
     return { lijst };
 })();
@@ -2549,6 +2812,7 @@ const Afgeleiden = (() => {
         { id: 'ketting', naam: 'Kettingregel', uitleg: 'machten en wortels van functies' },
         { id: 'gonio', naam: 'Goniometrische functies', uitleg: 'sin, cos, tan en cot' },
         { id: 'explog', naam: 'Exponentiële en logaritmische functies', uitleg: 'eˣ, aˣ, ln, log' },
+        { id: 'expgonio', naam: 'Exp, log en goniometrie gemengd', uitleg: 'kettingregel met eˣ, ln, sin, cos, tan door elkaar' },
         { id: 'cyclo', naam: 'Cyclometrische functies', uitleg: 'Bgsin, Bgcos, Bgtan, Bgcot', enkel8: true },
         { id: 'mix', naam: 'Gemengde uitdagingen', uitleg: 'alles door elkaar, vaak in meerdere stappen' }
     ];
@@ -2623,6 +2887,7 @@ const Afgeleiden = (() => {
     function laadBank() {
         BANK.length = 0; AFGEKEURD.length = 0;
         leesBank().forEach((r, i) => {
+            if (r.uit) return; // uitgeschakeld ("uit:"), maar het id blijft gereserveerd voor het dashboard
             const o = bouwOefening(r, 'h' + (i + 1), false);
             (o.problemen.length ? AFGEKEURD : BANK).push(o);
             if (o.waarschuwingen.length) console.warn('Waarschuwing bij', o.f, o.waarschuwingen);
@@ -2652,11 +2917,11 @@ const Afgeleiden = (() => {
             if (Array.isArray(b.cats)) S.cats = b.cats.filter(c => HOOFDSTUKKEN.some(h => h.id === c));
             if (['mix', '1', '2', '3'].includes(b.niveau)) S.niveau = b.niveau;
             if ([5, 10, 15, 20].includes(b.toetsN)) S.toetsN = b.toetsN;
+            if (typeof b.naam === 'string') S.naam = b.naam.slice(0, 40);
             S.eigenKlavier = !!b.eigenKlavier;
         }
     } catch (e) { /* geen opslag beschikbaar */ }
     function bewaar() { try { localStorage.setItem('afgeleiden.v2', JSON.stringify(S)); } catch (e) { /* geen opslag */ } }
-    bewaar(); // een vroeger bewaarde naam meteen overschrijven
 
     // ---------- selectie ----------
     const actieveCats = () => S.cats.filter(c => HOOFDSTUKKEN.some(h => h.id === c && !(h.enkel8 && S.richting === 5)));
@@ -2672,6 +2937,8 @@ const Afgeleiden = (() => {
         const cyclo = n => n.t === 'fn' && W.FUNCTIES[n.v].cyclo;
         const nodig = [];
         [['gonio', gonio], ['explog', explog], ['cyclo', cyclo]].forEach(([cat, test]) => {
+            // "Exp, log en goniometrie gemengd" dekt zelf goniometrie en exp/log.
+            if (o.cat === 'expgonio' && (cat === 'gonio' || cat === 'explog')) return;
             if (cat !== o.cat && (heeft(o.fBoom, test) || heeft(o.dBoom, test))) nodig.push(cat);
         });
         return (o._nodig = nodig);
@@ -2806,7 +3073,7 @@ const Afgeleiden = (() => {
         if (!act.length) melding = 'Duid minstens één hoofdstuk aan.';
         else if (!lv.length) melding = 'In de gekozen hoofdstukken zijn er geen oefeningen van dit niveau. Kies een ander niveau of meer hoofdstukken.';
         return `<div class="kaart">
-          <div class="kop"><div class="portaal-terug-rij" data-html2canvas-ignore><a class="portaal-terug" href="index.html">← Alle apps</a></div><h1>6do afgeleiden en de kettingregel</h1><p>3de graad ASO · kies je richting, de hoofdstukken en het niveau</p></div>
+          <div class="kop"><h1>6do afgeleiden en de kettingregel</h1><p>3de graad ASO · kies je richting, de hoofdstukken en het niveau</p></div>
           <div class="kaart-binnen">
             <div class="menu-blok"><h2>1. Richting</h2>
               <div class="keuze-rij">
@@ -2839,6 +3106,7 @@ const Afgeleiden = (() => {
               <div class="start-blok toets"><h2>📝 Toets</h2>
                 <p>Zonder hints. Na elke vraag zie je of je juist was, op het einde krijg je een rapport dat je als PDF kan downloaden.</p>
                 <div class="veld-rij">
+                  <label class="veld">Naam (niet verplicht)<input id="naam" maxlength="40" value="${esc(S.naam)}" autocomplete="off"></label>
                   <label class="veld">Aantal vragen<select id="toetsN">${[5, 10, 15, 20].map(n => `<option value="${n}" ${S.toetsN === n ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
                 </div>
                 <button class="knop knop-rood knop-groot" id="start-toets" ${kan ? '' : 'disabled'}>Start de toets</button>
@@ -2939,15 +3207,7 @@ const Afgeleiden = (() => {
         }
         return null;
     }
-    // dashboard: één rij per oefening, op het moment dat ze opgelost is (of verlaten wordt na een fout of hint)
-    function logKettingOefening(o, st, opgelost) {
-        if (!o || !st || st.gelogd) return;
-        st.gelogd = true;
-        const meteen = opgelost && !st.fout && !st.uitwerking && !st.hint;
-        portaalLogOpgave(meteen, o.cat, st.code || (opgelost ? null : 'niet_opgelost'), { oef: String(o.id || '').slice(0, 40), niv: o.niveau, st: meteen ? 'g' : opgelost ? 'h' : 'f', hints: st.hint });
-    }
     function volgendeOefening(eerste) {
-        if (!eerste && OEF.status && !OEF.status.opgelost && (OEF.status.fout || OEF.status.hint)) logKettingOefening(OEF.huidig, OEF.status, false);
         if (!eerste && OEF.status && !OEF.status.opgelost) OEF.reeks = 0;
         const o = trekOefening();
         if (!o) { scherm = 'menu'; toon(); alert('Er zijn geen oefeningen gevonden voor deze keuze.'); return; }
@@ -2984,14 +3244,12 @@ const Afgeleiden = (() => {
                 st.opgelost = true;
                 OEF.juist++;
                 if (!st.fout && !st.uitwerking) OEF.reeks++;
-                logKettingOefening(o, st, true);
             }
             zetFeedback(leerkrachtHTML(r, o, { metSleutel: true, slot: 'Klik op “Volgende” voor een nieuwe oefening.' }) + uitwerkingKnop(o));
             const vk = document.getElementById('volgendeknop');
             if (vk && !isAanraak) vk.focus();
         } else {
             st.fout = true;
-            if (!st.code) st.code = r.code || (r.codes && r.codes[0]) || null;
             OEF.reeks = 0;
             zetFeedback(leerkrachtHTML(r, o, { slot: 'Pas je antwoord aan en controleer opnieuw, of klik op “🪜 Stap voor stap”.' }));
         }
@@ -3079,18 +3337,9 @@ const Afgeleiden = (() => {
         T.fase = 'feedback';
         toon(false);
     }
-    // dashboard: één rij per toets
-    function logKettingToets(T) {
-        if (!T || T.gelogd || !T.vragen.length) return;
-        T.gelogd = true;
-        const fouten = {};
-        T.vragen.forEach((o, i) => { const a = T.antwoorden[i]; const c = a && !a.juist && a.resultaat && (a.resultaat.code || (a.resultaat.codes || [])[0]); if (typeof c === 'string' && c && (fouten[c] || Object.keys(fouten).length < 8)) fouten[c] = (fouten[c] || 0) + 1; });
-        const juist = T.antwoorden.filter(a => a && a.juist).length;
-        portaalLogToets(100 * juist / T.vragen.length, (new Date() - T.start) / 1000, 'toets', { vragen: T.vragen.length, juist, niv: T.instellingen.niveau, uren: T.instellingen.richting, fouten });
-    }
     function volgendeVraag() {
         const T = TOETS;
-        if (T.i >= T.vragen.length - 1) { logKettingToets(T); scherm = 'rapport'; toon(); return; }
+        if (T.i >= T.vragen.length - 1) { scherm = 'rapport'; toon(); return; }
         T.i++;
         T.fase = 'antwoord';
         T.invoer = '';
@@ -3101,7 +3350,6 @@ const Afgeleiden = (() => {
         if (!confirm(n ? 'Wil je de toets stoppen? Je krijgt een rapport van de vragen die je al beantwoord hebt.' : 'Wil je de toets stoppen?')) return;
         if (!n) { scherm = 'menu'; toon(); return; }
         T.vragen = T.vragen.slice(0, n);
-        logKettingToets(T);
         scherm = 'rapport';
         toon();
     }
@@ -3163,7 +3411,7 @@ const Afgeleiden = (() => {
         }).join('');
         return `<div class="kaart"><div class="kaart-binnen">
             <div class="rapport-kop"><h2>Toetsrapport</h2>
-              <div class="rapport-info">${portaalKlas() ? esc(portaalKlas()) + ' · ' : ''}${datum} · ${st.richting} uur wiskunde · ${niveau}<br>${st.cats.length === HOOFDSTUKKEN.filter(h => !(h.enkel8 && st.richting === 5)).length ? 'alle hoofdstukken' : st.cats.map(hoofdstukNaam).map(esc).join(' · ')}</div>
+              <div class="rapport-info">${T.naam ? '<b>' + esc(T.naam) + '</b> · ' : ''}${datum} · ${st.richting} uur wiskunde · ${niveau}<br>${st.cats.length === HOOFDSTUKKEN.filter(h => !(h.enkel8 && st.richting === 5)).length ? 'alle hoofdstukken' : st.cats.map(hoofdstukNaam).map(esc).join(' · ')}</div>
               <div class="score ${klas}">${juist} / ${n} <span class="klein">(${pct}%)</span></div>
             </div>
             ${samenvattingHTML(T)}
@@ -3186,7 +3434,7 @@ const Afgeleiden = (() => {
         if (pdfBibliotheek) return pdfBibliotheek;
         pdfBibliotheek = new Promise((ok, nok) => {
             const s = document.createElement('script');
-            s.src = 'lib/html2pdf-0.10.1.bundle.min.js';
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
             s.onload = () => ok();
             s.onerror = () => { pdfBibliotheek = null; nok(new Error('PDF-bibliotheek niet geladen')); };
             document.head.appendChild(s);
@@ -3211,7 +3459,7 @@ const Afgeleiden = (() => {
     function pdfNaam() {
         const T = TOETS, d = T.start;
         const datum = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        const naam = leerlingCode() || 'leerling';
+        const naam = (T.naam || '').replace(/[\\/:*?"<>|]+/g, '').trim() || 'leerling';
         return `Toetsrapport 6do afgeleiden en de kettingregel - ${naam} - ${datum}.pdf`;
     }
     function pdfOpdracht() {
@@ -3231,7 +3479,6 @@ const Afgeleiden = (() => {
                 pdf.setTextColor(148, 163, 184);
                 pdf.text(`pagina ${i} van ${n}`, 10, 290);
                 pdf.text('© T. Gaerdelen', 200, 290, { align: 'right' });
-                if (leerlingCode()) pdf.text(leerlingCode(), 105, 290, { align: 'center' });
             }
         });
     }
@@ -3311,7 +3558,7 @@ const Afgeleiden = (() => {
             opInvoer();
             const fb = document.getElementById('feedback');
             if (fb && fb.querySelector('.feedback.info, .leerkracht:not(.goed)') && !(scherm === 'toets' && TOETS.fase === 'feedback')) fb.innerHTML = '';
-        }
+        } else if (e.target.id === 'naam') { S.naam = e.target.value.slice(0, 40); bewaar(); }
     });
     document.addEventListener('keydown', e => {
         if (e.key !== 'Enter') return;
@@ -3334,10 +3581,6 @@ const Afgeleiden = (() => {
              laadPdfBibliotheek, pdfInhoud, pdfOpdracht, pdfNaam,
              get scherm() { return scherm; }, get OEF() { return OEF; }, get TOETS() { return TOETS; } };
 })();
-</script>
-<script src="tracker.js"></script>
-<script>
-  WiskundeTracker.init({ appId: "6do_kettingregel" });
 </script>
 </body>
 </html>
