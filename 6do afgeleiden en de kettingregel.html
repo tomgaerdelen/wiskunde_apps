@@ -6,11 +6,10 @@
 <title>6do afgeleiden en de kettingregel</title>
 <!-- Enige externe bibliotheek: KaTeX (vaste versie) voor de wiskundige weergave.
      Zonder internet werkt de app ook, maar dan worden formules als tekst getoond. -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+<link rel="stylesheet" href="lib/katex/katex.min.css">
 <!-- Handschrift-lettertype voor de feedback van de leerkracht (zonder internet: gewoon handschrift-lettertype van het toestel) -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+<link rel="stylesheet" href="lib/patrick-hand/patrick-hand.css">
+<script src="lib/katex/katex.min.js"></script>
 <style>
     :root {
         --bg: #f1f5f9; --kaart: #ffffff; --rand: #e2e8f0; --tekst: #1e293b; --zacht: #64748b; --heel-zacht: #94a3b8;
@@ -218,6 +217,42 @@
 </style>
 </head>
 <body>
+
+<!-- PORTAAL-KOPPELING (zelfde blok in elke app): terug naar het portaal en de leerlingcode.
+     De apps vragen of bewaren geen naam; enkel de anonieme code van het portaal wordt getoond. -->
+<style>
+    .portaal-terug { display: inline-block; margin: 0 0 12px; padding: 6px 14px; border: 1px solid #cbd5e1; border-radius: 999px; background: #fff; color: #475569; font: 600 .85rem system-ui, -apple-system, 'Segoe UI', sans-serif; text-decoration: none; }
+    .portaal-terug:hover { background: #f1f5f9; color: #1e293b; }
+    .portaal-terug-rij { text-align: left; }
+    .leerling-code { position: fixed; left: 14px; bottom: 10px; font: 11px system-ui, -apple-system, 'Segoe UI', sans-serif; color: #94a3b8; background: rgba(255,255,255,.85); padding: 2px 8px; border-radius: 6px; pointer-events: none; z-index: 50; }
+    @media print { .portaal-terug-rij, .leerling-code { display: none !important; } }
+</style>
+<script>
+    // Anonieme leerlingcode en klas, zoals ingesteld in het portaal (index.html)
+    function leerlingCode() {
+        try { return (localStorage.getItem('wisk_leerling_code') || '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 20); } catch (e) { return ''; }
+    }
+    function portaalKlas() {
+        try { const k = (localStorage.getItem('wisk_leerling_klas') || '').trim(); return k === 'alle klassen' ? '' : k.replace(/[^\p{L}\p{N} _-]/gu, '').slice(0, 20); } catch (e) { return ''; }
+    }
+    // Resultaten doorgeven aan het dashboard (via tracker.js). Bewaart nooit wat de leerling intypte:
+    // enkel welke oefening, juist of fout, en de soort fout.
+    function portaalLogOpgave(juist, module, fout, details) {
+        try { if (window.WiskundeTracker) WiskundeTracker.logOpgave({ isCorrect: !!juist, moduleId: module, foutCategorie: fout || null, details: details || {} }); } catch (e) { /* loggen mag de app nooit storen */ }
+    }
+    function portaalLogToets(procent, duur, module, details) {
+        try { if (window.WiskundeTracker) WiskundeTracker.logToets({ scoreProcent: procent, duurSeconden: duur || 0, moduleId: module, details: details || {} }); } catch (e) { /* loggen mag de app nooit storen */ }
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+        const code = leerlingCode();
+        if (!code || window.WiskundeTracker) return; // de tracker toont de code al zelf
+        const el = document.createElement('div');
+        el.className = 'leerling-code';
+        el.setAttribute('data-html2canvas-ignore', '');
+        el.textContent = code;
+        document.body.appendChild(el);
+    });
+</script>
 <div id="app"></div>
 <div class="maker-credit">© T. Gaerdelen</div>
 
@@ -2917,11 +2952,11 @@ const Afgeleiden = (() => {
             if (Array.isArray(b.cats)) S.cats = b.cats.filter(c => HOOFDSTUKKEN.some(h => h.id === c));
             if (['mix', '1', '2', '3'].includes(b.niveau)) S.niveau = b.niveau;
             if ([5, 10, 15, 20].includes(b.toetsN)) S.toetsN = b.toetsN;
-            if (typeof b.naam === 'string') S.naam = b.naam.slice(0, 40);
             S.eigenKlavier = !!b.eigenKlavier;
         }
     } catch (e) { /* geen opslag beschikbaar */ }
     function bewaar() { try { localStorage.setItem('afgeleiden.v2', JSON.stringify(S)); } catch (e) { /* geen opslag */ } }
+    bewaar(); // een vroeger bewaarde naam meteen overschrijven
 
     // ---------- selectie ----------
     const actieveCats = () => S.cats.filter(c => HOOFDSTUKKEN.some(h => h.id === c && !(h.enkel8 && S.richting === 5)));
@@ -3073,7 +3108,7 @@ const Afgeleiden = (() => {
         if (!act.length) melding = 'Duid minstens één hoofdstuk aan.';
         else if (!lv.length) melding = 'In de gekozen hoofdstukken zijn er geen oefeningen van dit niveau. Kies een ander niveau of meer hoofdstukken.';
         return `<div class="kaart">
-          <div class="kop"><h1>6do afgeleiden en de kettingregel</h1><p>3de graad ASO · kies je richting, de hoofdstukken en het niveau</p></div>
+          <div class="kop"><div class="portaal-terug-rij" data-html2canvas-ignore><a class="portaal-terug" href="index.html">← Alle apps</a></div><h1>6do afgeleiden en de kettingregel</h1><p>3de graad ASO · kies je richting, de hoofdstukken en het niveau</p></div>
           <div class="kaart-binnen">
             <div class="menu-blok"><h2>1. Richting</h2>
               <div class="keuze-rij">
@@ -3106,7 +3141,6 @@ const Afgeleiden = (() => {
               <div class="start-blok toets"><h2>📝 Toets</h2>
                 <p>Zonder hints. Na elke vraag zie je of je juist was, op het einde krijg je een rapport dat je als PDF kan downloaden.</p>
                 <div class="veld-rij">
-                  <label class="veld">Naam (niet verplicht)<input id="naam" maxlength="40" value="${esc(S.naam)}" autocomplete="off"></label>
                   <label class="veld">Aantal vragen<select id="toetsN">${[5, 10, 15, 20].map(n => `<option value="${n}" ${S.toetsN === n ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
                 </div>
                 <button class="knop knop-rood knop-groot" id="start-toets" ${kan ? '' : 'disabled'}>Start de toets</button>
@@ -3207,7 +3241,15 @@ const Afgeleiden = (() => {
         }
         return null;
     }
+    // dashboard: één rij per oefening, op het moment dat ze opgelost is (of verlaten wordt na een fout of hint)
+    function logKettingOefening(o, st, opgelost) {
+        if (!o || !st || st.gelogd) return;
+        st.gelogd = true;
+        const meteen = opgelost && !st.fout && !st.uitwerking && !st.hint;
+        portaalLogOpgave(meteen, o.cat, st.code || (opgelost ? null : 'niet_opgelost'), { oef: String(o.id || '').slice(0, 40), niv: o.niveau, st: meteen ? 'g' : opgelost ? 'h' : 'f', hints: st.hint });
+    }
     function volgendeOefening(eerste) {
+        if (!eerste && OEF.status && !OEF.status.opgelost && (OEF.status.fout || OEF.status.hint)) logKettingOefening(OEF.huidig, OEF.status, false);
         if (!eerste && OEF.status && !OEF.status.opgelost) OEF.reeks = 0;
         const o = trekOefening();
         if (!o) { scherm = 'menu'; toon(); alert('Er zijn geen oefeningen gevonden voor deze keuze.'); return; }
@@ -3244,12 +3286,14 @@ const Afgeleiden = (() => {
                 st.opgelost = true;
                 OEF.juist++;
                 if (!st.fout && !st.uitwerking) OEF.reeks++;
+                logKettingOefening(o, st, true);
             }
             zetFeedback(leerkrachtHTML(r, o, { metSleutel: true, slot: 'Klik op “Volgende” voor een nieuwe oefening.' }) + uitwerkingKnop(o));
             const vk = document.getElementById('volgendeknop');
             if (vk && !isAanraak) vk.focus();
         } else {
             st.fout = true;
+            if (!st.code) st.code = r.code || (r.codes && r.codes[0]) || null;
             OEF.reeks = 0;
             zetFeedback(leerkrachtHTML(r, o, { slot: 'Pas je antwoord aan en controleer opnieuw, of klik op “🪜 Stap voor stap”.' }));
         }
@@ -3337,9 +3381,18 @@ const Afgeleiden = (() => {
         T.fase = 'feedback';
         toon(false);
     }
+    // dashboard: één rij per toets
+    function logKettingToets(T) {
+        if (!T || T.gelogd || !T.vragen.length) return;
+        T.gelogd = true;
+        const fouten = {};
+        T.vragen.forEach((o, i) => { const a = T.antwoorden[i]; const c = a && !a.juist && a.resultaat && (a.resultaat.code || (a.resultaat.codes || [])[0]); if (typeof c === 'string' && c && (fouten[c] || Object.keys(fouten).length < 8)) fouten[c] = (fouten[c] || 0) + 1; });
+        const juist = T.antwoorden.filter(a => a && a.juist).length;
+        portaalLogToets(100 * juist / T.vragen.length, (new Date() - T.start) / 1000, 'toets', { vragen: T.vragen.length, juist, niv: T.instellingen.niveau, uren: T.instellingen.richting, fouten });
+    }
     function volgendeVraag() {
         const T = TOETS;
-        if (T.i >= T.vragen.length - 1) { scherm = 'rapport'; toon(); return; }
+        if (T.i >= T.vragen.length - 1) { logKettingToets(T); scherm = 'rapport'; toon(); return; }
         T.i++;
         T.fase = 'antwoord';
         T.invoer = '';
@@ -3350,6 +3403,7 @@ const Afgeleiden = (() => {
         if (!confirm(n ? 'Wil je de toets stoppen? Je krijgt een rapport van de vragen die je al beantwoord hebt.' : 'Wil je de toets stoppen?')) return;
         if (!n) { scherm = 'menu'; toon(); return; }
         T.vragen = T.vragen.slice(0, n);
+        logKettingToets(T);
         scherm = 'rapport';
         toon();
     }
@@ -3411,7 +3465,7 @@ const Afgeleiden = (() => {
         }).join('');
         return `<div class="kaart"><div class="kaart-binnen">
             <div class="rapport-kop"><h2>Toetsrapport</h2>
-              <div class="rapport-info">${T.naam ? '<b>' + esc(T.naam) + '</b> · ' : ''}${datum} · ${st.richting} uur wiskunde · ${niveau}<br>${st.cats.length === HOOFDSTUKKEN.filter(h => !(h.enkel8 && st.richting === 5)).length ? 'alle hoofdstukken' : st.cats.map(hoofdstukNaam).map(esc).join(' · ')}</div>
+              <div class="rapport-info">${portaalKlas() ? esc(portaalKlas()) + ' · ' : ''}${datum} · ${st.richting} uur wiskunde · ${niveau}<br>${st.cats.length === HOOFDSTUKKEN.filter(h => !(h.enkel8 && st.richting === 5)).length ? 'alle hoofdstukken' : st.cats.map(hoofdstukNaam).map(esc).join(' · ')}</div>
               <div class="score ${klas}">${juist} / ${n} <span class="klein">(${pct}%)</span></div>
             </div>
             ${samenvattingHTML(T)}
@@ -3434,7 +3488,7 @@ const Afgeleiden = (() => {
         if (pdfBibliotheek) return pdfBibliotheek;
         pdfBibliotheek = new Promise((ok, nok) => {
             const s = document.createElement('script');
-            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+            s.src = 'lib/html2pdf-0.10.1.bundle.min.js';
             s.onload = () => ok();
             s.onerror = () => { pdfBibliotheek = null; nok(new Error('PDF-bibliotheek niet geladen')); };
             document.head.appendChild(s);
@@ -3459,7 +3513,7 @@ const Afgeleiden = (() => {
     function pdfNaam() {
         const T = TOETS, d = T.start;
         const datum = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        const naam = (T.naam || '').replace(/[\\/:*?"<>|]+/g, '').trim() || 'leerling';
+        const naam = leerlingCode() || 'leerling';
         return `Toetsrapport 6do afgeleiden en de kettingregel - ${naam} - ${datum}.pdf`;
     }
     function pdfOpdracht() {
@@ -3479,6 +3533,7 @@ const Afgeleiden = (() => {
                 pdf.setTextColor(148, 163, 184);
                 pdf.text(`pagina ${i} van ${n}`, 10, 290);
                 pdf.text('© T. Gaerdelen', 200, 290, { align: 'right' });
+                if (leerlingCode()) pdf.text(leerlingCode(), 105, 290, { align: 'center' });
             }
         });
     }
@@ -3558,7 +3613,7 @@ const Afgeleiden = (() => {
             opInvoer();
             const fb = document.getElementById('feedback');
             if (fb && fb.querySelector('.feedback.info, .leerkracht:not(.goed)') && !(scherm === 'toets' && TOETS.fase === 'feedback')) fb.innerHTML = '';
-        } else if (e.target.id === 'naam') { S.naam = e.target.value.slice(0, 40); bewaar(); }
+        }
     });
     document.addEventListener('keydown', e => {
         if (e.key !== 'Enter') return;
@@ -3581,6 +3636,10 @@ const Afgeleiden = (() => {
              laadPdfBibliotheek, pdfInhoud, pdfOpdracht, pdfNaam,
              get scherm() { return scherm; }, get OEF() { return OEF; }, get TOETS() { return TOETS; } };
 })();
+</script>
+<script src="tracker.js"></script>
+<script>
+  WiskundeTracker.init({ appId: "6do_kettingregel" });
 </script>
 </body>
 </html>
