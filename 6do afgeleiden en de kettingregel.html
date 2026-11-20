@@ -2113,6 +2113,9 @@ const Wiskunde = (() => {
 
     // ---------- soorten fouten (voor de leerkrachtfeedback en het rapport) ----------
     const FOUTSOORTEN = {
+        kettingbinnen: { label: 'Kettingregel: afgeleide van de binnenste functie fout', tip: 'Leid de binnenste functie apart af: schrijf u = … en u′ = … op en controleer u′ voor je vermenigvuldigt.' },
+        kettingbuiten: { label: 'Kettingregel: afgeleide van de buitenste functie fout', tip: 'Leid eerst de buitenste functie af alsof de binnenste functie gewoon u is, bv. (ln u)′ = 1/u, (cos u)′ = −sin u, (tan u)′ = 1/cos²u.' },
+        kettingarg:   { label: 'Kettingregel: binnenste functie niet ingevuld', tip: 'In de afgeleide van de buitenste functie blijft de binnenste functie staan: (tan u)′ = 1/cos²u · u′, dus bij tan(2x) is dat 1/cos²(2x), niet 1/cos²(x).' },
         ketting:      { label: 'Kettingregel: afgeleide van de binnenste functie vergeten', tip: 'Schrijf bij een samengestelde functie eerst de binnenste functie u en haar afgeleide u′ op. Vermenigvuldig op het einde altijd met u′.' },
         invullen:     { label: 'Fout bij het invullen in de formule', tip: 'Vul de binnenste functie volledig en met haakjes in, bijvoorbeeld u² = (3x)² = 9x².' },
         product:      { label: 'Productregel niet juist toegepast', tip: 'Bij een product geldt (u·v)′ = u′v + uv′. Schrijf u, u′, v en v′ eerst apart op en vul dan pas in.' },
@@ -2175,6 +2178,11 @@ const Wiskunde = (() => {
             case 'x': return EEN;
             case 'neg': return tgst(afleiden(n.a, mut));
             case 'add': case 'sub': {
+                if (is('constanteKetting')) {
+                    const c = !hangtAf(n.a) ? n.a : n.b, g = c === n.a ? n.b : n.a;
+                    const term = mul(g.b, mcht(g.a, aft(g.b, EEN)));
+                    return mul({ t: n.t, a: c === n.a ? c : term, b: c === n.a ? term : c }, afleiden(g.a, mut));
+                }
                 let da = afleiden(n.a, mut), db = afleiden(n.b, mut);
                 if (is('constante')) { if (!hangtAf(n.a)) da = n.a; else db = n.b; }
                 return { t: n.t, a: da, b: db };
@@ -2213,13 +2221,14 @@ const Wiskunde = (() => {
                     if (is('exponentNiet')) return mul(mul(b, mcht(a, b)), da);
                     if (is('exponentOp')) return mul(mul(b, mcht(a, opt(b, EEN))), da);
                     if (is('geenN')) return mul(mcht(a, aft(b, EEN)), da);
-                    return mul(mul(b, mcht(a, aft(b, EEN))), da);
+                    return mul(mul(b, mcht(is('argX') ? { t: 'x' } : a, aft(b, EEN))), da);
                 }
                 if (!hangtAf(a)) {          // exponentiële functie a^u
                     if (is('alsMacht')) return mul(b, mcht(a, aft(b, EEN)));
                     const db = is('binnenste') ? EEN : afleiden(b, mut);
-                    if (is('geenLn') || (a.t === 'const' && a.v === 'e')) return mul(mcht(a, b), db);
-                    return mul(mul(mcht(a, b), fn('ln', a)), db);
+                    const bx = is('argX') ? { t: 'x' } : b;
+                    if (is('geenLn') || (a.t === 'const' && a.v === 'e')) return mul(mcht(a, bx), db);
+                    return mul(mul(mcht(a, bx), fn('ln', a)), db);
                 }
                 if (is('alsMacht')) return mul(mul(b, mcht(a, aft(b, EEN))), afleiden(a, mut));
                 if (is('alsExpo')) return mul(mul(mcht(a, b), fn('ln', a)), afleiden(b, mut));
@@ -2249,6 +2258,7 @@ const Wiskunde = (() => {
                 if (is('teken')) buiten = tgst(buiten);
                 if (is('wortel2')) buiten = dv(EEN, fn('sqrt', u));
                 if (is('lnDoorX')) buiten = dv(EEN, { t: 'x' });
+                if (is('argX')) buiten = metX(buiten, u);
                 return mul(buiten, du);
             }
         }
@@ -2311,6 +2321,8 @@ const Wiskunde = (() => {
             switch (n.t) {
                 case 'add': case 'sub':
                     if ((!hangtAf(n.a) && !isNum(n.a, 0)) || (!hangtAf(n.b) && !isNum(n.b, 0))) lijst.push([n, 'constante']);
+                    { const c = !hangtAf(n.a) ? n.a : (!hangtAf(n.b) ? n.b : null), g = c === n.a ? n.b : n.a;
+                      if (c && !isNum(c, 0) && g.t === 'pow' && !hangtAf(g.b) && hangtAf(g.a) && !triviaal(g.a)) lijst.push([n, 'constanteKetting']); }
                     break;
                 case 'mul':
                     if (hangtAf(n.a) && hangtAf(n.b)) ['uv', 'enkelUv', 'enkelVu', 'minProduct'].forEach(s => lijst.push([n, s]));
@@ -2319,12 +2331,12 @@ const Wiskunde = (() => {
                     if (hangtAf(n.b)) (hangtAf(n.a) ? ['quotUV', 'quotVolgorde', 'quotKwadraat', 'quotPlus'] : ['eenOverV', 'quotKwadraat']).forEach(s => lijst.push([n, s]));
                     break;
                 case 'pow':
-                    if (!hangtAf(n.b)) { if (!triviaal(n.a)) lijst.push([n, 'binnenste']); ['exponentNiet', 'exponentOp', 'geenN'].forEach(s => lijst.push([n, s])); }
-                    else if (!hangtAf(n.a)) { if (!triviaal(n.b)) lijst.push([n, 'binnenste']); lijst.push([n, 'alsMacht']); if (!(n.a.t === 'const' && n.a.v === 'e')) lijst.push([n, 'geenLn']); }
+                    if (!hangtAf(n.b)) { if (!triviaal(n.a)) { lijst.push([n, 'binnenste']); lijst.push([n, 'argX']); } ['exponentNiet', 'exponentOp', 'geenN'].forEach(s => lijst.push([n, s])); }
+                    else if (!hangtAf(n.a)) { if (!triviaal(n.b)) { lijst.push([n, 'binnenste']); lijst.push([n, 'argX']); } lijst.push([n, 'alsMacht']); if (!(n.a.t === 'const' && n.a.v === 'e')) lijst.push([n, 'geenLn']); }
                     else ['alsMacht', 'alsExpo'].forEach(s => lijst.push([n, s]));
                     break;
                 case 'fn':
-                    if (!triviaal(n.a)) lijst.push([n, 'binnenste']);
+                    if (!triviaal(n.a)) { lijst.push([n, 'binnenste']); if (n.v !== 'abs') lijst.push([n, 'argX']); }
                     if (['cos', 'cot', 'bgcos', 'bgcot'].includes(n.v)) lijst.push([n, 'teken']);
                     if (n.v === 'sqrt') lijst.push([n, 'wortel2']);
                     if (n.v === 'ln' && !triviaal(n.a)) lijst.push([n, 'lnDoorX']);
@@ -2336,7 +2348,7 @@ const Wiskunde = (() => {
     }
     const CODE_VAN = { binnenste: 'ketting', lnDoorX: 'ketting', teken: 'teken', wortel2: 'wortel', uv: 'product', enkelUv: 'product', enkelVu: 'product',
         minProduct: 'product', quotUV: 'quotient', quotVolgorde: 'quotient', quotKwadraat: 'quotient', quotPlus: 'quotient', eenOverV: 'quotient',
-        exponentNiet: 'macht', exponentOp: 'macht', geenN: 'macht', alsMacht: 'exponentieel', alsExpo: 'exponentieel', geenLn: 'exponentieel', constante: 'constante' };
+        exponentNiet: 'macht', exponentOp: 'macht', geenN: 'macht', alsMacht: 'exponentieel', alsExpo: 'exponentieel', geenLn: 'exponentieel', constante: 'constante', argX: 'kettingarg', constanteKetting: 'constante' };
     const TEKENREGEL = { cos: "(\\cos u)' = -\\sin u\\cdot u'", cot: "(\\cot u)' = -\\frac{u'}{\\sin^2 u}",
         bgcos: "(\\operatorname{Bgcos} u)' = \\frac{-u'}{\\sqrt{1-u^2}}", bgcot: "(\\operatorname{Bgcot} u)' = \\frac{-u'}{1+u^2}" };
     function beschrijf({ node: n, soort }) {
@@ -2369,6 +2381,14 @@ const Wiskunde = (() => {
                 return `Bij $${mooi(n)}$ hangen grondtal én exponent af van $x$, dus je mag de machtsregel niet gebruiken. Schrijf $${mooi(n)} = e^{${mooi(mul(n.b, fn('ln', n.a)))}}$ en gebruik de kettingregel.`;
             case 'alsExpo': return `Bij $${mooi(n)}$ hangen grondtal én exponent af van $x$, dus het is geen gewone exponentiële functie. Schrijf $${mooi(n)} = e^{${mooi(mul(n.b, fn('ln', n.a)))}}$ en gebruik de kettingregel.`;
             case 'geenLn': return `Bij $${mooi(n)}$ vergat je de factor $\\ln ${mooi(n.a)}$: $\\left(a^u\\right)' = a^u\\ln a\\cdot u'$. Enkel bij grondtal $e$ valt die factor weg.`;
+            case 'argX': {
+                const u = n.t === 'pow' && hangtAf(n.b) ? n.b : n.a, B = afleiden(n, new Map([[n, 'binnenste']]));
+                return `Bij $${mooi(n)}$ vulde je in de afgeleide van de buitenste functie $x$ in in plaats van de binnenste functie $${mooi(u)}$. Het moet $${mooi(B)}$ zijn, niet $${mooi(metX(B, u))}$ (kettingregel).`;
+            }
+            case 'constanteKetting': {
+                const c = !hangtAf(n.a) ? n.a : n.b;
+                return `Bij $${mooi(n)}$: de afgeleide van de constante $${mooi(c)}$ is $0$, die hoort er niet meer bij. Juist is $\\left(${mooi(n)}\\right)' = ${mooi(afleiden(n, null))}$.`;
+            }
             case 'constante': return `De afgeleide van een constante is $0$, maar jij liet $${mooi(!hangtAf(n.a) ? n.a : n.b)}$ staan.`;
         }
         return '';
@@ -2440,6 +2460,138 @@ const Wiskunde = (() => {
         return null;
     }
 
+    // ---------- kettinganalyse (2026-11-20): welk deel van de afgeleide klopt, en welk niet? ----------
+    // De afgeleide van een samengestelde functie is (afgeleide buitenste functie) · (afgeleide binnenste functie).
+    // We splitsen het antwoord van de leerling in factoren en zoeken welke factoren samen de afgeleide van de
+    // buitenste functie vormen. Klopt die, dan bekijken we de rest als afgeleide van de binnenste functie (laag per laag).
+    function metX(t, u) {
+        if (t === u) return { t: 'x' };
+        if (!t || typeof t !== 'object') return t;
+        const k = Object.assign({}, t);
+        if (t.a) k.a = metX(t.a, u);
+        if (t.b) k.b = metX(t.b, u);
+        return k;
+    }
+    function binnenVan(n) {
+        if (n.t === 'fn' && hangtAf(n.a) && n.a.t !== 'x') return n.a;
+        if (n.t === 'pow' && !hangtAf(n.b) && hangtAf(n.a) && n.a.t !== 'x') return n.a;
+        if (n.t === 'pow' && !hangtAf(n.a) && hangtAf(n.b) && n.b.t !== 'x') return n.b;
+        return null;
+    }
+    function factorLijst(n, uit = []) {
+        if (n.t === 'mul') { factorLijst(n.a, uit); factorLijst(n.b, uit); }
+        else if (n.t === 'neg') { uit.push(N(-1)); factorLijst(n.a, uit); }
+        else if (n.t === 'div') { if (!isNum(n.a, 1)) factorLijst(n.a, uit); factorLijst(n.b, []).forEach(f => uit.push(isNum(f, -1) ? f : dv(EEN, f))); }
+        else uit.push(n);
+        return uit;
+    }
+    const prodBoom = fs => fs.length ? fs.reduce((s, f) => mul(s, f)) : EEN;
+    function vecVan(n, pts) { return pts.map(x => waarde(n, x)); }
+    function gelijkVec(a, b) {
+        let geldig = 0;
+        for (let i = 0; i < a.length; i++) {
+            const c = b[i], u = a[i];
+            if (!Number.isFinite(c) || Math.abs(c) > 1e7) continue;
+            if (!Number.isFinite(u) || !dichtbij(u, c)) return false;
+            geldig++;
+        }
+        return geldig >= 4;
+    }
+    function deelverzamelingen(m, test) {     // eerst de kleinste
+        const maskers = [];
+        for (let k = 1; k < (1 << m); k++) maskers.push(k);
+        maskers.sort((p, q) => bits(p) - bits(q));
+        for (const k of maskers) if (test(k)) return k;
+        return 0;
+        function bits(x) { let c = 0; while (x) { c += x & 1; x >>= 1; } return c; }
+    }
+    // Vergelijk een stuk van het antwoord (factoren fs) met de afgeleide van deel n. Geeft { code, tekst } of null.
+    function deelAnalyse(n, fs, pts) {
+        const u = binnenVan(n);
+        const juist = afleiden(n, null);
+        const vfs = fs.map(f => vecVan(f, pts));
+        const prod = k => { const r = pts.map(() => 1); vfs.forEach((v, i) => { if (k & (1 << i)) v.forEach((x, j) => { r[j] *= x; }); }); return r; };
+        const alle = (1 << fs.length) - 1;
+        if (fs.length > 10) return null;
+        if (gelijkVec(prod(alle), vecVan(juist, pts))) return { ok: true };
+        if (!u) {
+            // geen kettingknoop: misschien een typische fout bij dit deel
+            const vR = prod(alle);
+            for (const [node, soort] of kandidaten(n)) {
+                if (gelijkVec(vR, vecVan(afleiden(n, new Map([[node, soort]])), pts))) return { code: CODE_VAN[soort] || 'onbekend', tekst: beschrijf({ node, soort }) };
+            }
+            return null;
+        }
+        const B = afleiden(n, new Map([[n, 'binnenste']])), dU = afleiden(u, null);
+        const vB = vecVan(B, pts), vU = vecVan(dU, pts);
+        const wat = n.t === 'pow' && hangtAf(n.b) ? 'de exponent' : 'de binnenste functie';
+        // 1. afgeleide van de buitenste functie juist?
+        const kB = deelverzamelingen(fs.length, k => gelijkVec(prod(k), vB));
+        if (kB) {
+            const rest = fs.filter((_, i) => !(kB & (1 << i)));
+            const vR = prod(alle & ~kB);
+            const begin = `Bij $${mooi(n)}$ heb je de afgeleide van de buitenste functie juist: $${mooi(B)}$. `;
+            if (!rest.length) return { code: 'ketting', tekst: begin + `Maar je vergat te vermenigvuldigen met de afgeleide van ${wat} $${mooi(u)}$, namelijk $${mooi(dU)}$.` };
+            const dieper = deelAnalyse(u, rest, pts);
+            if (dieper && dieper.ok) return null;
+            if (dieper) return { code: dieper.code, tekst: begin + dieper.tekst };
+            if (gelijkVec(vR, vU.map(v => -v))) return { code: 'teken', tekst: begin + `Bij de afgeleide van ${wat} $${mooi(u)}$ klopt het teken niet: het is $${mooi(dU)}$.` };
+            return { code: 'kettingbinnen', tekst: begin + `Maar de afgeleide van ${wat} $${mooi(u)}$ klopt niet: jij schreef $${mooi(prodBoom(rest))}$, het moet $${mooi(dU)}$ zijn.` };
+        }
+        // 2. afgeleide van de binnenste functie juist, buitenste fout?
+        if (!vU.every(v => Math.abs(v - 1) < 1e-9)) {
+            const kU = deelverzamelingen(fs.length, k => gelijkVec(prod(k), vU));
+            if (kU) {
+                const rest = fs.filter((_, i) => !(kU & (1 << i)));
+                const vR = prod(alle & ~kU);
+                const begin = `Bij $${mooi(n)}$ heb je de afgeleide van ${wat} $${mooi(u)}$ juist: $${mooi(dU)}$. `;
+                const Bx = metX(B, u);
+                if (gelijkVec(vR, vecVan(Bx, pts))) return { code: 'kettingarg', tekst: begin + `Maar in de afgeleide van de buitenste functie moet ${wat} $${mooi(u)}$ blijven staan: het is $${mooi(B)}$, niet $${mooi(Bx)}$.` };
+                if (gelijkVec(vR, vB.map(v => -v))) return { code: 'teken', tekst: begin + `Maar bij de afgeleide van de buitenste functie klopt het teken niet: het is $${mooi(B)}$.` };
+                return { code: 'kettingbuiten', tekst: begin + `Maar de afgeleide van de buitenste functie klopt niet: jij schreef $${mooi(prodBoom(rest))}$, het moet $${mooi(B)}$ zijn.` };
+            }
+        }
+        return null;
+    }
+    // Ingang: de hele functie, of per term (som) of per factor (productregel).
+    function kettingAnalyse(boom, oef) {
+        const pts = punten(oef.dom, 12), f = oef.fBoom;
+        if (binnenVan(f)) { const r = deelAnalyse(f, factorLijst(boom), pts); return r && !r.ok ? r : null; }
+        const sT = termen(boom);
+        if (f.t === 'add' || f.t === 'sub') {
+            const fT = termen(f).filter(t => hangtAf(t));
+            const verwacht = fT.map(t => vecVan(afleiden(t, null), pts));
+            const vrij = sT.filter(s => !verwacht.some(v => gelijkVec(vecVan(s, pts), v)));
+            for (let i = 0; i < fT.length; i++) {
+                if (sT.some(s => gelijkVec(vecVan(s, pts), verwacht[i]))) continue;
+                for (const s of vrij) {
+                    const r = deelAnalyse(fT[i], factorLijst(s), pts);
+                    if (r && !r.ok) return { code: r.code, tekst: `Bij de term $${mooi(fT[i])}$: ` + r.tekst };
+                }
+            }
+            return null;
+        }
+        if (f.t === 'mul' && hangtAf(f.a) && hangtAf(f.b) && sT.length === 2) {
+            const { a: u, b: v } = f;
+            const vu = vecVan(u, pts), vv = vecVan(v, pts);
+            const rollen = [{ hele: v, deel: u, naam: "u'\\cdot v" }, { hele: u, deel: v, naam: "u\\cdot v'" }];
+            for (const s of sT) {
+                const fs = factorLijst(s), vfs = fs.map(g => vecVan(g, pts));
+                for (const rol of rollen) {
+                    const doel = rol.hele === v ? vv : vu;
+                    const prod = k => { const r = pts.map(() => 1); vfs.forEach((w, i) => { if (k & (1 << i)) w.forEach((x, j) => { r[j] *= x; }); }); return r; };
+                    if (fs.length > 10) continue;
+                    const k = deelverzamelingen(fs.length, m => gelijkVec(prod(m), doel));
+                    if (!k) continue;
+                    const rest = fs.filter((_, i) => !(k & (1 << i)));
+                    const r = deelAnalyse(rol.deel, rest.length ? rest : [EEN], pts);
+                    if (r && !r.ok) return { code: r.code, tekst: `In de productregel $(u\\cdot v)' = u'v + uv'$ met $u = ${mooi(u)}$ en $v = ${mooi(v)}$ klopt de term $${rol.naam}$ niet. ` + r.tekst };
+                }
+            }
+        }
+        return null;
+    }
+
     // oef: { fBoom, dBoom, dom, fouten: [{ boom, tekst, code }] }
     // Resultaat: { status: 'juist'|'fout'|'onleesbaar', boom, boodschap, code, codes, delen, onvereenvoudigd }
     function beoordeel(invoer, oef) {
@@ -2458,6 +2610,9 @@ const Wiskunde = (() => {
             return fout('domein', "Je antwoord bestaat niet voor alle x waar f'(x) wel bestaat (bv. een wortel of logaritme van een negatief getal, of delen door 0).");
         const m = mutatieAnalyse(boom, oef);
         if (m) return fout(m.codes[0], m.delen.length === 1 ? m.delen[0] : 'Je maakte twee fouten: ' + m.delen.join(' '), { codes: m.codes, delen: m.delen });
+        let ka = null;
+        try { ka = kettingAnalyse(boom, oef); } catch (e) { ka = null; } // de analyse mag het nakijken nooit breken
+        if (ka) return fout(ka.code, ka.tekst);
         const r = constanteFactor(v.ratios);
         if (r !== null && Math.abs(r + 1) < 1e-6)
             return fout('teken', 'Bijna! Je antwoord is precies het tegengestelde van de afgeleide. Ergens staat een minteken te veel of te weinig.');
