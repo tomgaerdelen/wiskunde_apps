@@ -188,7 +188,6 @@
       color: #3730a3;
     }
     .badge-version { background: #f1f5f9; color: #475569; font-family: monospace; }
-    .badge-new { background: var(--success-bg); color: var(--success); }
     .badge-klas { background: #fef3c7; color: #92400e; }
     .app-card h3 { margin: 0 0 8px 0; font-size: 1.15rem; color: var(--text); }
     .app-card p { margin: 0 0 20px 0; font-size: 0.92rem; color: var(--muted); }
@@ -502,7 +501,7 @@ const APPS = [
     "beschrijving": "Maak oefeningen op afgeleiden en de kettingregel.",
     "bestand": "6do afgeleiden en de kettingregel.html",
     "versie": "1.7",
-    "nieuw": true,
+    "nieuw": false,
     "onderdeel": "Wiskunde",
     "klassen": [
       "6doTW",
@@ -833,7 +832,6 @@ function renderApps() {
           <div class="badges">
             ${app.onderdeel ? `<span class="badge">${app.onderdeel}</span>` : ""}
             <span class="badge badge-version">v${app.versie || "1.0"}</span>
-            ${app.nieuw ? `<span class="badge badge-new">Nieuw</span>` : ""}
             ${klasBadges}
           </div>
           <h3>${app.titel}</h3>
