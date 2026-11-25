@@ -3401,7 +3401,7 @@ const Afgeleiden = (() => {
         if (!o || !st || st.gelogd) return;
         st.gelogd = true;
         const meteen = opgelost && !st.fout && !st.uitwerking && !st.hint;
-        portaalLogOpgave(meteen, o.cat, st.code || (opgelost ? null : 'niet_opgelost'), { oef: String(o.id || '').slice(0, 40), niv: o.niveau, st: meteen ? 'g' : opgelost ? 'h' : 'f', hints: st.hint });
+        portaalLogOpgave(meteen, o.cat, st.code || (opgelost ? null : 'niet_opgelost'), { oef: String(o.id || '').slice(0, 40), niv: o.niveau, st: meteen ? 'g' : opgelost ? 'h' : 'f', hints: st.hint, ...(meteen ? {} : { opg: '$f(x) = ' + o.fTex + '$', jst: "$f'(x) = " + o.dTex + '$', ...(st.f1 || {}) }) }); // portaalFoutDetails
     }
     function volgendeOefening(eerste) {
         if (!eerste && OEF.status && !OEF.status.opgelost && (OEF.status.fout || OEF.status.hint)) logKettingOefening(OEF.huidig, OEF.status, false);
@@ -3449,6 +3449,8 @@ const Afgeleiden = (() => {
         } else {
             st.fout = true;
             if (!st.code) st.code = r.code || (r.codes && r.codes[0]) || null;
+            // dashboard: eerste foute antwoord en de feedback die de leerling toen zag
+            if (!st.f1) { try { st.f1 = { fs: soortVan(st.code || 'onbekend').label, fb: W.vulIn(r.boodschap || (r.delen || []).join(' / ') || soortVan(st.code || 'onbekend').tip), ant: r.boom ? "$f'(x) = " + W.tex(r.boom) + '$' : String(inp.value).slice(0, 80) }; } catch (e) { st.f1 = {}; } }
             OEF.reeks = 0;
             zetFeedback(leerkrachtHTML(r, o, { slot: 'Pas je antwoord aan en controleer opnieuw, of klik op “🪜 Stap voor stap”.' }));
         }
