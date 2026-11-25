@@ -3531,13 +3531,13 @@ function maakOefening(g, seed) {
 }
 // ===================== onderdelen, niveaus en opslag =====================
 const CATS = [
-    { id: 'explog', so: 'SO 1', naam: 'Afgeleiden: inverse, exp en log', kort: 'kettingregel, inverse functie, aˣ, logₐx, functiemacht, raaklijn', ico: 'eˣ', kleur: '#2563eb' },
-    { id: 'hopital', so: 'SO 2', naam: "Regel van de l'Hôpital", kort: '0/0, ∞/∞, ∞ − ∞, 0·∞, 1^∞, 0⁰, ∞⁰', ico: 'H', kleur: '#7c3aed' },
-    { id: 'verloopexp', so: 'SO 3', naam: 'Verloop van exp- en log-functies', kort: 'domein, asymptoten, extrema, buigpunten, parameters', ico: 'f', kleur: '#0891b2' },
-    { id: 'gonio', so: 'SO 4', naam: 'Goniometrische functies', kort: 'lim sin x / x, afgeleiden, periode, verloop, optimalisatie', ico: 'sin', kleur: '#db2777' },
-    { id: 'cyclo', so: 'SO 5', naam: 'Cyclometrische functies en limieten', kort: "Bgsin, Bgcos, Bgtan: waarden, domein, afgeleiden, verloop, l'Hôpital", ico: 'Bg', kleur: '#ea580c' },
-    { id: 'impl', so: 'SO 6', naam: 'Impliciet afleiden en parameterkrommen', kort: 'dy/dx, raaklijnen, horizontale en verticale raaklijnen, verwante snelheden', ico: 'dy', kleur: '#16a34a' },
-    { id: 'dv', so: 'SO 6', naam: 'Differentiaalvergelijkingen en kettinglijn', kort: "f' = k·f, groei en verval, afkoeling, cosh en sinh", ico: 'ekt', kleur: '#ca8a04' },
+    { id: 'explog', so: 'H1', naam: 'Afgeleiden: inverse, exp en log', kort: 'kettingregel, inverse functie, aˣ, logₐx, functiemacht, raaklijn', ico: 'eˣ', kleur: '#2563eb' },
+    { id: 'hopital', so: 'H2', naam: "Regel van de l'Hôpital", kort: '0/0, ∞/∞, ∞ − ∞, 0·∞, 1^∞, 0⁰, ∞⁰', ico: 'H', kleur: '#7c3aed' },
+    { id: 'verloopexp', so: 'H3', naam: 'Verloop van exp- en log-functies', kort: 'domein, asymptoten, extrema, buigpunten, parameters', ico: 'f', kleur: '#0891b2' },
+    { id: 'gonio', so: 'H4', naam: 'Goniometrische functies', kort: 'lim sin x / x, afgeleiden, periode, verloop, optimalisatie', ico: 'sin', kleur: '#db2777' },
+    { id: 'cyclo', so: 'H5', naam: 'Cyclometrische functies en limieten', kort: "Bgsin, Bgcos, Bgtan: waarden, domein, afgeleiden, verloop, l'Hôpital", ico: 'Bg', kleur: '#ea580c' },
+    { id: 'impl', so: 'H6', naam: 'Impliciet afleiden en parameterkrommen', kort: 'dy/dx, raaklijnen, horizontale en verticale raaklijnen, verwante snelheden', ico: 'dy', kleur: '#16a34a' },
+    { id: 'dv', so: 'H7', naam: 'Differentiaalvergelijkingen en kettinglijn', kort: "f' = k·f, groei en verval, afkoeling, cosh en sinh", ico: 'ekt', kleur: '#ca8a04' },
 ];
 const CAT = Object.fromEntries(CATS.map(c => [c.id, c]));
 const NIVEAU = { 1: 'eenvoudig', 2: 'gemiddeld', 3: 'uitdagend' };
@@ -3739,14 +3739,14 @@ function renderMenu() {
     };
     const ptn = ST.toetsCat === 'mix' ? [10, 20, 30] : [10, 20];
     if (!ptn.includes(ST.toetsPunten)) ST.toetsPunten = 20;
-    let s = `<div class="kaart"><div class="kop"><div class="portaal-terug-rij" data-html2canvas-ignore><a class="portaal-terug" href="index.html">← Alle apps</a></div><h1>6doTW afgeleiden semester 1</h1><p>Afgeleiden van exp-, log- en goniometrische functies · uitleg, extra oefeningen en toetsen per hoofdstuk (SO 1 – SO 6) en gemengd</p></div><div class="kaart-binnen">
+    let s = `<div class="kaart"><div class="kop"><div class="portaal-terug-rij" data-html2canvas-ignore><a class="portaal-terug" href="index.html">← Alle apps</a></div><h1>6doTW afgeleiden semester 1</h1><p>Afgeleiden van exp-, log- en goniometrische functies · uitleg, extra oefeningen en toetsen per hoofdstuk en gemengd</p></div><div class="kaart-binnen">
         <div class="modus-grid">
             <button class="modus theorie ${m === 'theorie' ? 'aan' : ''}" data-act="modus" data-m="theorie"><b>📘 Uitleg &amp; voorbeelden</b><span>De theorie uit de cursus, met telkens nieuwe, volledig uitgewerkte voorbeelden.</span></button>
             <button class="modus oefen ${m === 'oefen' ? 'aan' : ''}" data-act="modus" data-m="oefen"><b>✏️ Vrij oefenen</b><span>Zoveel nieuwe oefeningen als je wil, met hints, uitwerking en feedback van je leerkracht.</span></button>
             <button class="modus toets ${m === 'toets' ? 'aan' : ''}" data-act="modus" data-m="toets"><b>📝 Toets</b><span>Per hoofdstuk of gemengd over alles, met score, feedback en PDF-rapport.</span></button>
         </div>
         <div class="sectie-titel">${m === 'theorie' ? 'Kies een hoofdstuk om de uitleg te bekijken' : m === 'oefen' ? 'Kies een hoofdstuk om te oefenen' : 'Kies het onderdeel van de toets'}</div>
-        <div class="cat-grid">${CATS.map(c => catKaart(c.id, c.naam, c.kort, c.ico, c.kleur, c.so)).join('')}${m !== 'theorie' ? catKaart('mix', 'Gemengd: alles door elkaar', 'ideaal als examenvoorbereiding', '★', '#334155', 'SO 1–6') : ''}</div>`;
+        <div class="cat-grid">${CATS.map(c => catKaart(c.id, c.naam, c.kort, c.ico, c.kleur, c.so)).join('')}${m !== 'theorie' ? catKaart('mix', 'Gemengd: alles door elkaar', 'ideaal als examenvoorbereiding', '★', '#334155', 'H1–7') : ''}</div>`;
     if (m === 'toets') {
         s += `<div class="instel"><h3>Toets: ${esc(catNaam(ST.toetsCat))}</h3>
             <div class="keuze-rij">${ptn.map(p => `<button class="keuze ${ST.toetsPunten === p ? 'aan' : ''}" data-act="tpunten" data-p="${p}">${p} punten<small>${p === 10 ? 'korte toets' : p === 20 ? 'zoals een SO' : 'examenoefening'}</small></button>`).join('')}</div>
