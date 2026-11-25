@@ -4527,6 +4527,20 @@ function bewaarOefenWaarden() {
     if (!o || !o.inst) return;
     APP.querySelectorAll('[data-deel]').forEach(el => { const i = +el.dataset.deel; if (!o.staat[i].ok) o.staat[i].waarden = leesDeel(el); });
 }
+// dashboard: opgave, eerste foute antwoord en de feedback die de leerling toen zag
+function portaalFoutDetails(inst) {
+    try {
+        if (!inst) return {};
+        const f = inst._f, d = f ? inst.delen[f.i] : (inst.delen && inst.delen.length === 1 ? inst.delen[0] : null);
+        const r = { opg: [inst.opgave, d && d.vraag].filter(x => typeof x === 'string' && x).join(' | ') };
+        if (f) {
+            if (f.msg) r.fb = String(f.msg);
+            if (d && d.type !== 'keuze') r.ant = Object.values(f.w || {}).filter(v => v !== '' && v !== null && v !== undefined).map(String).join(' ; ');
+            if (d && typeof d.juistTex === 'string') r.jst = '$' + d.juistTex + '$';
+        }
+        return r;
+    } catch (e) { return {}; }
+}
 function logOefening(status) {
     const o = ST.oefen;
     if (o.gelogd) return;
@@ -4536,7 +4550,7 @@ function logOefening(status) {
     {
         const gen = (o.inst && o.inst.gen) || {};
         const codes = [...(o.codes || []), ...(o.fouten || []), ...(o.staat || []).flatMap(s => s.codes || [])].filter(c => typeof c === 'string' && c);
-        portaalLogOpgave(status === 'g', gen.cat, codes[0], { oef: gen.id, niv: gen.niveau, st: status, pog: o.pogingen, hints: o.hints, ...(o.lp ? { m: 'lp', stap: o.lp.id, fase: o.lp.soort === 'leer' ? o.lp.fase : o.lp.soort } : {}) });
+        portaalLogOpgave(status === 'g', gen.cat, codes[0], { oef: gen.id, niv: gen.niveau, st: status, pog: o.pogingen, hints: o.hints, ...(status === 'g' ? {} : portaalFoutDetails(o.inst)), ...(o.lp ? { m: 'lp', stap: o.lp.id, fase: o.lp.soort === 'leer' ? o.lp.fase : o.lp.soort } : {}) });
     }
     const s = opslag.lees('stat', {}), c = o.inst.gen.cat;
     s[c] = s[c] || { n: 0, g: 0 }; s[c].n++; if (status === 'g') s[c].g++;
@@ -4555,7 +4569,7 @@ function controleerOefening() {
         let res;
         try { res = TYPES[d.type].controleer(d, st.waarden); }
         catch (e) { res = e.leesfout ? { ok: false, leesfout: true, msg: e.message } : { ok: false, msg: 'Er liep iets mis bij het nakijken van dit antwoord.' }; if (!e.leesfout) console.error(e); }
-        st.fb = res;
+        st.fb = res; if (!res.ok && !res.leesfout && !o.inst._f) o.inst._f = { i, msg: res.msg, w: { ...st.waarden } };
         if (res.ok) st.ok = true; else { alleJuist = false; if (!res.leesfout) ergensFout = true; }
     });
     if (ergensFout) o.pogingen++;
