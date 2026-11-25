@@ -60,7 +60,8 @@
     .naam-rij .veld { flex: 1 1 200px; }
     .veld { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; font-weight: 600; color: #475569; }
     .veld input, .veld select { font: inherit; font-weight: 500; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; }
-    .modus-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
+    .modus-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
+    @media (max-width: 900px) { .modus-grid { grid-template-columns: repeat(2, 1fr); } }
     .modus { border-radius: 14px; padding: 16px; border: 2px solid var(--rand); background: #fff; text-align: left; display: flex; flex-direction: column; gap: 4px; }
     .modus b { font-size: 1.08rem; }
     .modus span { font-size: .86rem; color: var(--zacht); font-weight: 500; }
@@ -68,6 +69,33 @@
     .modus.oefen { border-color: var(--groen-rand); background: var(--groen-licht); } .modus.oefen b { color: var(--groen-donker); }
     .modus.toets { border-color: var(--rood-rand); background: var(--rood-licht); } .modus.toets b { color: var(--rood-donker); }
     .modus.aan { box-shadow: 0 0 0 3px rgba(30, 58, 138, .25); }
+    /* leerpad */
+    .modus.leerpad { border-color: #99f6e4; background: #f0fdfa; } .modus.leerpad b { color: #0f766e; }
+    .balk.leerpad { background: #0f766e; }
+    .lp-intro { margin-top: 18px; padding: 14px 16px; border-radius: 14px; background: #f0fdfa; border: 1px solid #99f6e4; }
+    .lp-intro p { margin: 0; }
+    .lp-voortgang { height: 10px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin: 12px 0 4px; }
+    .lp-voortgang > span { display: block; height: 100%; background: #0f766e; border-radius: 99px; }
+    .lp-etappe h3 { font-size: 1rem; margin: 20px 0 8px; color: #334155; }
+    .lp-stap { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: #fff; border: 2px solid var(--rand); border-radius: 12px; padding: 9px 12px; margin-bottom: 8px; }
+    .lp-stap:hover { border-color: #94a3b8; }
+    .lp-stap.volgende { border-color: #0f766e; box-shadow: 0 0 0 3px rgba(15, 118, 110, .15); }
+    .lp-nr { flex: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; background: #e2e8f0; color: #475569; }
+    .lp-stap.klaar .lp-nr { background: var(--groen); color: #fff; }
+    .lp-stap.wankel .lp-nr { background: #f59e0b; color: #fff; }
+    .lp-stap.bezig .lp-nr { background: #ccfbf1; color: #0f766e; }
+    .lp-stap b { display: block; font-size: .96rem; }
+    .lp-stap small { display: block; color: var(--zacht); font-size: .8rem; margin-top: 1px; }
+    .lp-badge { margin-left: auto; font-size: .76rem; font-weight: 700; color: var(--zacht); text-align: right; }
+    .lp-stap.klaar .lp-badge { color: var(--groen-donker); } .lp-stap.wankel .lp-badge { color: #b45309; }
+    .lp-fasen { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px 16px; background: #f0fdfa; border-bottom: 1px solid var(--rand); font-size: .84rem; }
+    .lp-fase { padding: 3px 10px; border-radius: 99px; background: #fff; border: 1px solid #cbd5e1; color: #64748b; font-weight: 600; }
+    .lp-fase.aan { background: #0f766e; border-color: #0f766e; color: #fff; }
+    .lp-fase.ok { background: var(--groen-licht); border-color: var(--groen-rand); color: var(--groen-donker); }
+    .kern { margin: 0 0 14px; border: 1px solid #99f6e4; background: #f0fdfa; border-radius: 12px; padding: 10px 14px; }
+    .kern summary { cursor: pointer; font-weight: 800; color: #0f766e; }
+    .kern ul { margin: 8px 0 0 18px; padding: 0; } .kern li { margin: 5px 0; }
+    .lp-slot { margin-top: 10px; padding: 8px 12px; border: 1px dashed #cbd5e1; border-radius: 10px; color: var(--zacht); font-size: .88rem; }
     .sectie-titel { font-size: 1.05rem; color: #334155; margin: 20px 0 10px; font-weight: 800; }
     .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
     .cat { display: flex; gap: 12px; align-items: flex-start; text-align: left; background: #fff; border: 2px solid var(--rand); border-radius: 14px; padding: 12px 14px; }
@@ -3672,6 +3700,327 @@ regGen({ id: 'bo_raakvlak_lr_rechte', cat: 'bol', niveau: 3, titel: 'Raakvlakken
     };
 } });
 
+// ===================== LEERPAD: oefeningen met en zonder tussenstappen =====================
+// Elke soort bestaat in twee versies met dezelfde opgave:
+//   <id>_b  begeleid: de tussenstappen zijn aparte deelvragen (in het leerpad verschijnen ze één voor één);
+//   <id>_z  zelfstandig: enkel het eindantwoord.
+// Deze oefeningen (lp: true) verschijnen alleen in het leerpad, niet bij vrij oefenen of in de toets.
+function lpPaar(id, cat, niveau, titel, bouw) {
+    regGen({ id: id + '_b', cat, niveau, titel: titel + ' (met tussenstappen)', lp: true, maak(r) { const o = bouw(r); return { opgave: o.opgave, figuur: o.figuur, delen: [...o.tussen, ...o.eind], hints: o.hintsB || o.hints, stappen: o.stappen }; } });
+    regGen({ id: id + '_z', cat, niveau, titel, lp: true, maak(r) { const o = bouw(r); return { opgave: o.opgaveZ || o.opgave, figuur: o.figuur, delen: o.eind, hints: o.hints, stappen: o.stappen }; } });
+}
+// getal-deelvraag met een melding als enkel het teken fout is
+function lpGetal(vraag, x, label, tekenMsg) {
+    x = Fr.of(x);
+    return D.getal(vraag, num(x), x.tex(), x.txt(), { label, ph: 'bv. -5 of 3/2', fouten: x.nul || !tekenMsg ? [] : [{ w: -num(x), msg: tekenMsg }] });
+}
+// melding "dat is de steunvector" enkel als die vector echt verschilt van de juiste richting
+const lpFoutSv = (P, R, msg) => (visNul(P) || vpar(P, R)) ? [] : [{ w: P, msg }];
+
+lpPaar('lp_ab', 'rechte', 1, 'Rechte door twee punten', r => {
+    let A, B; do { A = r.vec(-6, 6); B = r.vec(-6, 6); } while (vgelijk(A, B) || vmin(B, A).filter(x => x.nul).length > 1);
+    const AB = vmin(B, A), R = vprim(AB, false), n = r.pick(['a', 'b', 'd']);
+    return {
+        opgave: L`Gegeven: de punten $${TX.pt('A', A)}$ en $${TX.pt('B', B)}$. De rechte $${n}$ gaat door $A$ en $B$.`,
+        tussen: [D.vector(L`Bereken $co(\overrightarrow{AB})$.`, L`\overrightarrow{AB}`, AB, { fouten: [{ w: vneg(AB), msg: L`Je rekende $\vec A - \vec B$. Een vector is <b>eindpunt min beginpunt</b>: $\overrightarrow{AB} = \vec B - \vec A$.` }] })],
+        eind: [D.rechteParam(L`Bepaal een parametervergelijking van $${n}$.`, n, A, R)],
+        hints: [L`Een rechte ligt vast door een steunvector (een punt) en een richtingsvector.`, L`Neem $\vec A$ als steunvector en $\overrightarrow{AB} = \vec B - \vec A$ als richtingsvector.`, L`Bv. $x = ${linCF(A[0], [[AB[0], 'k']])}$, ...`],
+        stappen: [L`$${TX.sv(n)}: \vec A${TX.co(A)}$`, L`$${TX.rv(n)}: \overrightarrow{AB} = \vec B - \vec A = ${TX.co(AB)}` + (vgelijk(R, AB) ? '$' : L` \;\rightarrow\; ${TX.co(R)}$ (vereenvoudigd)`), L`!$${TX.rechteParam(n, A, R)}$`],
+    };
+});
+
+lpPaar('lp_cart', 'rechte', 1, 'Van parametervergelijking naar cartesiaanse vergelijkingen', r => {
+    const n = naamR(r), P = r.vec(-5, 5), R = r.richting(-5, 5, 0);
+    return {
+        opgave: L`Gegeven: $$${TX.rechteParam(n, P, R)}$$`,
+        tussen: [D.puntOpRechte(L`Lees een punt van $${n}$ af (een steunvector).`, L`\vec P`, P, R),
+            D.richting(L`Lees een richtingsvector van $${n}$ af.`, TX.rv(n), R, { fouten: lpFoutSv(P, R, 'Dat zijn de constanten: die vormen de steunvector. De richtingsvector bestaat uit de coëfficiënten van $k$.') })],
+        eind: [D.rechteCart(L`Stel een stel cartesiaanse vergelijkingen van $${n}$ op.`, n, P, R)],
+        hints: [L`De constanten vormen een steunvector, de coëfficiënten van $k$ een richtingsvector.`, HINT_CART, L`Bv. $\dfrac{${xMin('x', P[0])}}{${R[0].tex()}} = \ldots$`],
+        stappen: [L`$${TX.sv(n)}: \vec P${TX.co(P)}$ en $${TX.rv(n)}${TX.co(R)}$`, L`!$${TX.rechteCart(n, P, R)}$`],
+    };
+});
+
+lpPaar('lp_cart0', 'rechte', 2, 'Cartesiaanse vergelijkingen met een richtingsgetal 0', r => {
+    const n = naamR(r), P = r.vec(-5, 5);
+    let R; do { R = r.richting(-5, 5, 1); } while (R.filter(x => x.nul).length !== 1);
+    const i0 = R.findIndex(x => x.nul);
+    const opties = XYZ.map((c, i) => ({ t: L`$${c}$`, uitleg: i === i0 ? L`Het richtingsgetal bij $${c}$ is $0$: op de rechte verandert $${c}$ nooit, dus $${c} = ${P[i0].tex()}$.` : L`Kijk welk richtingsgetal $0$ is: die coördinaat verandert niet als $k$ verandert.` }));
+    return {
+        opgave: L`De rechte $${n}$ gaat door $${TX.pt('P', P)}$ en heeft richtingsvector $\vec R${TX.co(R)}$.`,
+        tussen: [D.keuze('Welke coördinaat is gelijk voor alle punten van de rechte?', opties, i0)],
+        eind: [D.rechteCart(L`Stel een stel cartesiaanse vergelijkingen van $${n}$ op.`, n, P, R)],
+        hints: [L`Delen door $0$ mag niet: de breuk $\frac{${xMin(XYZ[i0], P[i0])}}{0}$ bestaat niet.`, L`Splits: de constante coördinaat geeft een aparte vergelijking $${XYZ[i0]} = ${P[i0].tex()}$; de twee andere breuken blijven aan elkaar gelijk.`],
+        stappen: [L`$${TX.sv(n)}: \vec P${TX.co(P)}$ en $${TX.rv(n)}${TX.co(R)}$`, L`Het richtingsgetal bij $${XYZ[i0]}$ is $0$: splits het stelsel, $${XYZ[i0]} = ${P[i0].tex()}$.`, L`!$${TX.rechteCart(n, P, R)}$`],
+    };
+});
+
+lpPaar('lp_det', 'rechte', 2, 'Richtingsvector van een snijlijn (determinantenmethode)', r => {
+    const n = naamR(r), P = r.vec(-4, 4), R = r.richting(-4, 4, 1);
+    const rt = rechteTekst(n, P, R, 'stelsel', r);
+    const [n1, n2] = rt.vlakken.map(v => v.n);
+    const u = UW.rvDet(n1, n2, TX.rv(n)), raw = u.Rruw;
+    const fout1 = V(raw[0], raw[1].neg(), raw[2]);
+    const volgorde = 'Let op de volgorde: hoofddiagonaal min nevendiagonaal.';
+    return {
+        opgave: L`Gegeven: $$${rt.tex}$$ Zet de coëfficiënten van $x$, $y$ en $z$ onder elkaar: $\;${TX.mat23(n1, n2)}$`,
+        opgaveZ: L`Gegeven: $$${rt.tex}$$`,
+        tussen: [lpGetal(L`Eerste richtingsgetal: bereken $${TX.det2(n1[1], n1[2], n2[1], n2[2])}$ (de kolom van $x$ valt weg).`, raw[0], '', volgorde),
+            lpGetal(L`Tweede richtingsgetal: bereken $-${TX.det2(n1[0], n1[2], n2[0], n2[2])}$ (de kolom van $y$ valt weg). Let op het minteken!`, raw[1], '', 'Vergeet het minteken voor de middelste determinant niet.'),
+            lpGetal(L`Derde richtingsgetal: bereken $${TX.det2(n1[0], n1[1], n2[0], n2[1])}$ (de kolom van $z$ valt weg).`, raw[2], '', volgorde)],
+        eind: [D.richting(L`Geef een richtingsvector van $${n}$ (vereenvoudig waar mogelijk).`, TX.rv(n), u.R, { fouten: vpar(fout1, raw) ? [] : [{ w: fout1, msg: 'Vergeet het minteken bij de middelste determinant niet.' }] })],
+        hints: ['Een richtingsvector van de snijlijn staat loodrecht op beide normaalvectoren.', HINT_RVDET, 'Je mag de vector daarna vereenvoudigen (delen door een gemeenschappelijke deler).'],
+        stappen: [...u.st, L`!$${TX.rv(n)}${TX.co(u.R)}$`],
+    };
+});
+
+lpPaar('lp_snijlijn', 'rechte', 2, 'Parametervergelijking van een snijlijn', r => {
+    const n = naamR(r), P = r.vec(-4, 4), R = r.richting(-4, 4, 1);
+    const rt = rechteTekst(n, P, R, 'stelsel', r);
+    const u = UW.paramUitStelsel(n, rt.vlakken[0], rt.vlakken[1]);
+    zeker(vpar(u.R, R), 'snijlijn');
+    return {
+        opgave: L`Gegeven: $$${rt.tex}$$`,
+        tussen: [D.richting(L`Bepaal met de determinantenmethode een richtingsvector van $${n}$.`, TX.rv(n), u.R),
+            D.puntOpRechte(L`Zoek één punt van $${n}$: geef één onbekende een waarde (bv. $z = 0$) en los het stelsel in de twee andere onbekenden op.`, L`\vec P`, u.P, u.R)],
+        eind: [D.rechteParam(L`Bepaal een parametervergelijking van $${n}$.`, n, u.P, u.R)],
+        hints: [HINT_RVDET, L`Een punt: stel bv. $z = 0$; dan hou je twee vergelijkingen in $x$ en $y$ over.`, 'Steunvector = dat punt, richtingsvector = de vector uit de determinantenmethode.'],
+        stappen: [...u.st.slice(0, -1), L`!${u.st[u.st.length - 1]}`],
+    };
+});
+
+lpPaar('lp_det3', 'vlak', 1, 'Cartesiaanse vergelijking met de determinant', r => {
+    const n = naamV(r), P = r.vec(-5, 5), [R, S] = rvPaar(r, 3);
+    const u = UW.det(n, P, R, S), N = vcross(R, S);
+    const volgorde = 'Let op de volgorde: hoofddiagonaal min nevendiagonaal.';
+    return {
+        opgave: L`Het vlak $${n}$ gaat door $${TX.pt('P', P)}$ en heeft richtingsvectoren $\vec R${TX.co(R)}$ en $\vec S${TX.co(S)}$. Dan is $$${n} \leftrightarrow ${TX.det3(XYZ.map((c, i) => xMin(c, P[i])), R, S)} = 0$$`,
+        opgaveZ: L`Het vlak $${n}$ gaat door $${TX.pt('P', P)}$ en heeft richtingsvectoren $\vec R${TX.co(R)}$ en $\vec S${TX.co(S)}$.`,
+        tussen: [lpGetal(L`Ontwikkel naar de eerste rij. De factor bij $${xMinH('x', P[0])}$ is $${TX.det2(R[1], R[2], S[1], S[2])}$. Bereken die.`, N[0], '', volgorde),
+            lpGetal(L`De factor bij $${xMinH('y', P[1])}$ is $-${TX.det2(R[0], R[2], S[0], S[2])}$. Bereken die (let op het minteken).`, N[1], '', L`Vergeet het minteken bij de tweede term niet: de tekens zijn $+\;-\;+$.`),
+            lpGetal(L`De factor bij $${xMinH('z', P[2])}$ is $${TX.det2(R[0], R[1], S[0], S[1])}$. Bereken die.`, N[2], '', volgorde)],
+        eind: [D.vlak(L`Werk uit en geef een cartesiaanse vergelijking van $${n}$.`, n, u, { punten: [['P', P]], rv: [[L`\vec R`, R], [L`\vec S`, S]] })],
+        hints: [HINT_DET, L`Tekens bij het ontwikkelen naar de eerste rij: $+\;-\;+$.`, 'Controle: vul $P$ in in je vergelijking; dat moet kloppen.'],
+        stappen: [...u.st.slice(0, -1), '!' + u.st[u.st.length - 1].replace(/^>/, '')],
+    };
+});
+
+lpPaar('lp_drie', 'vlak', 2, 'Vlak door drie punten', r => {
+    let A, B, C; do { A = r.vec(-4, 4); B = r.vec(-4, 4); C = r.vec(-4, 4); } while (!nietCollineair(A, B, C) || vmin(B, A).some(x => Math.abs(x.n) > 5) || vmin(C, A).some(x => Math.abs(x.n) > 5));
+    const n = naamV(r), AB = vmin(B, A), AC = vmin(C, A), u = UW.det(n, A, AB, AC);
+    return {
+        opgave: L`Bepaal een cartesiaanse vergelijking van het vlak $${n}$ door $${TX.pt('A', A)}$, $${TX.pt('B', B)}$ en $${TX.pt('C', C)}$.`,
+        tussen: [D.vector(L`Eerste richtingsvector: bereken $co(\overrightarrow{AB})$.`, L`\overrightarrow{AB}`, AB), D.vector(L`Tweede richtingsvector: bereken $co(\overrightarrow{AC})$.`, L`\overrightarrow{AC}`, AC)],
+        eind: [D.vlak(L`Cartesiaanse vergelijking van $${n}$:`, n, u, { punten: [['A', A], ['B', B], ['C', C]] })],
+        hints: [L`Kies $\vec A$ als steunvector en $\overrightarrow{AB}$ en $\overrightarrow{AC}$ als richtingsvectoren.`, HINT_DET, 'Controle: vul de drie punten in in je vergelijking.'],
+        stappen: [L`$${TX.sv(n)}: \vec A${TX.co(A)}$, $\;\overrightarrow{RV_{${n}_1}}: \overrightarrow{AB}${TX.co(AB)}$, $\;\overrightarrow{RV_{${n}_2}}: \overrightarrow{AC}${TX.co(AC)}$`, ...u.st.slice(0, -1), '!' + u.st[u.st.length - 1].replace(/^>/, '')],
+    };
+});
+
+lpPaar('lp_ev', 'vlak', 1, 'Vlak door een punt, evenwijdig met een vlak', r => {
+    const N = vlakPrim(r.vecNZ(-5, 5), F(0)).n, t0 = F(r.int(-9, 9));
+    let P; do { P = r.vec(-5, 5); } while (vdot(N, P).plus(t0).nul || visNul(P) || vpar(P, N));
+    const u = UW.constante(L`\alpha`, N, P, 'P');
+    const opties = r.shuffle([
+        { t: L`$\alpha \leftrightarrow ${lin(N, XYZ)} + t = 0$`, ok: true, uitleg: 'Evenwijdige vlakken hebben dezelfde coëfficiënten van $x$, $y$ en $z$; enkel de constante term verschilt.' },
+        { t: L`$\alpha \leftrightarrow ${TX.vlakVgl(N, t0)}$`, uitleg: L`Dat is $\beta$ zelf. $P$ ligt niet in $\beta$, dus de constante term is anders.` },
+        { t: L`$\alpha \leftrightarrow ${lin(P, XYZ)} + t = 0$`, uitleg: 'De coördinaat van $P$ zijn geen coëfficiënten van het vlak: $P$ gebruik je om $t$ te bepalen.' },
+    ]);
+    return {
+        opgave: L`Bepaal een cartesiaanse vergelijking van het vlak $\alpha$ door $${TX.pt('P', P)}$ dat evenwijdig is met $${TX.vlak(L`\beta`, N, t0)}$.`,
+        tussen: [D.keuze(L`Welke vorm heeft de vergelijking van $\alpha$?`, opties, opties.findIndex(o => o.ok)),
+            lpGetal(L`$P$ ligt in $\alpha$: vul $P$ in in $${lin(N, XYZ)} + t = 0$ en bereken $t$.`, u.t, 't =', '')],
+        eind: [D.vlak(L`Cartesiaanse vergelijking van $\alpha$:`, L`\alpha`, u.vl, { punten: [['P', P]], normaal: [L`\overrightarrow{N_\beta}`, N] })],
+        hints: ['Evenwijdige vlakken verschillen enkel in hun constante term.', L`Dus $\alpha \leftrightarrow ${lin(N, XYZ)} + t = 0$.`, L`Bepaal $t$ door uit te drukken dat $P \in \alpha$.`],
+        stappen: [...u.st.slice(0, -1), '!' + u.st[u.st.length - 1].replace(/^>/, '')],
+    };
+});
+
+lpPaar('lp_punt_rechte', 'vlak', 2, 'Vlak door een punt en een rechte', r => {
+    for (;;) {
+        const Pl = r.vec(-4, 4), R = r.richting(-3, 3, 1), P = r.vec(-4, 4);
+        const PL = vmin(Pl, P);
+        if (visNul(PL) || vpar(PL, R) || PL.some(x => Math.abs(x.n) > 6)) continue;
+        const u = UW.det(L`\alpha`, P, R, PL);
+        return {
+            opgave: L`Het vlak $\alpha$ gaat door $${TX.pt('P', P)}$ en omvat de rechte $$${TX.rechteParam(L`\ell`, Pl, R, 'r')}$$`,
+            tussen: [D.richting(L`Eerste richtingsvector van $\alpha$: lees een richtingsvector van $\ell$ af.`, TX.rv(L`\ell`), R, { fouten: lpFoutSv(Pl, R, L`Dat zijn de constanten: een punt van $\ell$. De richtingsvector bestaat uit de coëfficiënten van $r$.`) }),
+                D.vector(L`Neem het punt $L$ van $\ell$ met $r = 0$. Bereken $co(\overrightarrow{PL})$: dat is een tweede richtingsvector van $\alpha$.`, L`\overrightarrow{PL}`, PL, { fouten: [{ w: vneg(PL), msg: L`Eindpunt min beginpunt: $\overrightarrow{PL} = \vec L - \vec P$.` }] })],
+            eind: [D.vlak(L`Bepaal een cartesiaanse vergelijking van $\alpha$.`, L`\alpha`, u, { punten: [['P', P], ['L', Pl]], rv: [[TX.rv(L`\ell`), R]] })],
+            hints: [L`Steunvector $\vec P$; richtingsvectoren: de richtingsvector van $\ell$ en de vector van $P$ naar een punt $L$ van $\ell$.`, L`Een punt van $\ell$: $L${TX.co(Pl)}$ (neem $r = 0$). Dan is $\overrightarrow{PL}${TX.co(PL)}$.`, HINT_DET],
+            stappen: [L`$${TX.sv(L`\alpha`)}: \vec P${TX.co(P)}$, $\;\overrightarrow{RV_{\alpha_1}}: ${TX.rv(L`\ell`)}${TX.co(R)}$, $\;\overrightarrow{RV_{\alpha_2}}: \overrightarrow{PL}${TX.co(PL)}$ met $L${TX.co(Pl)} \in \ell$`, ...u.st.slice(0, -1), '!' + u.st[u.st.length - 1].replace(/^>/, '')],
+        };
+    }
+});
+
+lpPaar('lp_waaier', 'vlak', 3, 'Vlak door een rechte en een punt (vlakkenwaaier)', r => {
+    for (;;) {
+        const Pa = r.vec(-4, 5), R = r.richting(-4, 4, 1), B = r.vec(-4, 4);
+        if (vpar(vmin(B, Pa), R) || visNul(vmin(B, Pa))) continue;
+        const rt = rechteTekst('a', Pa, R, 'stelsel', r);
+        const [v1, v2] = rt.vlakken;
+        const w1 = vdot(v1.n, B).plus(v1.t), w2 = vdot(v2.n, B).plus(v2.t);
+        if (w1.nul || w2.nul) continue;
+        const w = waaier(L`\alpha`, v1, v2, B);
+        zeker(opVlak(Pa, w.vl) && vdot(w.vl.n, R).nul, 'waaier lp');
+        const g = Fr.of(ggd(w1.n * w2.d, w2.n * w1.d) || 1);
+        let lam = w2.door(g), sig = w1.neg().door(g);
+        if (lam.n < 0) { lam = lam.neg(); sig = sig.neg(); }
+        const E1 = lin(v1.n, XYZ, v1.t), E2 = lin(v2.n, XYZ, v2.t);
+        const goed = (l, s) => Fr.of(l).maal(w1).plus(Fr.of(s).maal(w2)).nul;
+        const keuzeTekst = (l, s) => L`$\lambda = ${Fr.of(l).tex()}$ en $\sigma = ${Fr.of(s).tex()}$`;
+        const kand = [[sig, lam], [lam, sig.neg()], [F(1), F(1)], [w1, w2]].filter(([l, s]) => !goed(l, s) && !(Fr.of(l).nul && Fr.of(s).nul));
+        const uniek = [];
+        kand.forEach(k => { if (!uniek.some(u2 => u2[0].gelijk(k[0]) && u2[1].gelijk(k[1]))) uniek.push(k); });
+        const opties = r.shuffle([{ t: keuzeTekst(lam, sig), ok: true, uitleg: L`Controle: $${lam.tex()} \cdot ${haak(w1.tex())} + ${haak(sig.tex())} \cdot ${haak(w2.tex())} = 0$.` },
+            ...uniek.slice(0, 2).map(([l, s]) => ({ t: keuzeTekst(l, s), uitleg: L`Vul in: $${Fr.of(l).tex()} \cdot ${haak(w1.tex())} + ${haak(Fr.of(s).tex())} \cdot ${haak(w2.tex())} \neq 0$.` }))]);
+        return {
+            opgave: L`Gegeven: $$${rt.tex}$$ en het punt $${TX.pt('B', B)}$. Het vlak $\alpha$ omvat $a$ en gaat door $B$. De vlakkenwaaier door $a$ is $$\lambda\left(${E1}\right) + \sigma\left(${E2}\right) = 0 \qquad \lambda, \sigma \in \mathbb{R}$$`,
+            opgaveZ: L`Gegeven: $$${rt.tex}$$ en het punt $${TX.pt('B', B)}$.`,
+            tussen: [lpGetal(L`Vul $B$ in in de eerste haakjes: hoeveel is $${E1}$ in $B$?`, w1, '', ''),
+                lpGetal(L`Vul $B$ in in de tweede haakjes: hoeveel is $${E2}$ in $B$?`, w2, '', ''),
+                D.keuze(L`Je krijgt $${lin([w1, w2], [L`\lambda`, L`\sigma`])} = 0$. Welke keuze voor $\lambda$ en $\sigma$ past?`, opties, opties.findIndex(o => o.ok))],
+            eind: [D.vlak(L`Bepaal met een vlakkenwaaier een cartesiaanse vergelijking van het vlak $\alpha$ dat $a$ omvat en door $B$ gaat.`, L`\alpha`, w.vl, { punten: [['B', B], [L`\vec P`, Pa]], rv: [[TX.rv('a'), R]] })],
+            hints: [L`Vlakkenwaaier: $\alpha \leftrightarrow \lambda\,(\text{vgl. 1}) + \sigma\,(\text{vgl. 2}) = 0$.`, L`Vul $B$ in; je krijgt een verband tussen $\lambda$ en $\sigma$.`, L`Kies $\lambda$ en $\sigma$ zodat dat verband klopt, vul ze in en werk de haakjes uit.`],
+            stappen: [...w.st.slice(0, -1), '!' + w.st[w.st.length - 1].replace(/^>/, '')],
+        };
+    }
+});
+
+lpPaar('lp_snijpunt', 'ligging', 2, 'Snijpunt van een rechte en een vlak', r => {
+    for (;;) {
+        const N = vlakPrim(r.vecNZ(-3, 3), F(0)).n, R = r.richting(-3, 3, 1), S = r.vec(-4, 4), k0 = r.nz(-3, 3);
+        if (vdot(N, R).nul) continue;
+        const P = vmin(S, vmaal(R, k0)), t = vdot(N, S).neg();
+        if (P.some(x => Math.abs(x.n) > 9) || Math.abs(t.n) > 20) continue;
+        const n = naamR(r), s = UW.snij(P, R, { n: N, t }, 'k', 'S', L`\alpha`);
+        zeker(vgelijk(s.S, S) && s.k.gelijk(k0), 'snijpunt lp');
+        return {
+            opgave: L`Gegeven: $$${TX.rechteParam(n, P, R)} \qquad ${TX.vlak(L`\alpha`, N, t)}$$`,
+            tussen: [lpGetal(L`Vul $x$, $y$ en $z$ uit de parametervergelijking in in de vergelijking van $\alpha$ en los op naar $k$.`, F(k0), 'k =', '')],
+            eind: [D.punt(L`Bepaal het snijpunt $S$ van $${n}$ en $\alpha$.`, 'S', S)],
+            hints: [L`Elk punt van $${n}$ heeft als coördinaat $\left(${linCF(P[0], [[R[0], 'k']])},\, ${linCF(P[1], [[R[1], 'k']])},\, ${linCF(P[2], [[R[2], 'k']])}\right)$.`, L`Het snijpunt ligt ook in $\alpha$: vul in in de vergelijking van $\alpha$ en los op naar $k$.`, 'Vul de gevonden $k$ in in de parametervergelijking.'],
+            stappen: [...s.st, L`!$${TX.pt('S', S)}$`],
+        };
+    }
+});
+
+lpPaar('lp_normaal', 'loodrecht', 1, 'Normaalvector van een vlak aflezen', r => {
+    for (;;) {
+        const N = vlakPrim(r.vecVol(-5, 5), F(0)).n, t = F(r.nz(-9, 9));
+        const N1 = vlakPrim(r.vecNZ(-5, 5), F(0)).n, t1 = F(r.int(-9, 9));
+        const fout = V(N[0], N[1].neg(), N[2].neg());
+        if (vpar(fout, N)) continue;
+        const alfa = L`\alpha \leftrightarrow ${lin([N[0]], ['x'], t)} = ${lin([N[1].neg(), N[2].neg()], ['y', 'z'])}`;
+        return {
+            opgave: L`Gegeven: $$${TX.vlak(L`\beta`, N1, t1)} \qquad ${alfa}$$`,
+            opgaveZ: L`Gegeven: $$${alfa}$$`,
+            tussen: [D.richting(L`Geef een normaalvector van $\beta$.`, TX.nv(L`\beta`), N1)],
+            eind: [D.richting(L`Geef een normaalvector van $\alpha$.`, TX.nv(L`\alpha`), N, { fouten: [{ w: fout, msg: 'Breng eerst alle termen naar het linkerlid ($\\ldots = 0$). Pas dan vormen de coëfficiënten van $x$, $y$ en $z$ een normaalvector.' }] })],
+            hints: [L`$\alpha \leftrightarrow ux + vy + wz + t = 0 \;\Rightarrow\; ${TX.nv(L`\alpha`)}(u, v, w)$.`, 'Staan er termen in het rechterlid? Breng ze eerst naar het linkerlid (teken omkeren).'],
+            stappen: [L`$${TX.nv(L`\beta`)}${TX.co(N1)}$`, L`$${alfa} \;\Leftrightarrow\; ${TX.vlakVgl(N, t)}$`, L`!$${TX.nv(L`\alpha`)}${TX.co(N)}$`],
+        };
+    }
+});
+
+lpPaar('lp_crit', 'loodrecht', 1, 'Loodrecht of evenwijdig: rechte en vlak', r => {
+    for (;;) {
+        const N = vlakPrim(r.vecNZ(-4, 4), F(0)).n, t = F(r.int(-6, 6));
+        const soort = r.int(0, 2);
+        let R;
+        if (soort === 0) R = vmaal(N, r.pick([1, -1, 2, -2]));
+        else if (soort === 1) R = vprim(vcross(N, r.vecNZ(-2, 2)), false);
+        else R = r.richting(-4, 4, 1);
+        if (visNul(R) || R.some(x => Math.abs(x.n) > 8)) continue;
+        R = vprim(R, false);
+        const lr = vpar(R, N), ev = vdot(R, N).nul;
+        const juist = lr ? 0 : ev ? 1 : 2;
+        if (juist !== soort) continue;
+        const Pa = r.vec(-4, 4);
+        const rt = rechteTekst('a', Pa, R, r.pick(['param', 'cart']), r);
+        const dot = vdot(R, N);
+        const opties = [
+            { t: '$a \\perp \\alpha$', uitleg: lr ? L`$${TX.rv('a')}$ is een veelvoud van $${TX.nv(L`\alpha`)}$.` : L`$${TX.rv('a')}$ is geen veelvoud van $${TX.nv(L`\alpha`)}$.` },
+            { t: '$a \\parallel \\alpha$ (of $a$ ligt in $\\alpha$)', uitleg: ev ? L`$${TX.nv(L`\alpha`)} \cdot ${TX.rv('a')} = 0$.` : L`$${TX.nv(L`\alpha`)} \cdot ${TX.rv('a')} \neq 0$.` },
+            { t: 'geen van beide', uitleg: lr ? L`$${TX.rv('a')}$ is een veelvoud van $${TX.nv(L`\alpha`)}$: $a \perp \alpha$.` : (ev ? L`$${TX.nv(L`\alpha`)} \cdot ${TX.rv('a')} = 0$: $a \parallel \alpha$.` : 'Geen veelvoud en scalair product niet $0$.') },
+        ];
+        return {
+            opgave: L`Gegeven: $$${rt.tex} \qquad ${TX.vlak(L`\alpha`, N, t)}$$`,
+            tussen: [D.richting(L`Lees een richtingsvector van $a$ af.`, TX.rv('a'), R, { fouten: lpFoutSv(Pa, R, 'Dat is een steunvector (een punt van $a$), geen richtingsvector.') }),
+                D.richting(L`Lees een normaalvector van $\alpha$ af.`, TX.nv(L`\alpha`), N),
+                lpGetal(L`Bereken het scalair product $${TX.rv('a')}${TX.co(R)} \cdot ${TX.nv(L`\alpha`)}${TX.co(N)}$.`, dot, '', '')],
+            eind: [D.keuze('Welke uitspraak is juist?', opties, juist)],
+            hints: [L`$a \perp \alpha \;\Leftrightarrow\; ${TX.rv('a')} = k\cdot${TX.nv(L`\alpha`)}$ (veelvoud).`, L`$a \parallel \alpha \;\Leftrightarrow\; ${TX.rv('a')} \cdot ${TX.nv(L`\alpha`)} = 0$.`, L`Scalair product: $a_1a_2 + b_1b_2 + c_1c_2$.`],
+            stappen: [L`$${TX.rv('a')}${TX.co(R)}$ en $${TX.nv(L`\alpha`)}${TX.co(N)}$`, L`$${TX.rv('a')} \cdot ${TX.nv(L`\alpha`)} = ${invulTex(R, undefined, N)} = ${dot.tex()}$`,
+                lr ? L`!$${TX.rv('a')}$ is een veelvoud van $${TX.nv(L`\alpha`)}$, dus $a \perp \alpha$.` : ev ? L`!$= 0$, dus $a \parallel \alpha$ (of $a$ ligt in $\alpha$).` : L`!Geen veelvoud en $\neq 0$: niet loodrecht en niet evenwijdig.`],
+        };
+    }
+});
+
+lpPaar('lp_loodlijn', 'loodrecht', 1, 'Loodlijn uit een punt op een vlak', r => {
+    const N = vlakPrim(r.vecNZ(-4, 4), F(0)).n, t = F(r.int(-8, 8));
+    const P = r.vec(-5, 5), n = r.pick(['m', L`\ell`]);
+    return {
+        opgave: L`Gegeven: het punt $${TX.pt('P', P)}$ en het vlak $${TX.vlak(L`\alpha`, N, t)}$. De loodlijn $${n}$ uit $P$ op $\alpha$ gaat door $P$ en staat loodrecht op $\alpha$.`,
+        tussen: [D.richting(L`Geef een richtingsvector van de loodlijn $${n}$.`, TX.rv(n), N, { fouten: lpFoutSv(P, N, 'Dat is de plaatsvector van $P$: die gebruik je als steunvector, niet als richtingsvector.') })],
+        eind: [D.rechteParam(L`Bepaal een parametervergelijking van de loodlijn $${n}$ uit $P$ op $\alpha$.`, n, P, N)],
+        hints: [L`$${n} \perp \alpha$: de normaalvector $${TX.nv(L`\alpha`)}$ is een richtingsvector van $${n}$.`, L`$${TX.sv(n)}: \vec P$ en $${TX.rv(n)}: ${TX.nv(L`\alpha`)}${TX.co(N)}$.`],
+        stappen: [L`$${TX.sv(n)}: \vec P${TX.co(P)}$`, L`$${TX.rv(n)}: ${TX.nv(L`\alpha`)}${TX.co(N)}$ (want $${n} \perp \alpha$)`, L`!$${TX.rechteParam(n, P, N)}$`],
+    };
+});
+
+lpPaar('lp_loodvlak', 'loodrecht', 1, 'Loodvlak uit een punt op een rechte', r => {
+    const Pe = r.vec(-4, 4), R = r.richting(-4, 4, 1), P = r.vec(-4, 4);
+    const rt = rechteTekst('e', Pe, R, r.pick(['param', 'cart']), r);
+    const c = UW.constante(L`\alpha`, R, P, 'P');
+    return {
+        opgave: L`Gegeven: het punt $${TX.pt('P', P)}$ en de rechte $$${rt.tex}$$ Het loodvlak $\alpha$ uit $P$ op $e$ gaat door $P$ en staat loodrecht op $e$.`,
+        tussen: [D.richting(L`Geef een normaalvector van $\alpha$.`, TX.nv(L`\alpha`), R, { fouten: [...lpFoutSv(P, R, 'Dat is de plaatsvector van $P$: die gebruik je om de constante term te bepalen.'), ...lpFoutSv(Pe, R, 'Dat is een steunvector van $e$, geen richtingsvector.')] }),
+            lpGetal(L`Dus $\alpha \leftrightarrow ${lin(R, XYZ)} + t = 0$. Bepaal $t$ door uit te drukken dat $P \in \alpha$.`, c.t, 't =', '')],
+        eind: [D.vlak(L`Geef een cartesiaanse vergelijking van het loodvlak $\alpha$ uit $P$ op $e$.`, L`\alpha`, c.vl, { punten: [['P', P]], normaal: [TX.rv('e'), R] })],
+        hints: [L`$e \perp \alpha$: de richtingsvector van $e$ is een normaalvector van $\alpha$.`, L`$\alpha \leftrightarrow a\,x + b\,y + c\,z + t = 0$ met $(a, b, c) = ${TX.rv('e')}$.`, L`Bepaal $t$ met $P \in \alpha$.`],
+        stappen: [L`$${TX.nv(L`\alpha`)} = ${TX.rv('e')}${TX.co(R)}$ (want $e \perp \alpha$)`, ...c.st.slice(0, -1), '!' + c.st[c.st.length - 1].replace(/^>/, '')],
+    };
+});
+
+lpPaar('lp_projectie', 'loodrecht', 2, 'Loodrechte projectie van een punt op een vlak', r => {
+    for (;;) {
+        const N = vlakPrim(r.vecNZ(-3, 3), F(0)).n, Pp = r.vec(-4, 4), k0 = r.nz(-2, 2);
+        const t = vdot(N, Pp).neg(), P = vplus(Pp, vmaal(N, k0));
+        if (P.some(x => Math.abs(x.n) > 10) || Math.abs(t.n) > 25) continue;
+        const s = UW.snij(P, N, { n: N, t }, 'k', "P'", L`\alpha`);
+        zeker(vgelijk(s.S, Pp) && s.k.gelijk(-k0), 'projectie lp');
+        return {
+            opgave: L`Gegeven: het punt $${TX.pt('P', P)}$ en het vlak $${TX.vlak(L`\alpha`, N, t)}$. De loodrechte projectie $P'$ van $P$ op $\alpha$ is het snijpunt van de loodlijn $m$ uit $P$ op $\alpha$ met $\alpha$.`,
+            opgaveZ: L`Gegeven: het punt $${TX.pt('P', P)}$ en het vlak $${TX.vlak(L`\alpha`, N, t)}$.`,
+            tussen: [D.rechteParam(L`Stel een parametervergelijking op van de loodlijn $m$ uit $P$ op $\alpha$.`, 'm', P, N),
+                lpGetal(L`Neem $${TX.rechteParam('m', P, N)}$. Vul in in de vergelijking van $\alpha$ en bereken $k$.`, F(-k0), 'k =', '')],
+            eind: [D.punt(L`Bepaal de loodrechte projectie $P'$ van $P$ op $\alpha$.`, "P'", Pp, { fouten: [{ w: P, msg: 'Dat is $P$ zelf. Vul de gevonden $k$ in in de parametervergelijking van de loodlijn.' }] })],
+            hints: [L`Loodlijn $m$: steunvector $\vec P$, richtingsvector $${TX.nv(L`\alpha`)}${TX.co(N)}$.`, L`$P' = m \cap \alpha$: vul de parametervergelijking van $m$ in in de vergelijking van $\alpha$.`, 'Vul de gevonden $k$ in in de parametervergelijking van $m$.'],
+            stappen: [L`Loodlijn $m$ uit $P$ op $\alpha$: $${TX.sv('m')}: \vec P${TX.co(P)}$ en $${TX.rv('m')}: ${TX.nv(L`\alpha`)}${TX.co(N)}$`, L`$${TX.rechteParam('m', P, N)}$`, L`$P' = m \cap \alpha$:`, ...s.st, L`!$${TX.pt("P'", Pp)}$`],
+        };
+    }
+});
+
+lpPaar('lp_lr2', 'loodrecht', 2, 'Vlak door een punt, loodrecht op twee vlakken', r => {
+    let N1, N2; do { N1 = vlakPrim(r.vecNZ(-3, 3), F(0)).n; N2 = vlakPrim(r.vecNZ(-3, 3), F(0)).n; } while (vpar(N1, N2));
+    const t1 = F(r.int(-6, 6)), t2 = F(r.int(-6, 6)), P = r.vec(-4, 4);
+    const u = UW.det(L`\pi`, P, N1, N2);
+    const na = TX.nv(L`\alpha`), nb = TX.nv(L`\beta`);
+    const opties = r.shuffle([
+        { t: L`$${na}$ en $${nb}$ zijn richtingsvectoren van $\pi$.`, ok: true, uitleg: 'Staan twee vlakken loodrecht, dan is een normaalvector van het ene een richtingsvector van het andere.' },
+        { t: L`$${na}$ is een normaalvector van $\pi$.`, uitleg: L`Dan zou $\pi$ evenwijdig zijn met $\alpha$, niet loodrecht.` },
+        { t: L`$\vec P$ en $${na}$ zijn richtingsvectoren van $\pi$.`, uitleg: L`$\vec P$ is de steunvector, geen richtingsvector.` },
+    ]);
+    return {
+        opgave: L`Het vlak $\pi$ gaat door $${TX.pt('P', P)}$ en staat loodrecht op de vlakken $$${TX.vlak(L`\alpha`, N1, t1)} \quad\text{en}\quad ${TX.vlak(L`\beta`, N2, t2)}$$`,
+        tussen: [D.keuze('Welke uitspraak is juist?', opties, opties.findIndex(o => o.ok))],
+        eind: [D.vlak(L`Bepaal een cartesiaanse vergelijking van $\pi$.`, L`\pi`, u, { punten: [['P', P]], rv: [[na, N1], [nb, N2]] })],
+        hints: ['Staan twee vlakken loodrecht, dan is een normaalvector van het ene een richtingsvector van het andere.', L`Dus: steunvector $\vec P$, richtingsvectoren $${na}${TX.co(N1)}$ en $${nb}${TX.co(N2)}$.`, HINT_DET],
+        stappen: [L`$${TX.sv(L`\pi`)}: \vec P${TX.co(P)}$, $\;\overrightarrow{RV_{\pi_1}}: ${na}${TX.co(N1)}$, $\;\overrightarrow{RV_{\pi_2}}: ${nb}${TX.co(N2)}$`, ...u.st.slice(0, -1), '!' + u.st[u.st.length - 1].replace(/^>/, '')],
+    };
+});
+
 // ===================== INZICHTSVRAGEN (waar / onwaar) =====================
 const INZICHT = {
     ligging: [
@@ -4123,11 +4472,14 @@ function renderMenu() {
     };
     let s = `<div class="kaart"><div class="kop"><div class="portaal-terug-rij" data-html2canvas-ignore><a class="portaal-terug" href="index.html">← Alle apps</a></div><h1>6doTW ruimtemeetkunde semester 1</h1><p>Oefenen en testen — vectoren, rechten en vlakken, loodrechte stand, afstanden, hoeken en bollen</p></div><div class="kaart-binnen">
         <div class="modus-grid">
+            <button class="modus leerpad ${m === 'leerpad' ? 'aan' : ''}" data-act="modus" data-m="leerpad"><b>🧭 Leerpad</b><span>Stap voor stap de basis, van richtingsvector tot loodvlak en vlakkenwaaier.</span></button>
             <button class="modus theorie ${m === 'theorie' ? 'aan' : ''}" data-act="modus" data-m="theorie"><b>📘 Theorie &amp; voorbeelden</b><span>De werkwijze uit de cursus, met telkens nieuwe uitgewerkte voorbeelden.</span></button>
             <button class="modus oefen ${m === 'oefen' ? 'aan' : ''}" data-act="modus" data-m="oefen"><b>✏️ Vrij oefenen</b><span>Per onderdeel, van eenvoudig tot uitdagend, met hints, feedback en uitwerking.</span></button>
             <button class="modus toets ${m === 'toets' ? 'aan' : ''}" data-act="modus" data-m="toets"><b>📝 Toets</b><span>Op 5 of 10 punten, per onderdeel of gemengd, met PDF-rapport.</span></button>
         </div>
-        <div class="sectie-titel">${m === 'theorie' ? 'Kies een onderdeel om de theorie te bekijken' : m === 'oefen' ? 'Kies een onderdeel om te oefenen' : 'Kies het onderdeel van de toets'}</div>
+        `;
+    if (m === 'leerpad') s += lpKaartHtml();
+    else s += `<div class="sectie-titel">${m === 'theorie' ? 'Kies een onderdeel om de theorie te bekijken' : m === 'oefen' ? 'Kies een onderdeel om te oefenen' : 'Kies het onderdeel van de toets'}</div>
         <div class="cat-grid">${CATS.map(c => catKaart(c.id, c.naam, c.kort, c.ico, c.kleur)).join('')}${m !== 'theorie' ? catKaart('mix', 'Gemengd', 'oefeningen uit alle onderdelen door elkaar', '★', '#334155') : ''}</div>`;
     if (m === 'toets') {
         s += `<div class="instel"><h3>Toets: ${esc(catNaam(ST.toetsCat))}</h3>
@@ -4144,7 +4496,7 @@ function renderMenu() {
 // ===================== VRIJ OEFENEN =====================
 function kandidaten() {
     const o = ST.oefen;
-    return GEN.filter(g => (o.cat === 'mix' || g.cat === o.cat) && (o.niveau === 0 || g.niveau === o.niveau) && !o.uit.has(g.id));
+    return GEN.filter(g => !g.lp && (o.cat === 'mix' || g.cat === o.cat) && (o.niveau === 0 || g.niveau === o.niveau) && !o.uit.has(g.id));
 }
 function startOefen(cat, alleenGen = null) {
     ST.oefen = { cat, niveau: 0, uit: new Set(), inst: null, staat: [], recent: [], typesOpen: false };
@@ -4184,7 +4536,7 @@ function logOefening(status) {
     {
         const gen = (o.inst && o.inst.gen) || {};
         const codes = [...(o.codes || []), ...(o.fouten || []), ...(o.staat || []).flatMap(s => s.codes || [])].filter(c => typeof c === 'string' && c);
-        portaalLogOpgave(status === 'g', gen.cat, codes[0], { oef: gen.id, niv: gen.niveau, st: status, pog: o.pogingen, hints: o.hints });
+        portaalLogOpgave(status === 'g', gen.cat, codes[0], { oef: gen.id, niv: gen.niveau, st: status, pog: o.pogingen, hints: o.hints, ...(o.lp ? { m: 'lp', stap: o.lp.id, fase: o.lp.soort === 'leer' ? o.lp.fase : o.lp.soort } : {}) });
     }
     const s = opslag.lees('stat', {}), c = o.inst.gen.cat;
     s[c] = s[c] || { n: 0, g: 0 }; s[c].n++; if (status === 'g') s[c].g++;
@@ -4194,9 +4546,12 @@ function controleerOefening() {
     bewaarOefenWaarden();
     const o = ST.oefen;
     let alleJuist = true, ergensFout = false;
+    // leerpad met tussenstappen: enkel de stap die nu zichtbaar is nakijken
+    const grens = lpStapGrens(o);
     o.inst.delen.forEach((d, i) => {
         const st = o.staat[i];
         if (st.ok) return;
+        if (grens >= 0 && i > grens) { alleJuist = false; return; }
         let res;
         try { res = TYPES[d.type].controleer(d, st.waarden); }
         catch (e) { res = e.leesfout ? { ok: false, leesfout: true, msg: e.message } : { ok: false, msg: 'Er liep iets mis bij het nakijken van dit antwoord.' }; if (!e.leesfout) console.error(e); }
@@ -4206,11 +4561,14 @@ function controleerOefening() {
     if (ergensFout) o.pogingen++;
     if (alleJuist) {
         o.klaar = true;
-        logOefening(o.uitwerking ? 'f' : (o.pogingen === 0 && o.hints === 0 ? 'g' : 'h'));
+        const status = o.uitwerking ? 'f' : (o.pogingen === 0 && o.hints === 0 ? 'g' : 'h');
+        logOefening(status);
+        if (o.lp) lpVerwerk(status);
     }
     render();
     const eersteFout = APP.querySelector('.deel.fout input:not([disabled])');
     if (eersteFout) eersteFout.focus();
+    else if (o.lp && !o.klaar) { const nieuw = APP.querySelector('.deel:not(.juist) input:not([disabled])'); if (nieuw) { nieuw.focus(); nieuw.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }
 }
 function sessieHtml() {
     if (!ST.log.length) return '';
@@ -4220,7 +4578,8 @@ function sessieHtml() {
 }
 function renderOefen() {
     const o = ST.oefen, inst = o.inst;
-    const kandAlle = GEN.filter(g => (o.cat === 'mix' || g.cat === o.cat) && (o.niveau === 0 || g.niveau === o.niveau));
+    if (o.lp) return renderLpOefening();
+    const kandAlle = GEN.filter(g => !g.lp && (o.cat === 'mix' || g.cat === o.cat) && (o.niveau === 0 || g.niveau === o.niveau));
     const juistN = ST.log.filter(l => l.status === 'g').length;
     let s = `<div class="kaart"><div class="balk oefen"><button class="terug" data-act="menu">← Menu</button><h2>Vrij oefenen · ${esc(catNaam(o.cat))}</h2><span class="teller" title="meteen juist / gemaakt">✔ ${juistN} / ${ST.log.length}</span><button class="terug" data-act="oefenrapport">⬇ Rapport (PDF)</button></div>
         <div class="niveau-balk"><span>Niveau:</span>${[0, 1, 2, 3].map(n => `<button class="keuze ${o.niveau === n ? 'aan' : ''}" data-act="niveau" data-n="${n}">${n ? NIVEAU[n] : 'alle niveaus'}</button>`).join('')}
@@ -4252,6 +4611,257 @@ function renderOefen() {
     vernieuwAllePreviews();
 }
 
+// ===================== LEERPAD =====================
+// Per stap: kernidee → oefening met tussenstappen (B) → dezelfde soort zonder tussenstappen (Z).
+// Meteen juist = door naar het volgende deel. Fout = eerst een gelijkaardige oefening.
+const LP_ETAPPES = [
+    { id: 'rechten', naam: 'Etappe 1 · Rechten' },
+    { id: 'vlakken', naam: 'Etappe 2 · Vlakken' },
+    { id: 'loodrecht', naam: 'Etappe 3 · Loodrechte stand' },
+];
+const lpRV = n => TX.rv(n), lpNV = n => TX.nv(n), lpSV = n => TX.sv(n);
+const LP = [
+    { id: 'r_ab', etappe: 'rechten', titel: 'Rechte door twee punten', kort: 'steunvector en richtingsvector, parametervergelijking', B: 'lp_ab_b', Z: ['lp_ab_z', 're_param'],
+        kern: L`<ul><li>Een rechte ligt vast door een <b>steunvector</b> (een punt) en een <b>richtingsvector</b>.</li><li>Door $A$ en $B$: $${lpSV('a')}: \vec A$ en $${lpRV('a')}: \overrightarrow{AB} = \vec B - \vec A$ (<b>eindpunt min beginpunt</b>).</li><li>Elk veelvoud $\neq 0$ van een richtingsvector is ook een richtingsvector: vereenvoudigen mag.</li></ul>`
+            + KADER(L`$a \leftrightarrow \left\{\begin{array}{l} x = x_1 + k\,a \\ y = y_1 + k\,b \\ z = z_1 + k\,c \end{array}\right. \quad k \in \mathbb{R}$ met $\vec{P_1}(x_1, y_1, z_1)$ en $${lpRV('a')}(a, b, c)$`) },
+    { id: 'r_cart', etappe: 'rechten', titel: 'Cartesiaanse vergelijkingen', kort: 'van parametervergelijking naar cartesiaanse vergelijkingen', B: 'lp_cart_b', Z: ['lp_cart_z', 're_cart_uit_param', 're_param_uit_cart'],
+        kern: L`<ul><li>In een parametervergelijking vormen de <b>constanten</b> een steunvector en de <b>coëfficiënten van $k$</b> een richtingsvector.</li><li>Let op de tekens: $x = 2 - 3k$ geeft de teller $x - 2$ en de noemer $-3$.</li></ul>`
+            + KADER(L`$\dfrac{x - x_1}{a} = \dfrac{y - y_1}{b} = \dfrac{z - z_1}{c}$`) },
+    { id: 'r_cart0', etappe: 'rechten', titel: 'Een richtingsgetal is 0', kort: 'niet delen door 0: het stelsel splitsen', B: 'lp_cart0_b', Z: ['lp_cart0_z', 're_cart_nul'],
+        kern: L`<ul><li>Is een richtingsgetal $0$, dan is die coördinaat <b>constant</b> op de rechte. Delen door $0$ mag niet.</li><li>Je splitst: die coördinaat geeft een aparte vergelijking, de twee andere breuken blijven gelijk.</li></ul>`
+            + KADER(L`$\vec{P_1}(1, 4, 3)$ en $\vec R(2, 0, -1)$: $\quad\left\{\begin{array}{l} \dfrac{x - 1}{2} = \dfrac{z - 3}{-1} \\ y = 4 \end{array}\right.$`) },
+    { id: 'r_aflezen', etappe: 'rechten', titel: 'Aflezen: let op de vorm', kort: 'steunvector en richtingsvector uit een "vreemde" vergelijking', B: 're_aflezen', Z: ['re_aflezen'],
+        kern: L`<ul><li>Je mag pas aflezen als de vergelijking de vorm $\dfrac{x - x_1}{a}$ heeft: de coëfficiënt van $x$, $y$ en $z$ in de teller moet $1$ zijn.</li><li>$\dfrac{3 - y}{2} = \dfrac{y - 3}{-2}$ (teller en noemer maal $-1$) en $\dfrac{2z - 4}{3} = \dfrac{z - 2}{\frac{3}{2}}$ (teller en noemer gedeeld door $2$).</li><li>Een gemakkelijk punt: stel alle breuken gelijk aan $0$.</li></ul>` },
+    { id: 'r_det', etappe: 'rechten', titel: 'Richtingsvector van een snijlijn', kort: 'de determinantenmethode', B: 'lp_det_b', Z: ['lp_det_z', 're_rv_stelsel'],
+        kern: L`<ul><li>Een rechte kan gegeven zijn als <b>snijlijn van twee vlakken</b> (stelsel van twee vergelijkingen).</li><li>Zet de coëfficiënten van $x$, $y$, $z$ onder elkaar en bereken drie $2 \times 2$-determinanten. <b>Het minteken in het midden niet vergeten!</b></li></ul>`
+            + KADER(L`$\begin{array}{|rrr|} a_1 & b_1 & c_1 \\ a_2 & b_2 & c_2 \end{array} \;\Rightarrow$<br>$\overrightarrow{RV}\left(\begin{array}{|rr|} b_1 & c_1 \\ b_2 & c_2 \end{array},\, -\begin{array}{|rr|} a_1 & c_1 \\ a_2 & c_2 \end{array},\, \begin{array}{|rr|} a_1 & b_1 \\ a_2 & b_2 \end{array}\right)$`) },
+    { id: 'r_snijlijn', etappe: 'rechten', titel: 'Parametervergelijking van een snijlijn', kort: 'richtingsvector + één punt zoeken', B: 'lp_snijlijn_b', Z: ['lp_snijlijn_z', 're_param_uit_stelsel'],
+        kern: L`<ol style="margin:8px 0 0 18px;padding:0"><li>Richtingsvector met de determinantenmethode.</li><li>Eén punt: geef één onbekende een waarde (bv. $z = 0$) en los het stelsel in de twee andere onbekenden op.</li><li>Parametervergelijking met dat punt als steunvector.</li></ol>` },
+    { id: 'v_det3', etappe: 'vlakken', titel: 'Vlak met de determinant', kort: 'cartesiaanse vergelijking uit steunvector en twee richtingsvectoren', B: 'lp_det3_b', Z: ['lp_det3_z', 'vl_cart', 'vl_cart_uit_param'],
+        kern: L`<ul><li>Een vlak ligt vast door een steunvector en <b>twee</b> (niet evenwijdige) richtingsvectoren.</li><li>Ontwikkel de determinant naar de eerste rij, met de tekens $+\;-\;+$. Werk daarna uit en vereenvoudig.</li></ul>`
+            + KADER(L`$\begin{array}{|ccc|} x - x_1 & y - y_1 & z - z_1 \\ a_1 & b_1 & c_1 \\ a_2 & b_2 & c_2 \end{array} = 0$`) },
+    { id: 'v_drie', etappe: 'vlakken', titel: 'Vlak door drie punten', kort: 'twee richtingsvectoren uit de punten', B: 'lp_drie_b', Z: ['lp_drie_z', 'vl_drie_punten'],
+        kern: L`<ul><li>Drie punten $A$, $B$, $C$ (niet op één rechte): steunvector $\vec A$, richtingsvectoren $\overrightarrow{AB}$ en $\overrightarrow{AC}$.</li><li>Dan de determinant zoals in de vorige stap.</li><li>Controle: de drie punten moeten in je vergelijking passen.</li></ul>` },
+    { id: 'v_ev', etappe: 'vlakken', titel: 'Vlak evenwijdig met een vlak', kort: 'zelfde coëfficiënten, andere constante', B: 'lp_ev_b', Z: ['lp_ev_z', 'vl_ev_vlak', 'vl_ev_coordvlak'],
+        kern: L`<ul><li>Evenwijdige vlakken hebben <b>dezelfde coëfficiënten</b> van $x$, $y$ en $z$; enkel de constante term verschilt.</li><li>De constante bepaal je door het gegeven punt in te vullen.</li></ul>`
+            + KADER(L`$\alpha \parallel \beta \leftrightarrow ux + vy + wz + t_0 = 0 \;\Rightarrow\; \alpha \leftrightarrow ux + vy + wz + t = 0$, en $P \in \alpha \Leftrightarrow \ldots \Leftrightarrow t = \ldots$`) },
+    { id: 'v_punt_rechte', etappe: 'vlakken', titel: 'Vlak door een punt en een rechte', kort: 'tweede richtingsvector van het punt naar de rechte', B: 'lp_punt_rechte_b', Z: ['lp_punt_rechte_z', 'vl_punt_rechte', 'vl_twee_punten_rechte'],
+        kern: L`<ul><li>Steunvector $\vec P$.</li><li>Richtingsvectoren: de richtingsvector van de rechte $\ell$ en $\overrightarrow{PL}$, met $L$ een punt van $\ell$.</li><li>Een andere methode is de vlakkenwaaier: dat is de volgende stap.</li></ul>` },
+    { id: 'v_waaier', etappe: 'vlakken', titel: 'Vlakkenwaaier', kort: 'alle vlakken door een rechte', B: 'lp_waaier_b', Z: ['lp_waaier_z', 'vl_waaier'],
+        kern: L`<ul><li>Schrijf de rechte als stelsel van twee vergelijkingen $E_1 = 0$ en $E_2 = 0$ (uit $\frac{x - x_1}{a} = \frac{y - y_1}{b}$ volgt $b(x - x_1) = a(y - y_1)$).</li><li>Elk vlak door die rechte heeft de vorm hieronder.</li><li>Werkwijze: vul het punt in → verband tussen $\lambda$ en $\sigma$ → kies $\lambda$ en $\sigma$ → werk uit en vereenvoudig.</li></ul>`
+            + KADER(L`$\lambda\,(E_1) + \sigma\,(E_2) = 0 \qquad \lambda, \sigma \in \mathbb{R}$`) },
+    { id: 'v_snijpunt', etappe: 'vlakken', titel: 'Snijpunt van een rechte en een vlak', kort: 'invullen, k berekenen, terug invullen', B: 'lp_snijpunt_b', Z: ['lp_snijpunt_z', 'li_rechte_vlak'],
+        kern: L`<ol style="margin:8px 0 0 18px;padding:0"><li>Vul $x$, $y$ en $z$ uit de parametervergelijking van de rechte in in de vergelijking van het vlak.</li><li>Los op naar $k$.</li><li>Vul $k$ in in de parametervergelijking: dat is het snijpunt.</li></ol><p class="klein grijs" style="margin:6px 0 0">Valt $k$ weg? Dan is de rechte evenwijdig met het vlak (vals) of ligt ze erin (altijd waar).</p>` },
+    { id: 'l_normaal', etappe: 'loodrecht', titel: 'Normaalvector van een vlak', kort: 'de coëfficiënten van x, y en z', B: 'lp_normaal_b', Z: ['lp_normaal_z', 'lo_inzicht_mc'],
+        kern: L`<ul><li>Een <b>normaalvector</b> staat loodrecht op het vlak.</li><li>Breng eerst alle termen naar het linkerlid ($\ldots = 0$); de coëfficiënten van $x$, $y$, $z$ vormen dan een normaalvector.</li></ul>`
+            + KADER(L`$\alpha \leftrightarrow ux + vy + wz + t = 0 \;\Rightarrow\; ${lpNV(L`\alpha`)}(u, v, w)$`) },
+    { id: 'l_crit', etappe: 'loodrecht', titel: 'Loodrecht of evenwijdig?', kort: 'de criteria met scalair product en veelvouden', B: 'lp_crit_b', Z: ['lp_crit_z', 'lo_rechten', 'lo_vlakken', 'lo_rechte_vlak'],
+        kern: L`<ul><li>Scalair product: $(a_1, b_1, c_1) \cdot (a_2, b_2, c_2) = a_1a_2 + b_1b_2 + c_1c_2$; is het $0$, dan staan de vectoren loodrecht.</li></ul>`
+            + KADER(L`$\begin{array}{l} a \perp b \;\Leftrightarrow\; ${lpRV('a')} \cdot ${lpRV('b')} = 0 \\[4pt] a \perp \alpha \;\Leftrightarrow\; ${lpRV('a')} = k \cdot ${lpNV(L`\alpha`)} \\[4pt] a \parallel \alpha \;\Leftrightarrow\; ${lpRV('a')} \cdot ${lpNV(L`\alpha`)} = 0 \\[4pt] \alpha \perp \beta \;\Leftrightarrow\; ${lpNV(L`\alpha`)} \cdot ${lpNV(L`\beta`)} = 0 \end{array}$`) },
+    { id: 'l_loodlijn', etappe: 'loodrecht', titel: 'Loodlijn uit een punt op een vlak', kort: 'richtingsvector = normaalvector', B: 'lp_loodlijn_b', Z: ['lp_loodlijn_z', 'lo_loodlijn'],
+        kern: L`<ul><li>De loodlijn $m$ uit $P$ op $\alpha$ gaat door $P$ en staat loodrecht op $\alpha$.</li><li>Dus is de normaalvector van $\alpha$ een richtingsvector van $m$.</li></ul>`
+            + KADER(L`$${lpSV('m')}: \vec P \qquad ${lpRV('m')} = ${lpNV(L`\alpha`)}$`) },
+    { id: 'l_loodvlak', etappe: 'loodrecht', titel: 'Loodvlak uit een punt op een rechte', kort: 'normaalvector = richtingsvector', B: 'lp_loodvlak_b', Z: ['lp_loodvlak_z', 'lo_loodvlak', 'lo_middelloodvlak'],
+        kern: L`<ul><li>Het loodvlak $\alpha$ uit $P$ op $e$ gaat door $P$ en staat loodrecht op $e$.</li><li>Dus is de richtingsvector van $e$ een normaalvector van $\alpha$. De constante term bepaal je met $P \in \alpha$.</li><li>Middelloodvlak van $[AB]$: normaalvector $\overrightarrow{AB}$, door het midden $M$.</li></ul>`
+            + KADER(L`$${lpNV(L`\alpha`)} = ${lpRV('e')}(a, b, c) \;\Rightarrow\; \alpha \leftrightarrow ax + by + cz + t = 0$`) },
+    { id: 'l_projectie', etappe: 'loodrecht', titel: 'Loodrechte projectie en spiegelbeeld', kort: 'loodlijn snijden met het vlak', B: 'lp_projectie_b', Z: ['lp_projectie_z', 'lo_projectie', 'lo_spiegelbeeld'],
+        kern: L`<ol style="margin:8px 0 0 18px;padding:0"><li>Stel de loodlijn $m$ uit $P$ op $\alpha$ op.</li><li>$P' = m \cap \alpha$: invullen, $k$ berekenen, terug invullen.</li><li>Spiegelbeeld $Q$: neem de dubbele $k$, of gebruik dat $P'$ het midden is van $[PQ]$: $\vec Q = 2\vec{P'} - \vec P$.</li></ol>` },
+    { id: 'l_twee', etappe: 'loodrecht', titel: 'Loodrecht op twee vlakken of twee rechten', kort: 'normaalvector van het ene = richtingsvector van het andere', B: 'lp_lr2_b', Z: ['lp_lr2_z', 'lo_vlak_lr_twee_vlakken', 'lo_rechte_lr_twee'],
+        kern: L`<ul><li><b>Staan twee vlakken loodrecht, dan is een normaalvector van het ene een richtingsvector van het andere.</b></li><li>Vlak $\pi$ door $P$, loodrecht op $\alpha$ en $\beta$: steunvector $\vec P$, richtingsvectoren $${lpNV(L`\alpha`)}$ en $${lpNV(L`\beta`)}$, dan de determinant.</li><li>Rechte loodrecht op twee rechten: haar richtingsvector staat loodrecht op beide richtingsvectoren → determinantenmethode.</li></ul>` },
+];
+const LPI = Object.fromEntries(LP.map((s, i) => [s.id, i]));
+const LP_SNELKOPPEL = 3;   // na elke 3 nieuw beheerste stappen een herhaalvraag
+
+function lpSleutel() { let c = ''; try { c = typeof leerlingCode === 'function' ? leerlingCode() : ''; } catch (e) { c = ''; } return 'leerpad' + (c ? '_' + c : ''); }
+function lpLees() { const d = opslag.lees(lpSleutel(), null); return d && d.st ? d : { st: {}, teller: 0, laatste: null }; }
+function lpBewaar(d) { opslag.schrijf(lpSleutel(), d); }
+function lpStaat(d, id) { return d.st[id] || (d.st[id] = { fase: 'B', klaar: false, wankel: false, bH: 0, zH: 0, n: 0, g: 0 }); }
+function lpStatus(d, id) { const s = d.st[id]; if (!s || !s.n) return 'nieuw'; if (s.klaar) return s.wankel ? 'wankel' : 'klaar'; return 'bezig'; }
+// eerste stap die nog niet beheerst is, te beginnen na 'vanId'
+function lpVolgendeId(d, vanId) {
+    const start = vanId && LPI[vanId] !== undefined ? LPI[vanId] + 1 : 0;
+    for (let k = 0; k < LP.length; k++) { const x = LP[(start + k) % LP.length]; if (!(d.st[x.id] && d.st[x.id].klaar)) return x.id; }
+    return null;
+}
+// zuivere overgang na één oefening: past de stand s aan en zegt wat er volgt
+//   fase: 'B' of 'Z'; soort: 'leer' (gewoon), 'snel' (test-me) of 'herhaal'; status: 'g', 'h' of 'f'
+function lpOvergang(s, fase, soort, status) {
+    s.n++; if (status === 'g') s.g++;
+    if (soort === 'herhaal') {
+        if (status === 'g') { s.wankel = false; return { uit: 'herhaal-ok' }; }
+        if (status === 'h') { s.wankel = true; return { uit: 'herhaal-hulp' }; }
+        s.klaar = false; s.wankel = true; s.fase = 'B'; s.bH = 0; s.zH = 0; return { uit: 'herhaal-fout', fase: 'B' };
+    }
+    if (fase === 'B') {
+        if (status === 'g') { s.fase = 'Z'; s.bH = 0; return { uit: 'b-ok', fase: 'Z' }; }
+        if (status === 'h') { s.bH++; if (s.bH >= 2) { s.fase = 'Z'; s.bH = 0; return { uit: 'b-hulp-door', fase: 'Z' }; } return { uit: 'b-hulp', fase: 'B' }; }
+        s.bH = 0; return { uit: 'b-fout', fase: 'B' };
+    }
+    if (status === 'g') { s.klaar = true; s.wankel = false; s.zH = 0; return { uit: soort === 'snel' ? 'snel-ok' : 'z-ok', klaar: true }; }
+    if (status === 'h') { s.zH++; if (s.zH >= 2) { s.klaar = true; s.wankel = true; s.zH = 0; return { uit: 'z-hulp-door', klaar: true }; } s.fase = 'Z'; return { uit: 'z-hulp', fase: 'Z' }; }
+    s.fase = 'B'; s.zH = 0; return { uit: 'z-fout', fase: 'B' };
+}
+const LP_TEKST = {
+    'b-ok': ['💪', true, 'Sterk, meteen juist! Nu dezelfde soort vraag, maar <b>zonder tussenstappen</b>.', 'Nu zonder tussenstappen'],
+    'b-hulp': ['👍', false, 'Goed verbeterd! Doe nog één <b>gelijkaardige</b> oefening met tussenstappen: lukt die meteen?', 'Gelijkaardige oefening'],
+    'b-hulp-door': ['👍', true, 'Je verbeterde jezelf telkens. Probeer nu dezelfde soort vraag <b>zonder tussenstappen</b>.', 'Nu zonder tussenstappen'],
+    'b-fout': ['🔁', false, 'Geen probleem. Bekijk de uitwerking nog eens rustig: je krijgt een <b>gelijkaardige</b> oefening met tussenstappen.', 'Gelijkaardige oefening'],
+    'z-ok': ['🎉', true, 'Meteen juist zonder tussenstappen: <b>deze stap beheers je!</b>', null],
+    'snel-ok': ['⚡', true, 'Meteen juist: <b>deze stap beheers je al!</b>', null],
+    'z-hulp': ['👍', false, 'Juist na een verbetering. Nog één <b>gelijkaardige</b> zonder tussenstappen: lukt die meteen?', 'Gelijkaardige oefening'],
+    'z-hulp-door': ['✔', true, 'Gelukt, maar met wat hulp. Je mag verder; deze stap komt later nog eens terug als <b>herhaling</b>.', null],
+    'z-fout': ['🔁', false, 'Dat lukte nog niet zonder tussenstappen. We nemen de versie <b>met tussenstappen</b> nog eens.', 'Met tussenstappen'],
+    'herhaal-ok': ['🎉', true, 'Nog altijd meteen juist. Mooi!', null],
+    'herhaal-hulp': ['👍', false, 'Juist, maar met wat hulp. Deze stap komt later nog eens terug.', null],
+    'herhaal-fout': ['🔁', false, 'Dat zat er niet meer helemaal in. We nemen deze stap meteen opnieuw door, <b>met tussenstappen</b>.', 'Met tussenstappen'],
+};
+function lpVerwerk(status) {
+    const o = ST.oefen, id = o.lp.id;
+    const d = lpLees(), s = lpStaat(d, id);
+    const og = lpOvergang(s, o.lp.fase, o.lp.soort, status);
+    const [ico, ok, tekst, knop] = LP_TEKST[og.uit];
+    let volg = og.fase ? { id, fase: og.fase, soort: 'leer' } : null, extra = '';
+    if (og.klaar) {
+        d.teller = (d.teller || 0) + 1; d.laatste = id;
+        try { if (window.WiskundeTracker && WiskundeTracker.logModuleVoltooid) WiskundeTracker.logModuleVoltooid('leerpad', { stap: id, nr: LPI[id] + 1, wankel: s.wankel, n: s.n }); } catch (e) { /* loggen mag de app nooit storen */ }
+        const na = lpVolgendeId(d, id);
+        volg = na ? { id: na, fase: null, soort: 'leer' } : null;
+        // af en toe een herhaalvraag uit een eerder beheerste stap (eerst de wankele)
+        const eerder = LP.filter(x => x.id !== id && d.st[x.id] && d.st[x.id].klaar);
+        if (na && eerder.length && d.teller % LP_SNELKOPPEL === 0) {
+            const wankel = eerder.filter(x => d.st[x.id].wankel);
+            const pool = wankel.length ? wankel : eerder;
+            const h = pool[Math.floor(Math.random() * pool.length)];
+            volg = { id: h.id, fase: 'Z', soort: 'herhaal' };
+            extra = ` Eerst een korte <b>herhaalvraag</b> uit „${esc(h.titel)}”, daarna stap ${LPI[na] + 1}.`;
+        }
+    } else if (o.lp.soort === 'herhaal' && !og.fase) {
+        const na = lpVolgendeId(d, d.laatste);
+        volg = na ? { id: na, fase: null, soort: 'leer' } : null;
+    }
+    lpBewaar(d);
+    const knopTekst = knop || (volg ? (volg.soort === 'herhaal' ? 'Naar de herhaalvraag' : `Volgende stap: ${LP[LPI[volg.id]].titel}`) : 'Terug naar het leerpad');
+    o.lp.na = { ico, ok, tekst: tekst + extra, volg, knop: knopTekst, klaarStap: !!og.klaar };
+}
+function lpStart(id, soort = null) {
+    const d = lpLees(), s = lpStaat(d, id);
+    if (!soort) soort = s.klaar ? 'herhaal' : 'leer';
+    const fase = soort === 'leer' ? s.fase : 'Z';
+    lpBewaar(d);
+    ST.oefen = { cat: LP[LPI[id]].etappe, niveau: 0, uit: new Set(), inst: null, staat: [], recent: [], typesOpen: false,
+        lp: { id, fase, soort, vorigeZ: null, kernOpen: !s.n && fase === 'B' } };
+    ST.scherm = 'oefen'; ST.modus = 'leerpad'; opslag.schrijf('modus', 'leerpad');
+    lpNieuweOefening();
+}
+function lpNieuweOefening() {
+    const o = ST.oefen, x = LP[LPI[o.lp.id]];
+    let ids;
+    if (o.lp.fase === 'B') ids = [x.B];
+    else if (!o.lp.vorigeZ && o.lp.soort === 'leer') ids = [x.Z[0]];   // eerst dezelfde soort als de begeleide oefening
+    else { ids = x.Z.filter(g => g !== o.lp.vorigeZ); if (!ids.length) ids = x.Z; }
+    let inst = null;
+    for (let i = 0; i < 8 && !inst; i++) {
+        const g = GEN.find(q => q.id === ids[Math.floor(Math.random() * ids.length)]);
+        try { inst = maakOefening(g, nieuwZaad()); } catch (e) { console.error(g && g.id, e); }
+    }
+    if (!inst) { ST.scherm = 'menu'; render(); return; }
+    if (o.lp.fase === 'Z') o.lp.vorigeZ = inst.gen.id;
+    o.inst = inst; o.voorbeeld = null; o.lp.na = null;
+    o.staat = inst.delen.map(() => ({ waarden: {}, fb: null, ok: false }));
+    o.pogingen = 0; o.hints = 0; o.uitwerking = false; o.klaar = false; o.gelogd = false; o.start = new Date();
+    render();
+    window.scrollTo({ top: 0 });
+}
+// index van de stap die nu zichtbaar is (-1 = alles tonen)
+function lpStapGrens(o) {
+    if (!o || !o.lp || o.lp.fase !== 'B' || o.uitwerking || o.klaar) return -1;
+    return o.staat.findIndex(s => !s.ok);
+}
+function lpKaartHtml() {
+    const d = lpLees();
+    const aantal = LP.filter(x => d.st[x.id] && d.st[x.id].klaar).length;
+    const begonnen = LP.some(x => d.st[x.id] && d.st[x.id].n);
+    const volg = lpVolgendeId(d, null);
+    let s = `<div class="lp-intro"><p>Het leerpad neemt je stap voor stap door de basis. Elke stap: een kort <b>kernidee</b>, een oefening <b>met tussenstappen</b> en dan dezelfde soort vraag <b>zonder tussenstappen</b>. Lukt het meteen, dan ga je meteen verder. Maak je een fout, dan krijg je eerst een gelijkaardige oefening. Ken je een stap al? Klik dan op <i>⚡ Ik ken dit al</i>.</p>
+        <div class="lp-voortgang"><span style="width:${Math.round(100 * aantal / LP.length)}%"></span></div><div class="klein grijs">${aantal} van de ${LP.length} stappen beheerst</div>
+        <div class="knop-rij" style="margin-top:12px">`;
+    if (volg) s += `<button class="knop knop-groen knop-groot" data-act="lp-start" data-id="${volg}">▶ ${begonnen ? 'Ga verder' : 'Start het leerpad'}: stap ${LPI[volg] + 1} · ${esc(LP[LPI[volg]].titel)}</button>`;
+    else s += `<div class="feedback juist" style="margin:0"><span class="ico">🏆</span><div><b>Alle stappen beheerst!</b> Houd het warm met herhaalvragen, of oefen verder in <i>Vrij oefenen</i> en <i>Toets</i>.</div></div>`;
+    if (aantal) s += `<button class="knop knop-licht" data-act="lp-herhaal">🔁 Herhaalvraag</button>`;
+    s += `</div></div>`;
+    for (const e of LP_ETAPPES) {
+        s += `<div class="lp-etappe"><h3>${esc(e.naam)}</h3>`;
+        LP.filter(x => x.etappe === e.id).forEach(x => {
+            const st = lpStatus(d, x.id), i = LPI[x.id], ss = d.st[x.id];
+            const badge = st === 'klaar' ? '✓ beheerst' : st === 'wankel' ? '⚑ nog eens herhalen' : st === 'bezig' ? (ss.fase === 'Z' ? 'bezig · zonder tussenstappen' : 'bezig') : '';
+            s += `<button class="lp-stap ${st} ${x.id === volg ? 'volgende' : ''}" data-act="lp-start" data-id="${x.id}"><span class="lp-nr">${st === 'klaar' ? '✓' : i + 1}</span><span><b>${esc(x.titel)}</b><small>${esc(x.kort)}</small></span><span class="lp-badge">${badge}</span></button>`;
+        });
+        s += '</div>';
+    }
+    s += `<p class="klein grijs" style="margin-top:12px">Je mag ook zelf een stap kiezen. Je voortgang wordt op dit toestel bewaard. <button class="linkknop" data-act="lp-reset">Leerpad opnieuw beginnen</button></p>`;
+    return s;
+}
+function renderLpOefening() {
+    const o = ST.oefen, inst = o.inst, x = LP[LPI[o.lp.id]];
+    const d = lpLees(), ss = lpStaat(d, x.id);
+    const grens = lpStapGrens(o);
+    let s = `<div class="kaart"><div class="balk leerpad"><button class="terug" data-act="lp-kaart">← Leerpad</button><h2>Stap ${LPI[x.id] + 1}/${LP.length} · ${esc(x.titel)}</h2><button class="terug" data-act="oefenrapport">⬇ Rapport (PDF)</button></div>`;
+    const fasen = o.lp.soort === 'herhaal' ? `<span class="lp-fase aan">🔁 Herhaalvraag</span>`
+        : `<span class="lp-fase ok">1 · Kernidee</span><span class="lp-fase ${o.lp.fase === 'B' ? 'aan' : 'ok'}">2 · Met tussenstappen</span><span class="lp-fase ${o.lp.fase === 'Z' ? 'aan' : ''}">3 · Zonder tussenstappen</span>`;
+    const snel = o.lp.fase === 'B' && o.lp.soort === 'leer' && !ss.n && !o.pogingen && !o.hints && !o.klaar && !o.uitwerking;
+    s += `<div class="lp-fasen">${fasen}${snel ? `<button class="linkknop" style="margin-left:auto" data-act="lp-snel">⚡ Ik ken dit al: test me meteen</button>` : ''}</div><div class="kaart-binnen">`;
+    s += `<details class="kern" data-kern ${o.lp.kernOpen ? 'open' : ''}><summary>📌 Kernidee: ${esc(x.titel)}</summary>${wis(x.kern)}</details>`;
+    s += opgaveHtml(inst, false);
+    inst.delen.forEach((dd, i) => { if (grens >= 0 && i > grens) return; s += deelHtml(dd, i, { waarden: o.staat[i].waarden, fb: o.staat[i].fb, slot: o.staat[i].ok }); });
+    if (grens >= 0 && grens < inst.delen.length - 1) {
+        const rest = inst.delen.length - 1 - grens;
+        s += `<div class="lp-slot">🔒 Nog ${rest} ${rest === 1 ? 'stap' : 'stappen'}: ${rest === 1 ? 'die verschijnt' : 'ze verschijnen'} zodra deze stap juist is.</div>`;
+    }
+    if (o.lp.na) s += `<div class="feedback ${o.lp.na.ok ? 'juist' : 'info'}" style="margin-top:14px"><span class="ico">${o.lp.na.ico}</span><div>${o.lp.na.tekst}</div></div>`;
+    else if (o.pogingen >= 2 && !o.uitwerking) s += `<div class="feedback info" style="margin-top:14px"><span class="ico">💡</span><div>Lukt het niet? Vraag een hint of bekijk de uitwerking stap voor stap.</div></div>`;
+    s += `<div class="actie-rij">`;
+    if (o.klaar) s += `<button class="knop knop-groen knop-groot" data-act="lp-verder">${esc(o.lp.na ? o.lp.na.knop : 'Verder')} →</button>`;
+    else {
+        s += `<button class="knop knop-groen" data-act="controleer">✔ Controleer</button>
+            <button class="knop knop-geel" data-act="hint" ${o.hints >= inst.hints.length ? 'disabled' : ''}>💡 Hint (${o.hints}/${inst.hints.length})</button>
+            <button class="knop knop-blauw-licht" data-act="uitwerking">${o.uitwerking ? 'Verberg' : 'Toon'} uitwerking</button>
+            <button class="knop knop-licht" data-act="voorbeeld">📘 Voorbeeld</button>`;
+        if (o.uitwerking) s += `<button class="knop knop-donker" data-act="lp-verder" title="Telt als: met uitwerking">Verder →</button>`;
+    }
+    s += `</div>`;
+    if (o.hints) s += `<div class="hulp"><h3>Hints</h3><ol>${inst.hints.slice(0, o.hints).map(h => `<li>${wis(h)}</li>`).join('')}</ol></div>`;
+    if (o.uitwerking || o.klaar && o.lp.na && !o.lp.na.ok) s += `<div class="uitwerking"><h3>Uitwerking (zoals in de cursus)</h3>${stappenHtml(inst)}<div class="klein grijs" style="margin-top:8px">Juiste antwoord${inst.delen.length > 1 ? 'en' : ''}:</div>${inst.delen.map(dd => `<div>${dd.letter ? `<b>${dd.letter})</b> ` : ''}${juistHtml(dd)}</div>`).join('')}</div>`;
+    if (o.voorbeeld) s += voorbeeldHtml(o.voorbeeld, false);
+    s += typhulpHtml() + sessieHtml();
+    s += `<div id="pdf-status" class="klein grijs" style="margin-top:8px"></div></div></div>`;
+    APP.innerHTML = s;
+    vernieuwAllePreviews();
+}
+// controle voor de zelftest: bestaan alle oefeningen, lukt de LaTeX van de kernideeën, kloppen de overgangen?
+function lpControle(fouten) {
+    for (const x of LP) {
+        [x.B, ...x.Z].forEach(id => { if (!GEN.some(g => g.id === id)) fouten.push(['leerpad', x.id, 'oefening ontbreekt', id]); });
+        if (!LP_ETAPPES.some(e => e.id === x.etappe)) fouten.push(['leerpad', x.id, 'etappe', x.etappe]);
+        try { wis(x.kern); } catch (e) { fouten.push(['leerpad', x.id, 'latex kernidee', e.message]); }
+    }
+    const nieuw = () => ({ fase: 'B', klaar: false, wankel: false, bH: 0, zH: 0, n: 0, g: 0 });
+    const reeks = (stappen) => { const s = nieuw(); let fase = 'B'; const uit = []; for (const [soort, st] of stappen) { const og = lpOvergang(s, soort === 'herhaal' || soort === 'snel' ? 'Z' : fase, soort, st); uit.push(og.uit); if (og.fase) fase = og.fase; } return { s, uit }; };
+    const verwacht = [
+        [[['leer', 'g'], ['leer', 'g']], ['b-ok', 'z-ok'], s => s.klaar && !s.wankel],
+        [[['leer', 'h'], ['leer', 'h'], ['leer', 'g']], ['b-hulp', 'b-hulp-door', 'z-ok'], s => s.klaar],
+        [[['leer', 'f'], ['leer', 'g'], ['leer', 'f'], ['leer', 'g'], ['leer', 'g']], ['b-fout', 'b-ok', 'z-fout', 'b-ok', 'z-ok'], s => s.klaar],
+        [[['leer', 'g'], ['leer', 'h'], ['leer', 'h']], ['b-ok', 'z-hulp', 'z-hulp-door'], s => s.klaar && s.wankel],
+        [[['snel', 'g']], ['snel-ok'], s => s.klaar],
+        [[['snel', 'f']], ['z-fout'], s => !s.klaar && s.fase === 'B'],
+        [[['leer', 'g'], ['leer', 'g'], ['herhaal', 'f']], ['b-ok', 'z-ok', 'herhaal-fout'], s => !s.klaar && s.fase === 'B'],
+    ];
+    verwacht.forEach(([stappen, uit, check], i) => {
+        const r = reeks(stappen);
+        if (JSON.stringify(r.uit) !== JSON.stringify(uit) || !check(r.s)) fouten.push(['leerpad', 'overgang ' + i, JSON.stringify(r.uit), JSON.stringify(r.s)]);
+    });
+    Object.keys(LP_TEKST).forEach(k => { try { wis(LP_TEKST[k][2]); } catch (e) { fouten.push(['leerpad', 'tekst ' + k, e.message]); } });
+}
+
 // ===================== TOETS =====================
 function gewogenKeuze(r, lijst, gewicht) {
     const w = lijst.map(gewicht), som = w.reduce((a, b) => a + b, 0);
@@ -4266,7 +4876,7 @@ function kiesToets(cats, totaal, niveau, seed) {
     const maxInzicht = Math.max(1, Math.floor(totaal / 5));
     const GEWICHT = { 1: 0.35, 2: 0.45, 3: 0.2 };
     for (let poging = 0; rest > 0 && poging < 3000; poging++) {
-        let pool = GEN.filter(g => cats.includes(g.cat) && !gebruikt.has(g.id));
+        let pool = GEN.filter(g => !g.lp && cats.includes(g.cat) && !gebruikt.has(g.id));
         if (inzicht >= maxInzicht) pool = pool.filter(g => !g.inzicht);
         if (niveau) { const p = pool.filter(g => g.niveau === niveau); if (p.length) pool = p; }
         if (!pool.length) { gebruikt.clear(); continue; }
@@ -4507,7 +5117,10 @@ APP.addEventListener('change', e => {
 APP.addEventListener('keydown', e => {
     if (e.key === 'Enter' && e.target.matches('input.invoer') && ST.scherm === 'oefen' && ST.oefen && !ST.oefen.klaar) { e.preventDefault(); controleerOefening(); }
 });
-APP.addEventListener('toggle', e => { if (e.target.matches && e.target.matches('details[data-types]') && ST.oefen) ST.oefen.typesOpen = e.target.open; }, true);
+APP.addEventListener('toggle', e => {
+    if (e.target.matches && e.target.matches('details[data-types]') && ST.oefen) ST.oefen.typesOpen = e.target.open;
+    if (e.target.matches && e.target.matches('details[data-kern]') && ST.oefen && ST.oefen.lp) ST.oefen.lp.kernOpen = e.target.open;
+}, true);
 APP.addEventListener('click', e => {
     const b = e.target.closest('[data-act]');
     if (!b || b.disabled || b.type === 'checkbox') return;
@@ -4529,7 +5142,7 @@ APP.addEventListener('click', e => {
             ST.scherm = 'menu'; render(); window.scrollTo({ top: 0 }); break;
         case 'niveau': bewaarOefenWaarden(); ST.oefen.niveau = +b.dataset.n; nieuweOefening(); break;
         case 'types-alle': ST.oefen.uit.clear(); ST.oefen.typesOpen = true; render(); break;
-        case 'types-geen': GEN.filter(g => ST.oefen.cat === 'mix' || g.cat === ST.oefen.cat).forEach(g => ST.oefen.uit.add(g.id)); ST.oefen.typesOpen = true; nieuweOefening(); break;
+        case 'types-geen': GEN.filter(g => !g.lp && (ST.oefen.cat === 'mix' || g.cat === ST.oefen.cat)).forEach(g => ST.oefen.uit.add(g.id)); ST.oefen.typesOpen = true; nieuweOefening(); break;
         case 'controleer': controleerOefening(); break;
         case 'hint': bewaarOefenWaarden(); ST.oefen.hints++; render(); { const hl = APP.querySelector('.hulp'); if (hl) hl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } break;
         case 'uitwerking': bewaarOefenWaarden(); ST.oefen.uitwerking = !ST.oefen.uitwerking; render(); if (ST.oefen.uitwerking) { const u = APP.querySelector('.uitwerking'); if (u) u.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } break;
@@ -4571,6 +5184,33 @@ APP.addEventListener('click', e => {
             break;
         }
         case 'tvoorbeeld-opnieuw': ST.tvb.inst = maakOefening(ST.tvb.inst.gen, nieuwZaad()); renderTheorie(); { const v = APP.querySelector('.voorbeeld-vak'); if (v) v.scrollIntoView({ block: 'start' }); } break;
+        case 'lp-start': bewaarOefenWaarden(); lpStart(b.dataset.id); break;
+        case 'lp-snel': lpStart(ST.oefen.lp.id, 'snel'); break;
+        case 'lp-herhaal': {
+            const d = lpLees();
+            const klaar = LP.filter(x => d.st[x.id] && d.st[x.id].klaar), wankel = klaar.filter(x => d.st[x.id].wankel);
+            const pool = wankel.length ? wankel : klaar;
+            if (pool.length) lpStart(pool[Math.floor(Math.random() * pool.length)].id, 'herhaal');
+            break;
+        }
+        case 'lp-verder': {
+            const o = ST.oefen;
+            if (!o.klaar) { bewaarOefenWaarden(); o.klaar = true; logOefening('f'); lpVerwerk('f'); render(); { const f = APP.querySelector('.actie-rij'); if (f) f.scrollIntoView({ behavior: 'smooth', block: 'center' }); } break; }
+            const v = o.lp.na && o.lp.na.volg;
+            if (!v) { ST.scherm = 'menu'; ST.modus = 'leerpad'; render(); window.scrollTo({ top: 0 }); break; }
+            if (v.id === o.lp.id && v.fase) {
+                if (o.lp.fase !== v.fase) o.lp.vorigeZ = null;
+                o.lp.fase = v.fase; o.lp.soort = 'leer'; o.lp.kernOpen = false;
+                lpNieuweOefening();
+            } else lpStart(v.id, v.soort === 'herhaal' ? 'herhaal' : null);
+            break;
+        }
+        case 'lp-kaart':
+            if (ST.oefen && ST.oefen.inst && !ST.oefen.klaar && (ST.oefen.pogingen || ST.oefen.uitwerking)) logOefening('f');
+            ST.scherm = 'menu'; ST.modus = 'leerpad'; opslag.schrijf('modus', 'leerpad'); render(); window.scrollTo({ top: 0 }); break;
+        case 'lp-reset':
+            if (window.confirm('Wil je het leerpad opnieuw beginnen? Je voortgang in het leerpad wordt gewist.')) { opslag.schrijf(lpSleutel(), null); renderMenu(); }
+            break;
         case 'oefen-cat': startOefen(b.dataset.cat); break;
         case 'oefen-gen': { const g = GEN.find(x => x.id === b.dataset.id); startOefen(g.cat, g.id); break; }
     }
@@ -4716,6 +5356,7 @@ const RM = (() => {
                 });
             }
         }
+        if (!filter || filter === 'leerpad') lpControle(fouten);
         KATEX_STRIKT = false;
         const tijd = Math.round(performance.now() - t0);
         console.log(`Zelftest: ${GEN.length} soorten, ${n} exemplaren per soort, ${fouten.length} problemen, ${tijd} ms`);
