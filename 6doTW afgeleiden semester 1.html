@@ -1271,7 +1271,7 @@ regGen({ id: 'el_inverse', cat: 'explog', niveau: 1, titel: 'Afgeleide van een i
     const v = r.int(0, 5);
     let f, fi, dfx, dfi, dom, uitleg, st = [], fA = [], fB = [];
     if (v === 0) {
-        const a = r.pick(GRONDT);
+        const a = r.pick(GRONDT.filter(g => g !== 3)); // 3^x = SO 1
         f = `${a}^x`; fi = `${logS(a)}(x)`; dfx = `${a}^x ln(${a})`; dfi = `1/(x ln(${a}))`; dom = [0.3, 6];
         uitleg = L`$y = ${a}^x \Leftrightarrow x = ${logL(a)}\, y$. Verwissel $x$ en $y$: $f^{-1}(x) = ${logL(a)}\, x$.`;
         st = [L`$Df(x) = ${a}^x \ln ${a}$`, L`$Df^{-1}(x) = \dfrac{1}{${a}^{${logL(a)} x} \cdot \ln ${a}}$`, L`Omdat $${a}^{${logL(a)} x} = x$ is $Df^{-1}(x) = \dfrac{1}{x \ln ${a}}$.`];
@@ -1399,7 +1399,7 @@ regGen({ id: 'el_ketting2', cat: 'explog', niveau: 2, titel: 'Kettingregel met p
     const t = r.int(0, 3);
     let f, d, dom, st, fouten = [], hints;
     if (t === 0) {
-        const a = r.pick([2, 3, -2]), b = r.pick([1, 2, 3, 4, 5, 6, -1, -2, -3]), n = r.pick([2, 3]);
+        let a, b, n; do { a = r.pick([2, 3, -2]); b = r.pick([1, 2, 3, 4, 5, 6, -1, -2, -3]); n = r.pick([2, 3]); } while (a === 2 && b === 5 && n === 3); // niet de SO 1-functie
         const xb = S.xm(b), K = -n * Math.pow(a, n) * b;
         f = `((${a}x)/(${xb}))^${n}`; d = `${K}${n === 2 ? 'x' : 'x^' + (n - 1)}/(${xb})^${n + 1}`; dom = [b + 0.5, b + 5];
         const ud = `${-a * b}/(${xb})^2`;
@@ -1408,7 +1408,7 @@ regGen({ id: 'el_ketting2', cat: 'explog', niveau: 2, titel: 'Kettingregel met p
         st = [L`$f'(x) = ${n}\left(\dfrac{${a}x}{[[${xb}]]}\right)${n === 2 ? "" : "^{" + (n - 1) + "}"} \cdot \dfrac{${a}([[${xb}]]) - ${a < 0 ? `(${a}x)` : a + 'x'}}{([[${xb}]])^2}$`, L`$= ${n} \cdot \dfrac{[[${tel}]]}{([[${xb}]])^{${n - 1}}} \cdot [[${ud}]]$`.replace('^{1}', ''), L`!$f'(x) = [[${d}]]$`];
         fouten = [{ w: `${n}((${a}x)/(${xb}))^${n - 1}`, soort: 'ketting', msg: 'Je vergat te vermenigvuldigen met de afgeleide van de breuk binnen de haakjes.' }];
     } else if (t === 1) {
-        const p = r.pick([2, 3, 5]), q = r.int(1, 3), r0 = r.int(1, 3), s = r.pick([2, 3, 5, 7]);
+        let p, q, r0, s; do { p = r.pick([2, 3, 5]); q = r.int(1, 3); r0 = r.int(1, 3); s = r.pick([2, 3, 5, 7]); } while (p === 3 && q === 2 && r0 === 2 && s === 5); // niet de SO 1-functie
         const u = S.poly([p, 0, -q]), noem = S.som([String(r0), S.cf(-s, 'x')]);
         f = `sqrt(${u})/(${noem})`; d = `(${S.lin(p * r0, -s * q)})/(sqrt(${u})(${noem})^2)`;
         const x0 = Math.sqrt(q / p); dom = [x0 + 0.3, x0 + 4];
@@ -1484,7 +1484,7 @@ regGen({ id: 'el_exp2', cat: 'explog', niveau: 2, titel: 'Exponentiële functies
         st = [L`$f'(x) = ${n === 1 ? '1' : n === 2 ? '2x' : (n === 2 ? '2x' : n + 'x^{' + (n - 1) + '}')} \cdot e^{${tx(kx)}} + ${n === 1 ? 'x' : 'x^{' + n + '}'} \cdot [[${S.cf(k, `e^(${kx})`)}]]$`, L`!$f'(x) = [[${d}]]$ (gemeenschappelijke factor buiten haakjes)`];
         fouten = [{ w: `${S.cf(n, xp || '1')}e^(${kx})`.replace(/^1e/, 'e'), soort: 'product', msg: 'Gebruik de productregel: $(uv)\' = u\'v + uv\'$.' }];
     } else if (t === 1) {
-        const a = r.pick([2, 3, 5]), m = r.pick([-3, -2, -1, 1, 2]);
+        let a, m; do { a = r.pick([2, 3, 5]); m = r.pick([-3, -2, -1, 1, 2]); } while (a === 5 && m === -2); // niet de SO 1-functie
         const g = S.poly([1, 0, m, 0]), gp = S.poly([3, 0, m]);
         f = `x ${a}^(${g})`; d = `${a}^(${g})(1 + x ln(${a})(${gp}))`;
         hints = [L`Productregel met $u = x$ en $v = ${a}^{${tx(g)}}$.`, L`$v' = ${a}^{${tx(g)}} \cdot \ln ${a} \cdot ([[${gp}]])$.`];
@@ -1556,7 +1556,7 @@ regGen({ id: 'el_log2', cat: 'explog', niveau: 2, titel: 'Logaritmische functies
         st = [L`$f'(x) = \dfrac{1}{\ln x} \cdot D(\ln x) = \dfrac{1}{\ln x} \cdot \dfrac1x$`, L`!$f'(x) = \dfrac{1}{x \ln x}$`];
         fouten = [{ w: '1/ln(x)', soort: 'ketting', msg: L`Je vergat te vermenigvuldigen met $D(\ln x) = \frac1x$.` }];
     } else if (t === 1) {
-        const a = r.pick([2, 3, 5]);
+        const a = r.pick([3, 5]); // log2 = SO 1
         f = `${logS(a)}(e^(sqrt(x)))`; d = `1/(2ln(${a})sqrt(x))`; dom = [0.3, 5];
         hints = [L`$D(\log_a u) = \frac{u'}{u \ln a}$ met $u = e^{\sqrt x}$.`, L`$u' = e^{\sqrt x} \cdot \frac{1}{2\sqrt x}$. Vereenvoudig door $e^{\sqrt x}$. (Of: $\log_{${a}} e^{\sqrt x} = \frac{\sqrt x}{\ln ${a}}$.)`];
         st = [L`$f'(x) = \dfrac{1}{e^{\sqrt x} \ln ${a}} \cdot D\left(e^{\sqrt x}\right) = \dfrac{1}{e^{\sqrt x} \ln ${a}} \cdot e^{\sqrt x} \cdot \dfrac{1}{2\sqrt x}$`, L`!$f'(x) = \dfrac{1}{2 \ln ${a} \cdot \sqrt x}$`];
@@ -1593,7 +1593,7 @@ regGen({ id: 'el_log2', cat: 'explog', niveau: 2, titel: 'Logaritmische functies
 regGen({ id: 'el_functiemacht', cat: 'explog', niveau: 3, titel: 'Functie tot een functiemacht', maak(r) {
     const t = r.int(0, 6);
     let f, d, dom = [0.4, 4], u, v, exp, dexp;
-    if (t === 0) { const k = r.pick([1, 2, 3]); u = 'x'; v = S.cf(k, 'ln(x)'); f = `x^(${v})`; exp = `${S.cf(k, 'ln(x)^2')}`; dexp = `${2 * k}ln(x)/x`; d = `${2 * k}x^(${v}) ln(x)/x`; }
+    if (t === 0) { const k = r.pick([1, 3]); u = 'x'; v = S.cf(k, 'ln(x)'); f = `x^(${v})`; exp = `${S.cf(k, 'ln(x)^2')}`; dexp = `${2 * k}ln(x)/x`; d = `${2 * k}x^(${v}) ln(x)/x`; }
     else if (t === 1) { const p = r.pick([1, 2, 3]), q = r.int(-2, 3); u = 'x'; v = S.lin(p, q); f = `x^(${v})`; exp = `(${v})ln(x)`; dexp = `${p}ln(x) + (${v})/x`; d = `x^(${v})(${p}ln(x) + (${v})/x)`; }
     else if (t === 2) { u = 'x'; v = 'x'; f = 'x^x'; exp = 'x ln(x)'; dexp = 'ln(x) + 1'; d = 'x^x(ln(x) + 1)'; }
     else if (t === 3) { const a = r.int(1, 3), n = r.pick([2, 3]); u = `x^2 + ${a}`; v = `x^${n}`; f = `(${u})^(x^${n})`; exp = `x^${n} ln(${u})`; dexp = `${n}${n === 2 ? "x" : "x^" + (n - 1)} ln(${u}) + 2x^${n + 1}/(${u})`; d = `(${u})^(x^${n})(${dexp})`; dom = [-1.5, 1.5]; }
@@ -1616,7 +1616,7 @@ regGen({ id: 'el_raaklijn', cat: 'explog', niveau: 2, titel: 'Raaklijn aan de gr
     let f, a, aTex, fa, dfa, rl, df;
     if (t === 0) {
         f = 'ln(x)/x'; df = '(1 - ln(x))/x^2';
-        [a, aTex, fa, dfa, rl] = r.pick([['1/e', L`\frac1e`, '-e', '2e^2', 'y = 2e^2 x - 3e'], ['e', 'e', '1/e', '0', 'y = 1/e'], ['e^2', 'e^2', '2/e^2', '-1/e^4', 'y = -x/e^4 + 3/e^2'], ['1', '1', '0', '1', 'y = x - 1']]);
+        [a, aTex, fa, dfa, rl] = r.pick([['e', 'e', '1/e', '0', 'y = 1/e'], ['e^2', 'e^2', '2/e^2', '-1/e^4', 'y = -x/e^4 + 3/e^2'], ['1', '1', '0', '1', 'y = x - 1']]);
     } else if (t === 1) {
         const k = r.pick([1, 2, -1]); f = `x e^(${S.cf(k, 'x')})`; df = `(${S.som(['1', S.cf(k, 'x')])})e^(${S.cf(k, 'x')})`;
         if (r.bool()) { [a, aTex, fa, dfa, rl] = ['0', '0', '0', '1', 'y = x']; }
@@ -1862,7 +1862,7 @@ regGen({ id: 'hop_00_2', cat: 'hopital', niveau: 2, titel: "l'Hôpital: meerdere
         st = [L`$${l0} [[${f}]] ${H00} ${l0} \dfrac{\frac{${p}}{1 + ${tx(px)}} - ${p}}{2x} = ${l0} \dfrac{\frac{${p === 1 ? "-" : -p * p}x}{1 + ${tx(px)}}}{2x} = ${l0} \dfrac{${-p * p}}{2(1 + ${tx(px)})} = [[${Lw}]]$`];
         fouten = [{ w: F(p * p, 2).txt(), soort: 'teken', msg: 'Let op het teken: $\\frac{p}{1 + px} - p = \\frac{-p^2x}{1 + px}$.' }];
     } else if (t === 2) {
-        const p = r.pick([2, 3, 4]), b = r.pick([10, 2, 3]);
+        let p, b; do { p = r.pick([2, 3, 4]); b = r.pick([10, 2, 3]); } while (p === 3 && b === 10); // niet de SO 2-limiet
         f = `(1 - e^(-${p}x^2))/${logS(b)}(1 + x^2)`; Lw = `${p}ln(${b})`;
         st = [L`$${l0} [[${f}]] ${H00} ${l0} \dfrac{${2 * p}x\,e^{-${p}x^2}}{\frac{2x}{(1 + x^2)\ln ${b}}} = ${l0}\, ${p}e^{-${p}x^2}(1 + x^2)\ln ${b} = ${p}\ln ${b} = \ln ${Math.pow(b, p)}$`];
         fouten = [{ w: p, soort: 'lna', msg: L`$D\left(${logL(b)}(1 + x^2)\right) = \dfrac{2x}{(1 + x^2)\ln ${b}}$: vergeet $\ln ${b}$ niet.` }, { w: `${p}/ln(${b})`, soort: 'lna', msg: L`Delen door $\frac{1}{\ln ${b}}$ is vermenigvuldigen met $\ln ${b}$.` }];
@@ -1892,7 +1892,7 @@ regGen({ id: 'hop_verschil', cat: 'hopital', niveau: 2, titel: "l'Hôpital bij �
         f = `1/(${u}) - 1/(e^(${u}) - 1)`; Lw = '1/2';
         st = [L`Stel $u = ${uT}$: $= ${limT(0, '', 'u')} \dfrac{e^u - 1 - u}{u(e^u - 1)} ${H00} ${limT(0, '', 'u')} \dfrac{e^u - 1}{e^u - 1 + u e^u} ${H00} ${limT(0, '', 'u')} \dfrac{e^u}{2e^u + u e^u} = \dfrac12$`];
     } else if (t === 2) {
-        const p = r.pick([1, 2, 3]), px = S.cf(p, 'x');
+        const p = r.pick([2, 3, 4]), px = S.cf(p, 'x'); // p = 1 = SO 2
         f = `(1 + ${px})ln(1 + ${px})/x^2 - ${p}/x`; Lw = F(p * p, 2).txt();
         st = [L`$= ${limT(0)} \dfrac{(1 + ${tx(px)})\ln(1 + ${tx(px)}) - ${tx(px)}}{x^2} ${H00} ${limT(0)} \dfrac{${p === 1 ? '' : p}\ln(1 + ${tx(px)}) + ${p} - ${p}}{2x} ${H00} ${limT(0)} \dfrac{\frac{${p * p}}{1 + ${tx(px)}}}{2} = [[${Lw}]]$`];
     } else if (t === 3) {
@@ -1949,7 +1949,7 @@ function machtOef(r, o) {
 regGen({ id: 'hop_macht1', cat: 'hopital', niveau: 2, titel: "Limieten van de vorm 1^∞, 0⁰ en ∞⁰", maak(r) {
     const t = r.int(0, 4);
     if (t === 0) {
-        let p, q; do { p = r.pick([1, 2, 3, -1, -2, -3]); q = r.pick([1, 2, 3]); } while (p * q === 0);
+        let p, q; do { p = r.pick([1, 2, 3, -1, -2, -3]); q = r.pick([1, 2, 3]); } while (p * q === 0 || (p === -2 && q === 1)); // (1 - 2/x)^x = SO 2
         const bin = S.som(['1', `${p}/x`]), g = S.cf(q, 'x');
         const f = `(${bin})^(${g})`;
         return machtOef(r, { f, a: Infinity, aTex: OO, onb: 'e1', L: eM(p * q), expT: L`${tx(g)} \ln\left(${tx(bin)}\right)`, expL: { tex: String(p * q), txt: String(p * q) },
@@ -2101,7 +2101,7 @@ function kiesDelen(r, kand, n) {
 const MAXMIN = (r, juistMax, extra = '') => D.keuze(`Is dat extremum een maximum of een minimum?${extra}`, [{ t: 'maximum', uitleg: "Kijk naar de tekentabel van $f'$: van $-$ naar $+$ geeft een minimum.", soort: 'extremum' }, { t: 'minimum', uitleg: "Kijk naar de tekentabel van $f'$: van $+$ naar $-$ geeft een maximum.", soort: 'extremum' }], juistMax ? 0 : 1, { janee: true });
 
 regGen({ id: 've_lnquot', cat: 'verloopexp', niveau: 2, titel: 'Verloop van (p + ln u)/u', maak(r) {
-    const p = r.pick([0, 1, -1, 2]), c = r.pick([-2, -1, 0, 1, 2]);
+    let p, c; do { p = r.pick([0, 1, -1, 2]); c = r.pick([-2, -1, 0, 1, 2]); } while (p === 1 && c === -1); // niet de SO 3-functie
     const u = S.xm(c), U = c === 0 ? 'x' : `(${u})`, ln = `ln(${u})`;
     const tel = p === 0 ? ln : `${p} + ${ln}`;
     const f = `(${tel})/${U}`;
@@ -2237,8 +2237,7 @@ regGen({ id: 've_xexp', cat: 'verloopexp', niveau: 2, titel: 'Verloop van een pr
 
 regGen({ id: 've_buigpar', cat: 'verloopexp', niveau: 3, titel: 'Parameter bepalen voor een buigpunt', maak(r) {
     if (r.bool(0.6)) {
-        const [a, w] = r.pick([[F(2), 2], [F(1, 2), 1], [F(8), 4]]);
-        const x0 = r.pick([F(1), F(-1), F(2), F(1, 2)]), c = r.int(-3, 3);
+        let a, w, x0, c; do { [a, w] = r.pick([[F(2), 2], [F(1, 2), 1], [F(8), 4]]); x0 = r.pick([F(1), F(-1), F(2), F(1, 2)]); c = r.int(-3, 3); } while (w === 2 && x0.gelijk(1) && c === -2); // niet de SO 3-functie
         const k1 = a.maal(2).maal(x0).min(w), k2 = a.maal(2).maal(x0).plus(w);
         const expo = S.som([S.cf(a.neg(), 'x^2'), 'kx', String(c)]);
         return {
@@ -2266,8 +2265,7 @@ regGen({ id: 've_buigpar', cat: 'verloopexp', niveau: 3, titel: 'Parameter bepal
 } });
 
 regGen({ id: 've_ln_eax', cat: 'verloopexp', niveau: 3, titel: 'Asymptoten met parameters (toelatingsexamen)', maak(r) {
-    const [a, s] = r.pick([[1, F(1, 2)], [2, F(1)], [3, F(1)], [3, F(2)], [4, F(2)], [4, F(1)]]);
-    const q = r.pick([1, 2, -1]);
+    let a, s, q; do { [a, s] = r.pick([[1, F(1, 2)], [2, F(1)], [3, F(1)], [3, F(2)], [4, F(2)], [4, F(1)]]); q = r.pick([1, 2, -1]); } while (a === 2 && q === 1); // niet de SO 3-opgave
     const ratio = s.deel(F(a).min(s));
     const x0 = ratio.gelijk(1) ? F(q, a).txt() : `(${q} + ln(${ratio.txt()}))/${a}`;
     const y0 = `${q} + ln(${F(a).deel(F(a).min(s)).txt()})`;
@@ -2405,7 +2403,7 @@ const STD = L`\lim\limits_{t \to 0} \frac{\sin t}{t} = 1`;
 
 regGen({ id: 'go_lim', cat: 'gonio', niveau: 1, titel: 'Limieten met sin(x)/x', maak(r) {
     const t = r.int(0, 7);
-    const [a, b] = r.kies([2, 3, 4, 5, 6, 7], 2);
+    let a, b; do { [a, b] = r.kies([2, 3, 4, 5, 6, 7], 2); } while (t === 1 && a === 5 && b === 3); // sin 5x/sin 3x = SO 4
     let f, Lw, st, fouten = [];
     const ax = `${a}x`, bx = `${b}x`;
     if (t === 0) { f = `sin(${ax})/(${bx})`; Lw = F(a, b).txt(); st = [L`$= \dfrac{${a}}{${b}} \cdot \lim\limits_{${a}x \to 0} \dfrac{\sin ${a}x}{${a}x} = \dfrac{${a}}{${b}} \cdot 1$`]; fouten = [{ w: 1, soort: 'goniolim', msg: L`$\frac{\sin ${a}x}{${b}x}$ is niet gelijk aan 1: onder de sinus staat $${a}x$, in de noemer $${b}x$.` }]; }
@@ -2504,7 +2502,7 @@ const GO2 = [
     () => ({ f: 'x sin(2^x)', d: 'sin(2^x) + x cos(2^x) 2^x ln(2)', dom: [-1.5, 1.5], h: L`Productregel; $D\left(\sin 2^x\right) = \cos(2^x) \cdot 2^x \ln 2$.` }),
     r => { const a = r.int(1, 5); return { f: `(sin(x)^2 + ${a})/sin(x)^2`, d: `-${2 * a}cos(x)/sin(x)^3`, dom: [0.3, 2.8], h: L`Splits de breuk: $1 + \frac{${a}}{\sin^2 x} = 1 + ${a}(\sin x)^{-2}$.` }; },
     () => ({ f: 'cos(cos(x))', d: 'sin(x)sin(cos(x))', dom: [-2, 2], h: L`$-\sin(\cos x) \cdot (-\sin x)$.` }),
-    r => { const p = r.pick([2, 3]); return { f: `x cos(${p}x)^2/(2e^x)`, d: `((1 - x)cos(${p}x)^2 - ${p}x sin(${2 * p}x))/(2e^x)`, dom: [-1.5, 1.5], h: L`Quotiëntregel; $D\left(x\cos^2 ${p}x\right) = \cos^2 ${p}x + x \cdot 2\cos(${p}x)(-\sin ${p}x) \cdot ${p}$ en $2\sin\alpha\cos\alpha = \sin 2\alpha$.` }; },
+    r => { const p = r.pick([2, 4]); return { f: `x cos(${p}x)^2/(3e^x)`, d: `((1 - x)cos(${p}x)^2 - ${p}x sin(${2 * p}x))/(3e^x)`, dom: [-1.5, 1.5], h: L`Quotiëntregel; $D\left(x\cos^2 ${p}x\right) = \cos^2 ${p}x + x \cdot 2\cos(${p}x)(-\sin ${p}x) \cdot ${p}$ en $2\sin\alpha\cos\alpha = \sin 2\alpha$.` }; },
 ];
 regGen({ id: 'go_afg2', cat: 'gonio', niveau: 2, titel: 'Goniometrische afgeleiden met ketting-, product- en quotiëntregel', maak(r) {
     const o = r.pick(GO2)(r);
@@ -2577,7 +2575,7 @@ regGen({ id: 'go_vgl', cat: 'gonio', niveau: 1, titel: 'Goniometrische vergelijk
 
 regGen({ id: 'go_extrema', cat: 'gonio', niveau: 3, titel: 'Extrema en buigpunten van een goniometrische functie', maak(r) {
     if (r.bool(0.7)) {
-        const a = r.pick([1, 2, 3, -1, -2]), sg = r.pick([1, -1]), c = r.int(-4, 4);
+        let a, sg, c; do { a = r.pick([1, 2, 3, -1, -2]); sg = r.pick([1, -1]); c = r.int(-4, 4); } while (a === 2 && sg === 1 && c === -4); // niet de SO 4-functie
         const b = -2 * a * sg;
         const f = S.som([S.cf(a, 'sin(x)^2'), S.cf(b, 'sin(x)'), String(c)]);
         const fv = s => { s = Fr.of(s); return F(a).maal(s.maal(s)).plus(F(b).maal(s)).plus(c); };
@@ -2714,7 +2712,7 @@ regGen({ id: 'cy_domein', cat: 'cyclo', niveau: 2, titel: 'Domein van een cyclom
         st = [L`$-1 \leq x^2 - ${c} \leq 1 \Leftrightarrow ${c - 1} \leq x^2 \leq ${c + 1}$`, c === 1 ? L`$x^2 \geq 0$ is altijd waar en $x^2 \leq 2 \Leftrightarrow -\sqrt2 \leq x \leq \sqrt2$` : L`$x^2 \geq ${c - 1} \Leftrightarrow x \leq -[[sqrt(${c - 1})]] \vee x \geq [[sqrt(${c - 1})]]$ en $x^2 \leq ${c + 1} \Leftrightarrow -[[sqrt(${c + 1})]] \leq x \leq [[sqrt(${c + 1})]]$`];
     } else {
         const o = r.pick([
-            { q: '2x^2 - 5x + 1', a: '2x^2 - 5x + 2 = (2x - 1)(x - 2)', b: '2x^2 - 5x = x(2x - 5)', iv: '[0 ; 1/2] U [2 ; 5/2]', ivx: ']0 ; 1/2] U [2 ; 5/2]' },
+            { q: '2x^2 - 7x + 4', a: '2x^2 - 7x + 5 = (2x - 5)(x - 1)', b: '2x^2 - 7x + 3 = (2x - 1)(x - 3)', iv: '[1/2 ; 1] U [5/2 ; 3]', ivx: '[1/2 ; 1] U [5/2 ; 3]' },
             { q: 'x^2 - 3x + 1', a: 'x^2 - 3x + 2 = (x - 1)(x - 2)', b: 'x^2 - 3x = x(x - 3)', iv: '[0 ; 1] U [2 ; 3]', ivx: ']0 ; 1] U [2 ; 3]' },
             { q: 'x^2 - 5x + 5', a: 'x^2 - 5x + 6 = (x - 2)(x - 3)', b: 'x^2 - 5x + 4 = (x - 1)(x - 4)', iv: '[1 ; 2] U [3 ; 4]', ivx: '[1 ; 2] U [3 ; 4]' },
             { q: 'x^2 + x - 1', a: 'x^2 + x = x(x + 1)', b: 'x^2 + x - 2 = (x + 2)(x - 1)', iv: '[-2 ; -1] U [0 ; 1]', ivx: '[-2 ; -1] U ]0 ; 1]' },
@@ -2779,7 +2777,7 @@ regGen({ id: 'cy_raaklijn', cat: 'cyclo', niveau: 2, titel: 'Raaklijn aan een cy
     const t = r.int(0, 3);
     let f, a, fa, dfa, rl, df;
     if (t === 0) {
-        const c = r.pick([1, 2, 3]), p = r.pick([1, 2, -1]);
+        let c, p; do { c = r.pick([1, 2, 3]); p = r.pick([1, 2, -1]); } while (c === 2 && p === 1); // niet de SO 5-functie
         f = `${S.cf(c, `bgcos(${S.poly([1, -2 * p, p * p])})`)} + x`; df = `${-2 * c}(x - ${p})/sqrt(1 - (${S.poly([1, -2 * p, p * p])})^2) + 1`.replace('- -1', '+ 1');
         a = String(p); fa = S.plus(piS(F(c, 2)), p); dfa = '1'; rl = `y = x + ${piS(F(c, 2))}`;
     } else if (t === 1) {
@@ -2808,7 +2806,7 @@ regGen({ id: 'cy_raaklijn', cat: 'cyclo', niveau: 2, titel: 'Raaklijn aan een cy
 regGen({ id: 'cy_verloop', cat: 'cyclo', niveau: 3, titel: 'Verloop van cyclometrische functies', maak(r) {
     const v = r.int(0, 3);
     if (v === 0) {
-        const a = r.pick([1, 2, 3]);
+        const a = r.pick([2, 3]); // a = 1 = SO 5
         const u = S.som([S.cf(a, 'x^2'), '-1']), f = `bgtan(${u})`;
         const xs = a === 1 ? '1' : `1/sqrt(${a})`;
         return {
@@ -2868,8 +2866,8 @@ regGen({ id: 'cy_verloop', cat: 'cyclo', niveau: 3, titel: 'Verloop van cyclomet
 } });
 
 const CYH1 = [
-    r => { const a = r.pick([1, 2, 3]); const ax = S.cf(a, 'x'); return { f: `(${ax} - sin(${ax}))/x^3`, L: F(a ** 3, 6).txt(), onb: 'q00', st: [L`$${H00} \lim \dfrac{${a} - ${a}\cos ${tx(ax)}}{3x^2} ${H00} \lim \dfrac{${a * a}\sin ${tx(ax)}}{6x} ${H00} \lim \dfrac{${a ** 3}\cos ${tx(ax)}}{6} = [[${F(a ** 3, 6).txt()}]]$`.replace(/\{1 - 1\\cos/, '{1 - \\cos').replace('{1\\sin', '{\\sin').replace('{1\\cos', '{\\cos')] }; },
-    () => ({ f: '1/sin(x) - 1/x', L: '0', onb: 'min', st: [L`$= \lim \dfrac{x - \sin x}{x\sin x} ${H00} \lim \dfrac{1 - \cos x}{\sin x + x\cos x} ${H00} \lim \dfrac{\sin x}{2\cos x - x\sin x} = \dfrac02 = 0$`] }),
+    r => { const a = r.pick([2, 3]); const ax = S.cf(a, 'x'); return { f: `(${ax} - sin(${ax}))/x^3`, L: F(a ** 3, 6).txt(), onb: 'q00', st: [L`$${H00} \lim \dfrac{${a} - ${a}\cos ${tx(ax)}}{3x^2} ${H00} \lim \dfrac{${a * a}\sin ${tx(ax)}}{6x} ${H00} \lim \dfrac{${a ** 3}\cos ${tx(ax)}}{6} = [[${F(a ** 3, 6).txt()}]]$`.replace(/\{1 - 1\\cos/, '{1 - \\cos').replace('{1\\sin', '{\\sin').replace('{1\\cos', '{\\cos')] }; },
+    () => ({ f: '1/sin(x) - 1/tan(x)', L: '0', onb: 'min', st: [L`$= \lim \dfrac{1 - \cos x}{\sin x} ${H00} \lim \dfrac{\sin x}{\cos x} = \dfrac01 = 0$`] }),
     () => ({ f: '(x cos(x) - sin(x))/x^3', L: '-1/3', onb: 'q00', st: [L`$${H00} \lim \dfrac{\cos x - x\sin x - \cos x}{3x^2} = \lim \dfrac{-\sin x}{3x} = -\dfrac13$`] }),
     r => { const a = r.pick([2, 3, 4]); return { f: `(1 - cos(${a}x))/x^2`, L: F(a * a, 2).txt(), onb: 'q00', st: [L`$${H00} \lim \dfrac{${a}\sin ${a}x}{2x} ${H00} \lim \dfrac{${a * a}\cos ${a}x}{2} = [[${F(a * a, 2).txt()}]]$`] }; },
     r => { const a = r.pick([1, 2, 3]), b = r.pick([2, 3, 5]); return { f: `bgsin(${S.cf(a, 'x')})/(${b}x)`, L: F(a, b).txt(), onb: 'q00', st: [L`$${H00} \lim \dfrac{\frac{${a}}{\sqrt{1 - ${a * a === 1 ? '' : a * a}x^2}}}{${b}} = [[${F(a, b).txt()}]]$`] }; },
@@ -2909,7 +2907,7 @@ regGen({ id: 'cy_hop2', cat: 'cyclo', niveau: 3, titel: "Moeilijke limieten met 
 regGen({ id: 'cy_param', cat: 'cyclo', niveau: 3, titel: 'Parameters bepalen uit een limiet', maak(r) {
     const t = r.int(0, 3);
     if (t === 0) {
-        const L0 = r.pick([2, 3, 5, 7, 4, 9]);
+        const L0 = r.pick([2, 3, 6, 7, 4, 9]); // 5 = SO 5
         const aw = Number.isInteger(Math.sqrt(L0)) ? String(Math.sqrt(L0)) : `sqrt(${L0})`;
         return { opgave: L`Bepaal een positief getal $a$ zodat $$${limT(OO)} ax\operatorname{Bgtan}\frac{a}{x} = ${L0}$$`,
             delen: [D.getal('Geef $a$.', aw, { label: 'a =', soort: 'hopital', punten: 2, fouten: [{ w: L0, soort: 'rekenfout', msg: 'De limiet is $a^2$, niet $a$.' }, { w: '-' + aw, soort: 'teken', msg: 'Er wordt een positief getal gevraagd.' }] })],
@@ -3085,12 +3083,12 @@ regGen({ id: 'im_HR', cat: 'impl', niveau: 3, titel: 'Horizontale raaklijnen aan
 
 const PARAM = [
     r => { const a = r.int(2, 5), b = r.int(2, 5); return { x: `${a}cos(t)`, y: `${b}sin(t)`, dx: `-${a}sin(t)`, dy: `${b}cos(t)`, d: `-${b}cos(t)/(${a}sin(t))` }; },
-    r => { const a = r.int(2, 4), b = r.int(2, 5); return { x: `${a}cos(t)`, y: `${b}sin(2t)`, dx: `-${a}sin(t)`, dy: `${2 * b}cos(2t)`, d: `-${2 * b}cos(2t)/(${a}sin(t))` }; },
+    r => { let a, b; do { a = r.int(2, 4); b = r.int(2, 5); } while (a === 3 && b === 4); return { x: `${a}cos(t)`, y: `${b}sin(2t)`, dx: `-${a}sin(t)`, dy: `${2 * b}cos(2t)`, d: `-${2 * b}cos(2t)/(${a}sin(t))` }; },
     r => { const c = r.int(1, 5); return { x: 't^2', y: S.som(['t^3', S.cf(-c, 't')]), dx: '2t', dy: `3t^2 - ${c}`, d: `(3t^2 - ${c})/(2t)` }; },
     () => ({ x: 'e^t', y: 'e^(2t) - t', dx: 'e^t', dy: '2e^(2t) - 1', d: '(2e^(2t) - 1)/e^t' }),
     () => ({ x: 't sin(t)', y: 't cos(t)', dx: 'sin(t) + t cos(t)', dy: 'cos(t) - t sin(t)', d: '(cos(t) - t sin(t))/(sin(t) + t cos(t))' }),
     r => { const [a, b] = r.kies([1, 2, 3, 4], 2); return { x: `sin(${S.cf(a, 't')})`, y: `sin(${S.cf(b, 't')})`, dx: S.cf(a, `cos(${S.cf(a, 't')})`), dy: S.cf(b, `cos(${S.cf(b, 't')})`), d: `${b}cos(${S.cf(b, 't')})/(${a}cos(${S.cf(a, 't')}))` }; },
-    r => { const p = r.int(1, 3), q = r.int(1, 3), s = r.int(2, 4); return { x: `${p} + ${q}sin(t/2)`, y: `${s}sin(2t)`, dx: `${q}/2 cos(t/2)`, dy: `${2 * s}cos(2t)`, d: `${4 * s}cos(2t)/(${q}cos(t/2))` }; },
+    r => { let p, q, s; do { p = r.int(1, 3); q = r.int(1, 3); s = r.int(2, 4); } while (p === 2 && q === 2 && s === 3); return { x: `${p} + ${q}sin(t/2)`, y: `${s}sin(2t)`, dx: `${q}/2 cos(t/2)`, dy: `${2 * s}cos(2t)`, d: `${4 * s}cos(2t)/(${q}cos(t/2))` }; },
     () => ({ x: 'cos(2t) + 2sin(t)', y: 'cos(t)', dx: '-2sin(2t) + 2cos(t)', dy: '-sin(t)', d: '-sin(t)/(-2sin(2t) + 2cos(t))' }),
 ];
 const PARAM_HINT = L`$\dfrac{dy}{dx} = \dfrac{\;\frac{dy}{dt}\;}{\frac{dx}{dt}}$ (als $\frac{dx}{dt} \neq 0$).`;
@@ -3152,7 +3150,7 @@ regGen({ id: 'pa_HRVR', cat: 'impl', niveau: 2, titel: 'Horizontale en verticale
     const t = r.int(0, 3);
     const kromT = (x, y, iv) => L`$$k \leftrightarrow \left\{\begin{array}{l} x = [[${x}]] \\ y = [[${y}]] \end{array}\right. \quad t \in ${iv}$$`;
     if (t === 0) {
-        const a = r.int(2, 5), b = r.int(2, 5);
+        let a, b; do { a = r.int(2, 5); b = r.int(2, 5); } while (a === 3 && b === 4); // niet de SO 6-kromme
         const xr = `${a}sqrt(2)/2`;
         return {
             opgave: L`Gegeven is de kromme ${kromT(`${a}cos(t)`, `${b}sin(2t)`, L`[0, 2\pi[`)}`,
@@ -3172,7 +3170,7 @@ regGen({ id: 'pa_HRVR', cat: 'impl', niveau: 2, titel: 'Horizontale en verticale
         };
     }
     if (t === 2) {
-        const p = r.int(1, 3), q = r.int(1, 3), s = r.int(2, 4);
+        let p, q, s; do { p = r.int(1, 3); q = r.int(1, 3); s = r.int(2, 4); } while (p === 2 && q === 2 && s === 3); // niet de SO 6-kromme
         return {
             opgave: L`Gegeven is de kromme ${kromT(`${p} + ${q}sin(t/2)`, `${s}sin(2t)`, L`[0, 4\pi]`)} Bepaal algebraïsch (zonder grafiek) de meest linkse en de meest rechtse punten.`,
             delen: [D.punt('Het meest rechtse punt:', 'R', [p + q, 0], { soort: 'extremum' }), D.punt('Het meest linkse punt:', 'L', [p - q, 0], { soort: 'extremum' })],
@@ -3240,7 +3238,7 @@ const fmtD = (v, d = 2) => String(+v.toFixed(d)).replace('.', '{,}');
 regGen({ id: 'dv_groei', cat: 'dv', niveau: 1, titel: "Groei en verval: f' = k·f", maak(r) {
     const verval = r.bool(0.65);
     if (verval) {
-        const [naam, k, eenh] = r.pick([['polonium-218', 0.227, 'min'], ['radon-222', 0.181, 'dagen'], ['jodium-131', 0.0862, 'dagen'], ['cesium-137', 0.0231, 'jaar'], ['radium-228', 0.121, 'jaar']]);
+        const [naam, k, eenh] = r.pick([['lood-214', 0.0259, 'min'], ['radon-222', 0.181, 'dagen'], ['jodium-131', 0.0862, 'dagen'], ['cesium-137', 0.0231, 'jaar'], ['radium-228', 0.121, 'jaar']]);
         const m0 = r.pick([20, 50, 80, 100, 250]), p = r.pick([10, 20, 25, 5]), t1 = r.pick([2, 5, 10, 20]);
         const kand = [
             { vast: true, d: D.uitdr(L`Geef het voorschrift van $m(t)$ als $m(0) = ${m0}$ mg.`, 'm(t) =', `${m0}e^(-${k}t)`, { vars: ['t'], dom: [0, 10], soort: 'dv', fouten: [{ w: `${m0}e^(${k}t)`, soort: 'dv', msg: 'Bij verval is $k$ negatief: $m(t) = b \\cdot e^{-' + String(k).replace('.', '{,}') + 't}$.' }] }) },
@@ -3267,7 +3265,7 @@ regGen({ id: 'dv_groei', cat: 'dv', niveau: 1, titel: "Groei en verval: f' = k·
             stappen: [L`$K(t) = ${K0}\,e^{${String(k).replace('.', '{,}')}t}$`, L`$e^{${String(k).replace('.', '{,}')}t} = 2 \Leftrightarrow t = \dfrac{\ln 2}{${String(k).replace('.', '{,}')}} \approx ${fmtD(Math.log(2) / k)}$ jaar`, L`!$K(${t1}) \approx ${fmtD(K0 * Math.exp(k * t1))}$ euro`],
         };
     }
-    const k = r.pick([0.227, 0.15, 0.3]), t1 = r.pick([3, 5, 8]), m1 = r.pick([10, 20, 25]);
+    const k = r.pick([0.2, 0.15, 0.3]), t1 = r.pick([3, 5, 8]), m1 = r.pick([10, 20, 25]);
     return {
         opgave: L`Een stof vervalt volgens $\frac{dm}{dt} = -${String(k).replace('.', '{,}')}\,m$ ($t$ in minuten, $m$ in mg). Na ${t1} minuten wil je nog ${m1} mg over hebben.`,
         delen: [D.getal('Hoeveel mg moet je dan aanvankelijk hebben? (op 2 decimalen)', `${m1}e^(${k * t1})`, { label: 'b \\approx', benadering: true, soort: 'dv', punten: 2, fouten: [{ w: `${m1}e^(-${k * t1})`, soort: 'dv', msg: 'Aanvankelijk moet je méér hebben: $b = \\frac{m(t)}{e^{-kt}}$.' }] })],
@@ -3353,7 +3351,7 @@ regGen({ id: 'dv_oplossing', cat: 'dv', niveau: 2, titel: 'Oplossingen van diffe
 
 regGen({ id: 'dv_kettinglijn', cat: 'dv', niveau: 1, titel: 'Kettinglijn', maak(r) {
     if (r.bool(0.7)) {
-        const a = r.pick([5, 8, 10, 12, 15, 20]), d = r.pick([10, 16, 20, 24, 30]);
+        let a, d; do { a = r.pick([5, 8, 10, 12, 15, 20]); d = r.pick([10, 16, 20, 24, 30]); } while (a === 10 && d === 20); // niet de SO 6-kabel
         const H = a * Math.cosh(d / (2 * a));
         return {
             opgave: L`Een kabel hangt tussen twee even hoge masten die $${d}$ m uit elkaar staan. Het voorschrift van de kettinglijn is $$f(x) = ${a}\cosh\left(\frac{x}{${a}}\right) \quad \text{met } \cosh x = \frac{e^x + e^{-x}}{2},$$ met de $y$-as door het midden tussen de masten.`,
@@ -3440,7 +3438,7 @@ const THEORIE = {
             + L`<p>Voorbeeld: $\lim\limits_{x \to 0^+} x \ln x = \lim\limits_{x \to 0^+} \dfrac{\ln x}{\frac1x} ${HOO} \lim\limits_{x \to 0^+} \dfrac{\frac1x}{-\frac{1}{x^2}} = \lim\limits_{x \to 0^+} (-x) = 0$.</p>` },
         { titel: 'Onbepaaldheden $1^\\infty$, $0^0$ en $\\infty^0$', gens: ['hop_macht1', 'hop_macht2', 'hop_param'], html:
             KADER(L`$f(x)^{g(x)} = e^{g(x) \ln f(x)} \qquad\Rightarrow\qquad \lim f(x)^{g(x)} = e^{\lim g(x) \ln f(x)}$`)
-            + L`<p>Bereken eerst de limiet $L$ van de exponent $g \ln f$ (meestal $0 \cdot \infty$); het antwoord is $e^L$. Voorbeeld: $\lim\limits_{x \to +\infty}\left(1 - \frac2x\right)^x = e^{\lim x \ln\left(1 - \frac2x\right)} = e^{-2}$.</p><p>$0^0$ wordt vaak per definitie gelijkgesteld aan $1$, maar bij limieten is het een onbepaaldheid.</p>` },
+            + L`<p>Bereken eerst de limiet $L$ van de exponent $g \ln f$ (meestal $0 \cdot \infty$); het antwoord is $e^L$. Voorbeeld: $\lim\limits_{x \to +\infty}\left(1 + \frac3x\right)^x = e^{\lim x \ln\left(1 + \frac3x\right)} = e^{3}$.</p><p>$0^0$ wordt vaak per definitie gelijkgesteld aan $1$, maar bij limieten is het een onbepaaldheid.</p>` },
     ],
     verloopexp: [
         { titel: 'Stappenplan van een functieonderzoek', gens: ['ve_basis', 've_lnquot', 've_expquot'], html:
@@ -3481,7 +3479,7 @@ const THEORIE = {
         { titel: 'Verloop van cyclometrische functies', gens: ['cy_verloop', 'cy_raaklijn', 'cy_kijkhoek'], html:
             L`<ul><li>$\lim\limits_{x \to \pm\infty}\operatorname{Bgtan} x = \pm\frac{\pi}{2}$: H.A. of een bijdrage aan een S.A.</li><li>Een <b>hoekpunt</b>: de linker- en rechterlimiet van $f'$ zijn verschillend. Let op: $\sqrt{x^2} = |x|$ (dus $-x$ voor $x < 0$).</li><li>Een verticale raaklijn waar $f'(x) \to \pm\infty$, bv. aan de rand van het domein van $\operatorname{Bgsin}$ of $\operatorname{Bgcos}$.</li></ul>` },
         { titel: "Limieten met de regel van de l'Hôpital", gens: ['cy_hop1', 'cy_hop2', 'cy_param'], html:
-            L`<p>De regel van de l'Hôpital werkt ook met goniometrische en cyclometrische functies. Voorbeelden: $\lim\limits_{x \to 0}\dfrac{x - \sin x}{x^3} ${H00} \lim\dfrac{1 - \cos x}{3x^2} ${H00} \lim\dfrac{\sin x}{6x} ${H00} \lim\dfrac{\cos x}{6} = \dfrac16$ en $\lim\limits_{x \to 0}\left(\dfrac{1}{\sin x} - \dfrac1x\right) = \lim\dfrac{x - \sin x}{x\sin x} = 0$.</p><p>Parameters bepalen: vul eerst in. Is de teller $0$, dan moet de noemer ook $0$ worden (anders is de limiet $0$ of $\pm\infty$).</p>` },
+            L`<p>De regel van de l'Hôpital werkt ook met goniometrische en cyclometrische functies. Voorbeelden: $\lim\limits_{x \to 0}\dfrac{\tan x - x}{x^3} ${H00} \lim\dfrac{\frac{1}{\cos^2 x} - 1}{3x^2} = \lim\dfrac{\tan^2 x}{3x^2} = \dfrac13$ en $\lim\limits_{x \to 0}\left(\dfrac{1}{\sin x} - \dfrac{1}{\tan x}\right) = \lim\dfrac{1 - \cos x}{\sin x} ${H00} \lim\dfrac{\sin x}{\cos x} = 0$.</p><p>Parameters bepalen: vul eerst in. Is de teller $0$, dan moet de noemer ook $0$ worden (anders is de limiet $0$ of $\pm\infty$).</p>` },
     ],
     impl: [
         { titel: 'Impliciet afleiden', gens: ['im_dydx', 'im_raaklijn'], html:
