@@ -3866,7 +3866,7 @@ const THEORIE = {
         { titel: 'Vlakkenwaaier', gens: ['vl_waaier'], html:
             L`<p>Is een rechte gegeven als snijlijn van de vlakken $u_1x + v_1y + w_1z + t_1 = 0$ en $u_2x + v_2y + w_2z + t_2 = 0$, dan is elk vlak door die rechte van de vorm</p>`
             + KADER(L`$\lambda\left(u_1x + v_1y + w_1z + t_1\right) + \sigma\left(u_2x + v_2y + w_2z + t_2\right) = 0 \qquad \lambda, \sigma \in \mathbb{R}$`)
-            + L`<p>Werkwijze: (1) schrijf de rechte als stelsel van twee vergelijkingen (uit $\frac{x - 3}{3} = \frac{y - 4}{5}$ volgt $5(x - 3) = 3(y - 4)$); (2) vul het gegeven punt in: je krijgt een verband tussen $\lambda$ en $\sigma$; (3) kies een passende waarde (bv. $-4\lambda - \sigma = 0$: stel $\lambda = -1$, $\sigma = 4$); (4) werk uit en vereenvoudig.</p>` },
+            + L`<p>Werkwijze: (1) schrijf de rechte als stelsel van twee vergelijkingen (uit $\frac{x - 2}{4} = \frac{y + 1}{3}$ volgt $3(x - 2) = 4(y + 1)$); (2) vul het gegeven punt in: je krijgt een verband tussen $\lambda$ en $\sigma$; (3) kies een passende waarde (bv. $3\lambda - 2\sigma = 0$: stel $\lambda = 2$, $\sigma = 3$); (4) werk uit en vereenvoudig.</p>` },
         { titel: 'Punten in een vlak, coplanaire punten', gens: ['vl_k', 'vl_coplanair'], html:
             L`<p>Een punt ligt in een vlak als zijn coördinaat aan de vergelijking voldoet. Vier punten zijn coplanair als het vierde punt in het vlak door de drie andere ligt.</p>` },
     ],
@@ -4050,7 +4050,7 @@ function typhulpHtml() {
         ${rij('breuk', ['3/4', '-5/2'], L`\tfrac34,\ -\tfrac52`)}
         ${rij('vierkantswortel', ['sqrt(14)', '√14', '2sqrt(3)/7'], L`\sqrt{14},\ \tfrac{2\sqrt3}{7}`)}
         ${rij('macht', ['x^2', '(y+1)^2'], L`x^2,\ (y+1)^2`)}
-        ${rij('vlak', ['2x - 3y + z - 5 = 0', 'x/2 + y/3 - z/4 = 1'], '')}
+        ${rij('vlak', ['2x - 3y + z - 5 = 0', 'x/5 - y/2 + z/3 = 1'], '')}
         ${rij('rechte (doorlopend)', ['(x-1)/2 = (y+3)/(-1) = z'], L`\frac{x-1}{2} = \frac{y+3}{-1} = z`)}
         ${rij('rechte (stelsel)', ['x + y - 6 = 0', 'z = 3'], '')}
         ${rij('parameter', ['1 + 2k', '3 - k + 2m'], '')}
