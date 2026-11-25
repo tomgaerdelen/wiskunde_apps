@@ -284,11 +284,56 @@ window.WiskundeTracker = (function () {
     return String(waarde).slice(0, max);
   }
 
-  // Details blijven bewust klein: enkel wat nodig is voor de foutenanalyse, nooit wat de leerling intypte.
+  // Details blijven klein: enkel wat nodig is voor de foutenanalyse. Bij een fout gaan ook mee:
+  // de opgave (opg), het eerste foute antwoord (ant, enkel het wiskundige antwoord in het antwoordvak),
+  // de feedback die de leerling kreeg (fb) en het juiste antwoord (jst). Geen namen, geen vrije tekst.
+  const TEKST_VELDEN = { opg: 260, fb: 320, ant: 90, jst: 140, fs: 90 };
+
+  function maakTekst(waarde, max) {
+    if (waarde === null || waarde === undefined) return undefined;
+    let t = String(waarde);
+    // Al opgemaakte formules (KaTeX) terug omzetten naar hun formule-code: $...$
+    if (/[<&]/.test(t) && typeof document !== "undefined") {
+      try {
+        const sjabloon = document.createElement("template"); // inert: niets wordt uitgevoerd of geladen
+        sjabloon.innerHTML = t;
+        sjabloon.content.querySelectorAll(".katex").forEach(k => {
+          const a = k.querySelector('annotation[encoding="application/x-tex"]');
+          k.replaceWith(a ? " $" + a.textContent.trim() + "$ " : k.textContent);
+        });
+        sjabloon.content.querySelectorAll("br").forEach(b => b.replaceWith(" "));
+        sjabloon.content.querySelectorAll("script, style").forEach(x => x.remove());
+        t = sjabloon.content.textContent.replace(/\s+/g, " ").trim();
+        if (!t) return undefined;
+        return t.length > max ? t.slice(0, max - 1) + "…" : t;
+      } catch (err) { /* dan gewoon de tags weghalen hieronder */ }
+    }
+    t = t
+      .replace(/<(script|style)[\s\S]*?<\/\1>/gi, " ")
+      .replace(/<br\s*\/?>/gi, " ")
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;/g, " ").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&")
+      .replace(/\s+/g, " ").trim();
+    if (!t) return undefined;
+    return t.length > max ? t.slice(0, max - 1) + "…" : t;
+  }
+
   function kleineDetails(details) {
     try {
-      const json = JSON.stringify(details || {});
-      return json.length <= 400 ? JSON.parse(json) : {};
+      const d = JSON.parse(JSON.stringify(details || {}));
+      for (const [veld, max] of Object.entries(TEKST_VELDEN)) {
+        if (veld in d) {
+          const t = maakTekst(d[veld], max);
+          if (t === undefined) delete d[veld]; else d[veld] = t;
+        }
+      }
+      // Te groot? Eerst de langste tekstvelden laten vallen, de rest blijft bewaard.
+      for (const veld of ["fb", "opg", "jst", "ant"]) {
+        if (JSON.stringify(d).length <= 1200) break;
+        delete d[veld];
+      }
+      return JSON.stringify(d).length <= 1200 ? d : {};
     } catch (err) {
       return {};
     }
