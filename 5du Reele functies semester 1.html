@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5du Reële functies semester 1</title>
+<link rel="stylesheet" href="lib/katex/katex.min.css">
+<script src="lib/katex/katex.min.js"></script>
+<link rel="stylesheet" href="lib/patrick-hand/patrick-hand.css">
+<script defer src="lib/html2canvas-1.4.1.min.js"></script>
+<script defer src="lib/jspdf-2.5.1.umd.min.js"></script>
+<style>
+  :root { --blauw:#1e3a8a; --blauw2:#172554; --tekst:#1e293b; --grijs:#64748b; --rand:#e2e8f0; --achter:#f1f5f9;
+          --h1:#38873c; --h2:#1e5aaa; --h3:#c85f14; --ex:#e11d48; --opl:#10309e; --goed:#15803d; --fout:#b91c1c; --pen:#be123c; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:18px; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: var(--achter); color: var(--tekst); }
+  button, input, select { font-family: inherit; font-size: 1rem; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  h1 { font-size: 1.8rem; margin: .2rem 0 .3rem; font-weight: 800; }
+  h2 { font-size: 1.25rem; margin: 0 0 .6rem; }
+  .sub { color: var(--grijs); margin: 0 0 1rem; }
+  .kaart { background:#fff; border:1px solid var(--rand); border-radius:16px; box-shadow:0 4px 18px rgba(15,23,42,.06); padding:18px 20px; margin-bottom:16px; }
+  .kaart.h1 { border-top:6px solid var(--h1); } .kaart.h2 { border-top:6px solid var(--h2); } .kaart.h3 { border-top:6px solid var(--h3); } .kaart.ex { border-top:6px solid var(--ex); }
+  .rij { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .knop { background: var(--blauw); color:#fff; border:none; border-radius:10px; padding:10px 18px; font-weight:700; cursor:pointer; }
+  .knop:hover { background: var(--blauw2); }
+  .knop.licht { background:#fff; color: var(--blauw); border:1px solid #bfdbfe; }
+  .knop.licht:hover { background:#eff6ff; }
+  .knop.klein { padding:6px 12px; font-size:.9rem; }
+  .knop.rood { background: var(--ex); } .knop.rood:hover { background:#be123c; }
+  .knop:disabled { opacity:.45; cursor:default; }
+  .start-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap:16px; }
+  .doel { display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-top:1px solid var(--rand); }
+  .doel:first-of-type { border-top:none; }
+  .doel .tekst { flex:1; }
+  .doel .naam { font-weight:700; }
+  .doel .kan { color: var(--grijs); font-size:.9rem; margin-top:2px; }
+  .bolletjes { display:inline-flex; gap:3px; margin-top:6px; }
+  .bol { width:12px; height:12px; border-radius:50%; background:#e2e8f0; display:inline-block; }
+  .bol.j { background:#22c55e; } .bol.f { background:#f87171; }
+  .beheerst { color: var(--goed); font-weight:700; font-size:.85rem; margin-left:6px; }
+  .zelf { display:inline-flex; gap:2px; margin-top:6px; }
+  .zelf button { border:1px solid var(--rand); background:#fff; border-radius:8px; padding:1px 6px; cursor:pointer; font-size:1rem; filter:grayscale(1); opacity:.55; }
+  .zelf button.aan { filter:none; opacity:1; border-color:#93c5fd; background:#eff6ff; }
+  .zelf .lbl { font-size:.78rem; color:var(--grijs); margin-right:4px; align-self:center; }
+  .doel .knoppen { display:flex; flex-direction:column; gap:6px; }
+  .badge { display:inline-block; padding:2px 10px; border-radius:999px; font-size:.8rem; font-weight:700; background:#eff6ff; color:var(--blauw); border:1px solid #bfdbfe; }
+  .badge.h1 { background:#ecfdf3; color:var(--h1); border-color:#bbf7d0; } .badge.h2 { background:#eff6ff; color:var(--h2); border-color:#bfdbfe; } .badge.h3 { background:#fff7ed; color:var(--h3); border-color:#fed7aa; } .badge.ex { background:#fff1f2; color:var(--ex); border-color:#fecdd3; }
+  .topbalk { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+  .voortgang { height:8px; background:#e2e8f0; border-radius:999px; overflow:hidden; margin:8px 0 14px; }
+  .voortgang > div { height:100%; background: var(--blauw); transition: width .3s; }
+  .vraag { font-size:1.08rem; line-height:1.55; margin-bottom:12px; }
+  .figuur { text-align:center; margin: 6px 0 12px; }
+  .figuur svg { max-width:100%; height:auto; }
+  .werkvorm { font-size:.8rem; font-weight:700; color:var(--grijs); text-transform:uppercase; letter-spacing:.04em; }
+  .regel { margin: 8px 0; line-height: 2.2; font-size:1.05rem; }
+  input.veld { width:5.2em; padding:5px 8px; border:2px solid #cbd5e1; border-radius:8px; text-align:center; font-size:1rem; }
+  input.veld:focus { outline:none; border-color:#60a5fa; }
+  select.veld { padding:5px 6px; border:2px solid #cbd5e1; border-radius:8px; background:#fff; }
+  .veld.goed { border-color:#22c55e !important; background:#f0fdf4; } .veld.fout { border-color:#f87171 !important; background:#fef2f2; }
+  .infknop { border:1px solid #cbd5e1; background:#f8fafc; border-radius:6px; padding:1px 6px; cursor:pointer; font-size:.85rem; margin: 0 2px; }
+  .opties { display:grid; gap:8px; }
+  .optie { text-align:left; border:2px solid var(--rand); background:#fff; border-radius:12px; padding:10px 14px; cursor:pointer; font-size:1rem; line-height:1.45; }
+  .optie:hover { border-color:#93c5fd; }
+  .optie.gekozen { border-color: var(--blauw); background:#eff6ff; }
+  .optie.goed { border-color:#22c55e; background:#f0fdf4; } .optie.fout { border-color:#f87171; background:#fef2f2; }
+  .opties.figs { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+  .opties.figs .optie { text-align:center; }
+  .feedback { border-radius:12px; padding:12px 16px; margin-top:14px; line-height:1.5; }
+  .feedback.ok { background:#f0fdf4; border:1px solid #bbf7d0; }
+  .feedback.nok { background:#fef2f2; border:1px solid #fecaca; }
+  .feedback.info { background:#f8fafc; border:1px solid var(--rand); }
+  .pen { font-family:'Patrick Hand', 'Comic Sans MS', cursive; color: var(--pen); font-size:1.25rem; line-height:1.3; }
+  .uitleg { margin-top:8px; color:#334155; }
+  .uitleg .opl { color: var(--opl); }
+  .acties { display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
+  /* sorteren en koppelen */
+  .pool { display:flex; flex-wrap:wrap; gap:8px; min-height:56px; padding:10px; border:2px dashed #cbd5e1; border-radius:12px; margin-bottom:12px; background:#f8fafc; }
+  .bakken { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:10px; }
+  .bak { border:2px solid var(--rand); border-radius:12px; min-height:90px; padding:8px; background:#fff; cursor:pointer; }
+  .bak:hover { border-color:#93c5fd; }
+  .bak .bnaam { font-weight:700; font-size:.92rem; margin-bottom:6px; color:var(--blauw); }
+  .bak .inhoud { display:flex; flex-wrap:wrap; gap:6px; }
+  .kaartje { border:2px solid #cbd5e1; background:#fff; border-radius:10px; padding:6px 10px; cursor:pointer; user-select:none; }
+  .kaartje.gekozen { border-color: var(--blauw); box-shadow:0 0 0 3px #bfdbfe; }
+  .kaartje.goed { border-color:#22c55e; } .kaartje.fout { border-color:#f87171; background:#fef2f2; }
+  .match { display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+  .match .kol { display:grid; gap:8px; align-content:start; }
+  .mitem { border:2px solid var(--rand); background:#fff; border-radius:12px; padding:8px 10px; cursor:pointer; text-align:center; position:relative; min-height:44px; display:flex; align-items:center; justify-content:center; }
+  .mitem.gekozen { border-color: var(--blauw); box-shadow:0 0 0 3px #bfdbfe; }
+  .mitem .nr { position:absolute; top:4px; left:6px; width:22px; height:22px; border-radius:50%; color:#fff; font-size:.8rem; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .mitem.goed { border-color:#22c55e; } .mitem.fout { border-color:#f87171; background:#fef2f2; }
+  /* ordenen */
+  .orden { display:grid; gap:8px; }
+  .stap { display:flex; align-items:center; gap:8px; border:2px solid var(--rand); border-radius:10px; padding:6px 10px; background:#fff; }
+  .stap.vast { background:#f8fafc; }
+  .stap .inh { flex:1; }
+  .stap .pk { display:flex; flex-direction:column; gap:2px; }
+  .stap .pk button { border:1px solid #cbd5e1; background:#fff; border-radius:6px; cursor:pointer; padding:0 8px; line-height:1.3; }
+  .stap.goed { border-color:#22c55e; } .stap.fout { border-color:#f87171; background:#fef2f2; }
+  /* fout zoeken */
+  .uitwerking { display:grid; gap:6px; }
+  .lijn { border:2px solid var(--rand); border-radius:10px; padding:6px 12px; cursor:pointer; background:#fff; }
+  .lijn:hover { border-color:#93c5fd; }
+  .lijn.gekozen { border-color: var(--pen); background:#fff1f2; }
+  .lijn.goed { border-color:#22c55e; } .lijn.fout { border-color:#f87171; }
+  /* tabellen */
+  table.schema { border-collapse:collapse; margin: 6px auto; }
+  table.schema td { padding:4px 6px; text-align:center; min-width:44px; height:38px; }
+  table.schema td.kop { border-right:2px solid var(--tekst); font-style:italic; font-weight:600; min-width:46px; }
+  table.schema tr.r1 td { border-bottom:2px solid var(--tekst); }
+  .cel { min-width:40px; height:34px; border:2px dashed #94a3b8; border-radius:8px; background:#fff; cursor:pointer; font-size:1.15rem; font-weight:700; color: var(--opl); }
+  .cel:hover { border-color:#60a5fa; }
+  .cel.goed { border:2px solid #22c55e; background:#f0fdf4; } .cel.fout { border:2px solid #f87171; background:#fef2f2; }
+  table.schema input.veld { width:3.6em; padding:3px 4px; }
+  table.statisch td { min-width:30px; height:28px; padding:2px 6px; }
+  /* schuifregelaars */
+  .sliders { display:grid; gap:10px; max-width:460px; margin: 0 auto; }
+  .sliders label { display:flex; align-items:center; gap:10px; font-weight:700; }
+  .sliders input[type=range] { flex:1; }
+  .sliders .w { min-width:3em; text-align:right; font-variant-numeric: tabular-nums; }
+  /* verklaren */
+  .vstap { border-left:4px solid #bfdbfe; padding:6px 12px; margin:8px 0; background:#f8fafc; border-radius:0 10px 10px 0; }
+  .vstap .wv { margin-top:8px; }
+  /* leerkaart */
+  .leerkaart p { line-height:1.6; }
+  .leerkaart .vb { background:#f8fafc; border:1px solid var(--rand); border-radius:12px; padding:10px 14px; margin:10px 0; }
+  .leerkaart .vb .opl { color: var(--opl); }
+  .leerkaart .tip { background:#fff7ed; border:1px solid #fed7aa; border-radius:12px; padding:8px 12px; }
+  .naam-app { position:fixed; right:12px; bottom:8px; font-size:11px; color:#94a3b8; pointer-events:none; }
+  .resultaat td, .resultaat th { padding:6px 10px; border-bottom:1px solid var(--rand); text-align:left; }
+  .resultaat { border-collapse:collapse; width:100%; }
+  .grote-score { font-size:2.4rem; font-weight:800; color: var(--blauw); }
+  .advies { background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; padding:10px 14px; }
+  .katex { white-space: nowrap; } /* een formule nooit over twee regels */
+  .tabelwrap { overflow-x:auto; max-width:100%; }
+  body { padding-bottom: 40px; overflow-x: hidden; }
+  @media (max-width: 640px) { body { padding:10px 10px 40px; } .match { grid-template-columns: 1fr 1fr; gap:8px; } h1 { font-size:1.45rem; } .kaart { padding:14px; }
+    .mitem { font-size:.8rem; padding:6px 4px; overflow-x:auto; } .mitem svg { width:100%; height:auto; }
+    table.schema td { min-width:28px; padding:2px 3px; } .cel { min-width:30px; } table.schema input.veld { width:2.8em; } .vraag { font-size:1rem; } }
+</style>
+</head>
+<body>
+<!-- PORTAAL-KOPPELING (zelfde blok in elke app): terug naar het portaal en de leerlingcode.
+     De apps vragen of bewaren geen naam; enkel de anonieme code van het portaal wordt getoond. -->
+<style>
+    .portaal-terug { display: inline-block; margin: 0 0 12px; padding: 6px 14px; border: 1px solid #cbd5e1; border-radius: 999px; background: #fff; color: #475569; font: 600 .85rem system-ui, -apple-system, 'Segoe UI', sans-serif; text-decoration: none; }
+    .portaal-terug:hover { background: #f1f5f9; color: #1e293b; }
+    .portaal-terug-rij { text-align: left; }
+    .leerling-code { position: fixed; left: 14px; bottom: 10px; font: 11px system-ui, -apple-system, 'Segoe UI', sans-serif; color: #94a3b8; background: rgba(255,255,255,.85); padding: 2px 8px; border-radius: 6px; pointer-events: none; z-index: 50; }
+    @media print { .portaal-terug-rij, .leerling-code { display: none !important; } }
+</style>
+<script>
+    // Anonieme leerlingcode en klas, zoals ingesteld in het portaal (index.html)
+    function leerlingCode() {
+        try { return (localStorage.getItem('wisk_leerling_code') || '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 20); } catch (e) { return ''; }
+    }
+    function portaalKlas() {
+        try { const k = (localStorage.getItem('wisk_leerling_klas') || '').trim(); return k === 'alle klassen' ? '' : k.replace(/[^\p{L}\p{N} _-]/gu, '').slice(0, 20); } catch (e) { return ''; }
+    }
+    // Resultaten doorgeven aan het dashboard (via tracker.js). Bewaart nooit wat de leerling intypte:
+    // enkel welke oefening, juist of fout, en de soort fout.
+    function portaalLogOpgave(juist, module, fout, details) {
+        try { if (window.WiskundeTracker) WiskundeTracker.logOpgave({ isCorrect: !!juist, moduleId: module, foutCategorie: fout || null, details: details || {} }); } catch (e) { /* loggen mag de app nooit storen */ }
+    }
+    function portaalLogToets(procent, duur, module, details) {
+        try { if (window.WiskundeTracker) WiskundeTracker.logToets({ scoreProcent: procent, duurSeconden: duur || 0, moduleId: module, details: details || {} }); } catch (e) { /* loggen mag de app nooit storen */ }
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+        const code = leerlingCode();
+        if (!code || window.WiskundeTracker) return; // de tracker toont de code al zelf
+        const el = document.createElement('div');
+        el.className = 'leerling-code';
+        el.setAttribute('data-html2canvas-ignore', '');
+        el.textContent = code;
+        document.body.appendChild(el);
+    });
+</script>
+<div class="wrap">
+  <div class="portaal-terug-rij" data-html2canvas-ignore><a class="portaal-terug" href="index.html">← Alle apps</a></div>
+  <div id="scherm"></div>
+</div>
+<div class="naam-app">© T. Gaerdelen</div>
+
+<script>
+'use strict';
+/* =====================================================================
+   Reële functies (5du, semester 1): actief leren voor het kerstexamen.
+   Werkvormen: sorteren, koppelen, stappen ordenen, fout zoeken, kijk & verklaar,
+   schuifregelaars, tabellen aanklikken en invullen. Elke oefening wordt telkens
+   opnieuw gemaakt met andere getallen (nooit de getallen van het examen).
+   Id's van leerdoelen (DOELEN) en oefeningen (GEN) nooit hernoemen: het dashboard
+   koppelt de logs eraan. Nieuwe id's mogen erbij.
+   ===================================================================== */
+const APP_ID = '5du_reele_functies_sem1';
+
+/* ---------------- hulpfuncties ---------------- */
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const kies = arr => arr[Math.floor(Math.random() * arr.length)];
+const schud = arr => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const rndNZ = (a, b) => { let x; do { x = rnd(a, b); } while (x === 0); return x; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function M(t) { try { return katex.renderToString(t, { throwOnError: false }); } catch (e) { return esc(t); } }
+function MD(t) { try { return katex.renderToString(t, { throwOnError: false, displayMode: true }); } catch (e) { return esc(t); } }
+const nul = x => Math.abs(x) < 1e-9 ? 0 : x;
+
+function breuk(x) { for (let q = 1; q <= 12; q++) { const p = Math.round(x * q); if (Math.abs(p / q - x) < 1e-9) return [p, q]; } return null; }
+// getal als TeX: decimale komma
+function G(x) { x = nul(x); if (x === Infinity) return '+\\infty'; if (x === -Infinity) return '-\\infty';
+  const s = String(Math.round(x * 1e6) / 1e6); return s.replace('.', '{,}'); }
+// getal als TeX: breuk waar dat kan (½, ⅓ ...)
+function F(x) { x = nul(x); const b = breuk(x); if (b && b[1] !== 1) return (b[0] < 0 ? '-' : '') + '\\frac{' + Math.abs(b[0]) + '}{' + b[1] + '}'; return G(x); }
+function haak(x, fmt = G) { return x < 0 ? '(' + fmt(x) + ')' : fmt(x); }
+function term(c, v, eerste, fmt) { if (Math.abs(c) < 1e-12) return ''; const neg = c < 0, ab = Math.abs(c);
+  const cs = (v && Math.abs(ab - 1) < 1e-12) ? '' : fmt(ab); const s = cs + v; return eerste ? (neg ? '-' : '') + s : (neg ? ' - ' : ' + ') + s; }
+function pol(a, b, c, fmt = G) { let s = '', eerste = true; for (const [k, v] of [[a, 'x^2'], [b, 'x'], [c, '']]) { const t = term(k, v, eerste, fmt); if (t) { s += t; eerste = false; } } return s || '0'; }
+function pk(a, p, k, fmt = F) { let s = Math.abs(a - 1) < 1e-12 ? '' : Math.abs(a + 1) < 1e-12 ? '-' : fmt(a);
+  s += p === 0 ? 'x^2' : '(x ' + (p > 0 ? '- ' : '+ ') + fmt(Math.abs(p)) + ')^2'; if (k) s += (k > 0 ? ' + ' : ' - ') + fmt(Math.abs(k)); return s; }
+function xmin(p) { return p === 0 ? 'x' : '(x ' + (p > 0 ? '- ' : '+ ') + G(Math.abs(p)) + ')'; }
+
+// invoer lezen: komma of punt, breuken (1/2), wortels (√3, 2√5), oneindig (∞, oo, inf)
+function leesGetal(s) {
+  if (s === null || s === undefined) return NaN;
+  s = String(s).trim().replace(/\s+/g, '').replace(/[−–]/g, '-').replace(/,/g, '.').replace(/^\+/, '');
+  if (s === '') return NaN;
+  if (/^-?(∞|oo|inf|oneindig)$/i.test(s)) return s.startsWith('-') ? -Infinity : Infinity;
+  let m = s.match(/^(-?)(\d*\.?\d*)?(?:√|v|sqrt)\(?(\d+(?:\.\d+)?)\)?$/i);
+  if (m && (m[2] === undefined || m[2] === '' || !isNaN(parseFloat(m[2])))) { const f = (m[2] === undefined || m[2] === '') ? 1 : parseFloat(m[2]); return (m[1] ? -1 : 1) * f * Math.sqrt(parseFloat(m[3])); }
+  m = s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/); if (m) { const d = parseFloat(m[2]); return d ? parseFloat(m[1]) / d : NaN; }
+  if (/^-?(\d+\.?\d*|\.\d+)$/.test(s)) return parseFloat(s);
+  return NaN;
+}
+// een getal zoals een leerling het zou intypen (voor het tonen van de oplossing)
+function invoerTekst(x) { if (Number.isInteger(x)) return String(x); const b = breuk(x); if (b && b[1] <= 4) return b[0] + '/' + b[1];
+  const k = Math.round(x * x * 1e6) / 1e6; if (Number.isInteger(k)) return (x < 0 ? '-' : '') + '√' + k; return String(Math.round(x * 1e4) / 1e4).replace('.', ','); }
+const gelijk = (x, y) => x === y || (isFinite(x) && isFinite(y) && Math.abs(x - y) < 1e-6);
+
+// getallen van het examen en het voorbeeldexamen nooit gebruiken (standaardvorm a, b, c, ook ×(−1))
+const VERBODEN = [[2,4,-6],[-1,2,8],[0.5,-3,5],[5,0,-20],[3,0,12],[-2,10,0],[2,-16,14],[1,-6,9],[2,1,-3],[1,2,5],[-0.5,2,1],[3,12,7],[-1,8,-17],[0.5,-1,0.5],[-1,3,5],[1,2,-3],[0.5,-3,4],
+  [-1,4,5],[1/3,-2,2],[1,4,-5],[2,0,-32],[3,-12,0],[3,6,-24],[1,-3,-10],[2,1,3],[-0.5,2,2.5],[1,-4,7]];
+function verboden(a, b, c) { return VERBODEN.some(v => (gelijk(v[0], a) && gelijk(v[1], b) && gelijk(v[2], c)) || (gelijk(v[0], -a) && gelijk(v[1], -b) && gelijk(v[2], -c))); }
+
+/* ---------------- grafieken (SVG) ----------------
+   Rooster met getallen langs de assen, kromme op de voorgrond en tot de rand van het rooster
+   (behalve bij een gegeven domein), geen dikke punten. */
+function grafiek(o) {
+  const W = o.w || 300, x0 = o.xmin, x1 = o.xmax, y0 = o.ymin, y1 = o.ymax;
+  const sx = W / (x1 - x0), sy = o.h ? o.h / (y1 - y0) : sx, H = (y1 - y0) * sy;
+  const X = x => (x - x0) * sx, Y = y => (y1 - y) * sy;
+  const id = 'k' + Math.random().toString(36).slice(2, 9);
+  const lst = o.lstap || ((x1 - x0) > 14 ? 2 : 1), lsty = o.lstapy || ((y1 - y0) > 14 ? 2 : 1);
+  let s = `<svg viewBox="-16 -14 ${W + 32} ${H + 30}" width="${W + 32}" height="${H + 30}" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, Arial" font-size="${o.fs || 11}">`;
+  s += `<defs><clipPath id="${id}"><rect x="0" y="0" width="${W}" height="${H}"/></clipPath>
+        <marker id="${id}p" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#1e293b"/></marker></defs>`;
+  if (o.rooster !== false) {
+    for (let x = Math.ceil(x0); x <= x1 + 1e-9; x++) s += `<line x1="${X(x)}" y1="0" x2="${X(x)}" y2="${H}" stroke="#e2e8f0" stroke-width="1"/>`;
+    for (let y = Math.ceil(y0); y <= y1 + 1e-9; y++) s += `<line x1="0" y1="${Y(y)}" x2="${W}" y2="${Y(y)}" stroke="#e2e8f0" stroke-width="1"/>`;
+  }
+  const ax = (y0 <= 0 && y1 >= 0) ? Y(0) : null, ay = (x0 <= 0 && x1 >= 0) ? X(0) : null;
+  if (ax !== null) s += `<line x1="0" y1="${ax}" x2="${W + 8}" y2="${ax}" stroke="#1e293b" stroke-width="1.3" marker-end="url(#${id}p)"/><text x="${W + 10}" y="${ax + 4}" font-style="italic">x</text>`;
+  if (ay !== null) s += `<line x1="${ay}" y1="${H}" x2="${ay}" y2="-8" stroke="#1e293b" stroke-width="1.3" marker-end="url(#${id}p)"/><text x="${ay + 6}" y="-4" font-style="italic">y</text>`;
+  if (o.getallen !== false) {
+    const halo = 'stroke="#fff" stroke-width="3" paint-order="stroke"';
+    if (ax !== null) for (let x = Math.ceil(x0 / lst) * lst; x <= x1 - 0.5; x += lst) { if (x === 0 || x <= x0) continue; s += `<line x1="${X(x)}" y1="${ax - 3}" x2="${X(x)}" y2="${ax + 3}" stroke="#1e293b"/><text x="${X(x)}" y="${ax + 14}" text-anchor="middle" ${halo}>${x < 0 ? '−' + (-x) : x}</text>`; }
+    if (ay !== null) for (let y = Math.ceil(y0 / lsty) * lsty; y <= y1 - 0.5; y += lsty) { if (y === 0 || y <= y0) continue; s += `<line x1="${ay - 3}" y1="${Y(y)}" x2="${ay + 3}" y2="${Y(y)}" stroke="#1e293b"/><text x="${ay - 6}" y="${Y(y) + 4}" text-anchor="end" ${halo}>${y < 0 ? '−' + (-y) : y}</text>`; }
+  }
+  s += `<g clip-path="url(#${id})">`;
+  (o.lijnen || []).forEach(l => { s += `<line x1="${X(l.x1)}" y1="${Y(l.y1)}" x2="${X(l.x2)}" y2="${Y(l.y2)}" stroke="${l.kleur || '#be123c'}" stroke-width="${l.dikte || 1.6}" ${l.stippel ? 'stroke-dasharray="6 4"' : ''}/>`; });
+  (o.krommen || []).forEach(k => {
+    const a = k.van !== undefined ? k.van : x0 - 0.5, b = k.tot !== undefined ? k.tot : x1 + 0.5, n = k.n || 260; let d = '';
+    for (let i = 0; i <= n; i++) { const x = a + (b - a) * i / n; let y = k.f(x); if (!isFinite(y)) continue; y = Math.max(y0 - 50, Math.min(y1 + 50, y)); d += (d ? ' L' : 'M') + X(x).toFixed(2) + ',' + Y(y).toFixed(2); }
+    s += `<path d="${d}" fill="none" stroke="${k.kleur || '#1e5aaa'}" stroke-width="${k.dikte || 2.6}" ${k.stippel ? 'stroke-dasharray="7 5"' : ''} stroke-linecap="round" stroke-linejoin="round"/>`;
+  });
+  (o.param || []).forEach(k => { let d = ''; const n = k.n || 260;
+    for (let i = 0; i <= n; i++) { const t = k.t0 + (k.t1 - k.t0) * i / n; d += (d ? ' L' : 'M') + X(k.x(t)).toFixed(2) + ',' + Y(k.y(t)).toFixed(2); }
+    s += `<path d="${d}" fill="none" stroke="${k.kleur || '#1e5aaa'}" stroke-width="${k.dikte || 2.6}" stroke-linecap="round"/>`; });
+  s += `</g>`;
+  (o.teksten || []).forEach(t => { s += `<text x="${X(t.x)}" y="${Y(t.y)}" text-anchor="${t.anker || 'middle'}" fill="${t.kleur || '#1e293b'}" font-size="${t.fs || 12}" stroke="#fff" stroke-width="3" paint-order="stroke">${t.t}</text>`; });
+  return s + '</svg>';
+}
+// gladde kromme door knopen: in elke knoop een top (waarde precies de knoopwaarde)
+function knoopFunctie(kn) {
+  return x => {
+    if (x <= kn[0][0]) return kn[0][1];
+    for (let i = 0; i < kn.length - 1; i++) { const [xa, ya] = kn[i], [xb, yb] = kn[i + 1];
+      if (x <= xb) { const t = (x - xa) / (xb - xa); return ya + (yb - ya) * (1 - Math.cos(Math.PI * t)) / 2; } }
+    return kn[kn.length - 1][1];
+  };
+}
+// kleine schets van een parabool zonder getallen (voor tekentabellen en koppelen)
+function schetsParabool(a, k, w = 120) {
+  return grafiek({ xmin: -3, xmax: 3, ymin: -3, ymax: 3, w, rooster: false, getallen: false, krommen: [{ f: x => a * (0.7 * x * x) + k, kleur: '#c85f14' }] });
+}
+
+/* ---------------- tabellen (statisch) ---------------- */
+function statTeken(xs, tekens) {
+  let r1 = '<td class="kop">x</td>', r2 = '<td class="kop">f(x)</td>';
+  tekens.forEach((t, i) => { const punt = i % 2 === 1; r1 += `<td>${punt ? M(xs[(i - 1) / 2]) : ''}</td>`; r2 += `<td style="color:var(--opl);font-weight:700">${t}</td>`; });
+  if (tekens.length === 1) { r1 += ''; }
+  return `<table class="schema statisch"><tr class="r1">${r1}</tr><tr>${r2}</tr></table>`;
+}
+
+/* =====================================================================
+   LEERDOELEN (uit het examenleerstofoverzicht) met hun leerkaart
+   ===================================================================== */
+const HOOFDSTUKKEN = [
+  { id: 'h1', nr: 1, naam: 'Kenmerken van functies', kleur: 'h1' },
+  { id: 'h2', nr: 2, naam: 'Tweedegraadsfuncties', kleur: 'h2' },
+  { id: 'h3', nr: 3, naam: 'Tweedegraadsvergelijkingen en kenmerken', kleur: 'h3' },
+];
+const DOELEN = [
+  { id: 'd_functie', h: 'h1', naam: 'Functie of niet?', kan: 'Ik kan met verticale lijnen nagaan of een grafiek een functie is en dat verklaren.', gens: ['fn_sort', 'fn_waarom'] },
+  { id: 'd_domein', h: 'h1', naam: 'Domein en bereik', kan: 'Ik kan domein en bereik aflezen en als interval noteren, ook het praktische domein en bereik.', gens: ['db_lees', 'db_noteer', 'db_prak'] },
+  { id: 'd_teken', h: 'h1', naam: 'Nulwaarden en tekentabel', kan: 'Ik kan nulwaarden aflezen en een tekentabel opstellen.', gens: ['tt_lees', 'tt_terug'] },
+  { id: 'd_verloop', h: 'h1', naam: 'Verloopschema en extrema', kan: 'Ik kan een verloopschema opstellen met MAX en MIN, en zeggen of ze relatief of absoluut zijn.', gens: ['vs_lees', 'vs_absrel'] },
+  { id: 'd_stijging', h: 'h1', naam: 'Toenemend of afnemend', kan: 'Ik herken een toenemende of afnemende stijging of daling.', gens: ['ta_koppel', 'ta_context'] },
+  { id: 'd_symm', h: 'h1', naam: 'Symmetrie', kan: 'Ik kan een symmetrieas of symmetriemiddelpunt aflezen en noteren.', gens: ['sy_lees'] },
+  { id: 'd_periode', h: 'h1', naam: 'Periodiciteit', kan: 'Ik kan de periode aflezen en daarmee een functiewaarde ver buiten de grafiek berekenen.', gens: ['pe_lees'] },
+  { id: 'd_herken', h: 'h2', naam: 'Tweedegraadsfunctie herkennen', kan: 'Ik herken een tweedegraadsfunctie en noteer a, b en c. Bij een veelterm geef ik de graad.', gens: ['hk_sort', 'hk_abc'] },
+  { id: 'd_pkvorm', h: 'h2', naam: 'De p-k-vorm lezen', kan: 'Ik lees uit a(x − p)² + k de soort parabool, de symmetrieas, de top, MAX of MIN en het bereik.', gens: ['pk_lees', 'pk_top'] },
+  { id: 'd_apk', h: 'h2', naam: 'Wat doen a, p en k?', kan: 'Ik weet wat a, p en k met de grafiek doen en koppel grafieken aan voorschriften.', gens: ['apk_doel', 'apk_voorspel', 'apk_koppel', 'apk_teken'] },
+  { id: 'd_schets', h: 'h2', naam: 'Een parabool schetsen', kan: 'Ik maak een schets met de top, de symmetrieas en minstens 3 punten.', gens: ['sk_punten', 'sk_kies'] },
+  { id: 'd_standaard', h: 'h2', naam: 'Van p-k-vorm naar standaardvorm', kan: 'Ik werk a(x − p)² + k uit met het merkwaardig product en noteer a, b en c.', gens: ['st_orden', 'st_fout', 'st_abc'] },
+  { id: 'd_top', h: 'h2', naam: 'Top bij de standaardvorm', kan: 'Ik bereken de symmetrieas met x = −b/(2a) en daarna de top.', gens: ['tp_bereken', 'tp_fout'] },
+  { id: 'd_voorschrift', h: 'h2', naam: 'Voorschrift opstellen', kan: 'Ik stel het voorschrift op als ik de top en één punt ken (ook f(x) = ax²).', gens: ['vk_voorschrift', 'vo_stappen', 'vo_orden', 'vo_ax2'] },
+  { id: 'd_vglherken', h: 'h3', naam: 'Tweedegraadsvergelijking herkennen', kan: 'Ik herken het type vergelijking en herleid naar de standaardvorm met a, b en c.', gens: ['vh_sort', 'vh_herleid'] },
+  { id: 'd_onvolledig', h: 'h3', naam: 'Onvolledige vergelijkingen', kan: 'Ik los ax² = 0, ax² + c = 0, ax² + bx = 0 en a(x − p)² + k = 0 op met de meest aangewezen methode.', gens: ['ov_type1', 'ov_type2', 'ov_type3', 'ov_type4', 'ov_fout'] },
+  { id: 'd_discr', h: 'h3', naam: 'Volledige vergelijkingen: discriminant', kan: 'Ik los ax² + bx + c = 0 op met D = b² − 4ac en noteer V.', gens: ['vk_discriminant', 'di_los', 'di_orden', 'di_fout'] },
+  { id: 'd_aantal', h: 'h3', naam: 'Aantal nulwaarden zonder rekenen', kan: 'Ik zeg zonder rekenen hoeveel nulwaarden een parabool heeft en verklaar dat.', gens: ['an_redeneer', 'an_koppel'] },
+  { id: 'd_snijpunt', h: 'h3', naam: 'Snijpunten met de assen', kan: 'Ik bereken de snijpunten met de x-as en de y-as en noteer ze als coördinaat.', gens: ['sn_assen'] },
+  { id: 'd_tabellen', h: 'h3', naam: 'Tekentabel en verloopschema van een parabool', kan: 'Ik stel de tekentabel en het verloopschema van een tweedegraadsfunctie op.', gens: ['tb_teken', 'tb_verloop'] },
+  { id: 'd_vraagstuk', h: 'h3', naam: 'Vraagstukken met een parabool', kan: 'Ik vertaal een vraag naar wiskunde en antwoord met een zin en de eenheid.', gens: ['vr_vertaal', 'vr_context'] },
+];
+const doelVan = id => DOELEN.find(d => d.id === id);
+
+/* ---------------- leerkaarten (korte theorie met voorbeeld) ---------------- */
+function leerkaart(id) {
+  const vb = (t) => `<div class="vb">${t}</div>`;
+  const L = {
+    d_functie: () => `<p>Een <b>functie</b> is een verband waarbij bij elke ${M('x')} <b>hoogstens één</b> ${M('y')} hoort.</p>
+      <p>Controle op een grafiek: teken <b>verticale lijnen</b>. Snijdt een verticale lijn de grafiek meer dan één keer, dan is het <b>geen</b> functie.</p>
+      <div class="rij" style="justify-content:center">${grafiek({ xmin: -3, xmax: 3, ymin: -1, ymax: 4, w: 170, getallen: false, krommen: [{ f: x => 0.5 * x * x }], lijnen: [{ x1: 1.4, y1: -1, x2: 1.4, y2: 4, stippel: true }] })}
+      ${grafiek({ xmin: -1, xmax: 4, ymin: -3, ymax: 3, w: 170, getallen: false, param: [{ t0: -3, t1: 3, x: t => 0.45 * t * t, y: t => t }], lijnen: [{ x1: 2, y1: -3, x2: 2, y2: 3, stippel: true }] })}</div>
+      ${vb(`<b>Links: ja</b>, voor elke waarde van ${M('x')} is er precies 1 ${M('y')}-waarde.<br><b>Rechts: nee</b>, meerdere ${M('y')}-waarden voor 1 ${M('x')}-waarde.`)}
+      <p class="tip">Let op: horizontale lijnen zeggen niets over functie of niet!</p>`,
+    d_domein: () => `<p><b>Domein</b> = alle ${M('x')}-waarden van de grafiek (lees af op de ${M('x')}-as). <b>Bereik</b> = alle ${M('y')}-waarden (lees af op de ${M('y')}-as).</p>
+      <p>Noteer als interval: ${M('[-3, 5]')}: ${M('-3')} en ${M('5')} horen erbij. Hoort een getal er niet bij, of staat er ${M('\\infty')}, dan staat het haakje <b>naar buiten</b>: ${M('[1, +\\infty[')}, ${M(']-\\infty, 2]')}.</p>
+      <p>Loopt de grafiek tot de rand van het rooster, dan loopt ze verder (naar ${M('\\infty')}).</p>
+      ${vb(`<b>Praktisch domein en bereik</b>: welke waarden hebben zin in de situatie? Een kaars van 20 cm brandt 5 uur: ${M('\\text{dom } h = [0, 5]')} (van 0 tot 5 uur), ${M('\\text{ber } h = [0, 20]')} (de hoogte gaat van 20 cm tot 0 cm).`)}`,
+    d_teken: () => `<p>Een <b>nulwaarde</b> is een ${M('x')} waarbij ${M('y = 0')}: daar snijdt (of raakt) de grafiek de ${M('x')}-as.</p>
+      <p>In de <b>tekentabel</b> zet je in de ${M('x')}-rij <b>alleen de nulwaarden</b>. In de ${M('f(x)')}-rij zet je ${M('+')} waar de grafiek boven de ${M('x')}-as ligt, ${M('-')} waar ze eronder ligt, en ${M('0')} bij de nulwaarden.</p>
+      ${vb(`<div class="rij" style="justify-content:center;gap:24px">${grafiek({ xmin: -4, xmax: 5, ymin: -3, ymax: 3, w: 220, krommen: [{ f: x => -0.25 * (x + 2) * (x - 1) * (x - 3) }] })}
+      ${statTeken(['-2', '1', '3'], ['+', '0', '−', '0', '+', '0', '−'])}</div>`)}
+      <p class="tip">Raakt de grafiek de ${M('x')}-as zonder door te gaan, dan blijft het teken links en rechts van die ${M('0')} hetzelfde.</p>`,
+    d_verloop: () => `<p>Het <b>verloopschema</b> toont waar de functie <b>stijgt</b> (${M('\\nearrow')}) en <b>daalt</b> (${M('\\searrow')}). In de ${M('x')}-rij staan de ${M('x')}-waarden van de toppen (en de grenzen van het domein), in de ${M('f(x)')}-rij de ${M('y')}-waarden. Onder een top schrijf je <b>MAX</b> of <b>MIN</b>.</p>
+      ${vb(`<div class="rij" style="justify-content:center;gap:24px">${grafiek({ xmin: -1, xmax: 7, ymin: -2, ymax: 4, w: 220, krommen: [{ f: knoopFunctie([[0, 1], [2, 3], [4, -1], [6, 2]]), van: 0, tot: 6 }] })}
+      <table class="schema statisch"><tr class="r1"><td class="kop">x</td><td>${M('0')}</td><td></td><td>${M('2')}</td><td></td><td>${M('4')}</td><td></td><td>${M('6')}</td></tr>
+      <tr><td class="kop">f(x)</td><td>${M('1')}</td><td>${M('\\nearrow')}</td><td>${M('3')}</td><td>${M('\\searrow')}</td><td>${M('-1')}</td><td>${M('\\nearrow')}</td><td>${M('2')}</td></tr>
+      <tr><td></td><td></td><td></td><td><small>MAX</small></td><td></td><td><small>MIN</small></td><td></td><td></td></tr></table></div>`)}
+      <p><b>Absoluut</b> maximum = het hoogste punt van de hele grafiek. <b>Relatief</b> = alleen het hoogste punt in de buurt. Hier: MAX 3 in ${M('x = 2')} is absoluut, MIN ${M('-1')} in ${M('x = 4')} is ook absoluut.</p>`,
+    d_stijging: () => `<p>Kijk of de grafiek <b>steeds steiler</b> wordt (<b>toenemend</b>) of <b>steeds minder steil</b> (<b>afnemend</b>).</p>
+      <div class="rij" style="justify-content:center;gap:18px">${['toenemend stijgen', 'afnemend stijgen', 'toenemend dalen', 'afnemend dalen'].map((t, i) => `<div style="text-align:center">${stijgSchets(i)}<div><small>${t}</small></div></div>`).join('')}</div>
+      ${vb(`Een kop koffie koelt eerst snel af, daarna steeds trager: <b>afnemend dalen</b>.`)}`,
+    d_symm: () => `<p>Een <b>symmetrieas</b> is een verticale lijn: noteer ${M('s\\colon x = \\ldots')}. Een <b>symmetriemiddelpunt</b> is een punt: noteer de coördinaat ${M('(\\ldots, \\ldots)')}.</p>
+      <div class="rij" style="justify-content:center;gap:20px">${grafiek({ xmin: -2, xmax: 5, ymin: -1, ymax: 4, w: 180, krommen: [{ f: x => 0.6 * (x - 1.5) * (x - 1.5) }], lijnen: [{ x1: 1.5, y1: -1, x2: 1.5, y2: 4, stippel: true }] })}
+      ${grafiek({ xmin: -1, xmax: 5, ymin: -2, ymax: 4, w: 180, krommen: [{ f: x => 0.5 * Math.pow(x - 2, 3) - 1.5 * (x - 2) + 1 }] })}</div>
+      ${vb(`Links: ${M('s\\colon x = 1{,}5')}. Rechts: symmetriemiddelpunt ${M('(2, 1)')}.`)}`,
+    d_periode: () => `<p>Een <b>periodieke</b> functie herhaalt zich telkens na de <b>periode</b> ${M('p')}: ${M('f(x + p) = f(x)')}.</p>
+      <p>Een functiewaarde ver buiten de grafiek? Trek zo vaak ${M('p')} af tot je terug in de grafiek zit.</p>
+      ${vb(`Periode ${M('p = 4')}: ${M('f(30) = f(30 - 7\\cdot 4) = f(2)')}, en ${M('f(2)')} lees je af op de grafiek.`)}`,
+    d_herken: () => `<p>Een <b>tweedegraadsfunctie</b> heeft als voorschrift ${M('f(x) = ax^2 + bx + c')} met ${M('a \\neq 0')} (de <b>standaardvorm</b>). De grafiek is een <b>parabool</b>.</p>
+      ${vb(`${M('f(x) = 4 - x^2 + 3x')}: let op de volgorde, ${M('a')} hoort bij ${M('x^2')}: <span class="opl">${M('a = -1,\\ b = 3,\\ c = 4')}</span>.<br>
+      ${M('f(x) = (x + 2)(x - 3)')}: eerst uitwerken: <span class="opl">${M('x^2 - 3x + 2x - 6 = x^2 - x - 6')}</span>.`)}
+      <p>De <b>graad</b> van een veelterm is de hoogste exponent van ${M('x')}: ${M('2x^3 - x')} is van graad 3 (derdegraadsfunctie).</p>`,
+    d_pkvorm: () => `<p>In de <b>p-k-vorm</b> ${M('f(x) = a(x - p)^2 + k')} lees je meteen af:</p>
+      <ul><li>${M('a > 0')}: <b>dalparabool</b> (MIN), ${M('a < 0')}: <b>bergparabool</b> (MAX)</li><li>top ${M('T(p, k)')} en symmetrieas ${M('s\\colon x = p')}</li><li>bereik: ${M('[k, +\\infty[')} (dal) of ${M(']-\\infty, k]')} (berg)</li></ul>
+      ${vb(`${M('f(x) = 2(x + 3)^2 - 1')}: ${M('(x + 3)^2 = (x - (-3))^2')}, dus <span class="opl">${M('p = -3')}</span>. Top <span class="opl">${M('T(-3, -1)')}</span>, dalparabool, MIN ${M('-1')}, ${M('\\text{ber } f = [-1, +\\infty[')}.`)}
+      <p class="tip">Valkuil: bij ${M('(x + 3)^2')} is ${M('p = -3')}, niet ${M('3')}.</p>`,
+    d_apk: () => `<p>${M('a')}: ver van 0 = smaller/steiler, dicht bij 0 = breder; negatief = bergparabool.<br>
+      ${M('p')}: ${M('p > 0')} schuift naar <b>rechts</b>, ${M('p < 0')} naar <b>links</b>.<br>
+      ${M('k')}: ${M('k > 0')} schuift naar <b>boven</b>, ${M('k < 0')} naar <b>onder</b>.</p>
+      ${vb(`Tekens aflezen op een grafiek: staat de parabool open naar boven (${M('a > 0')}) of naar onder (${M('a < 0')})? Ligt de top rechts van de ${M('y')}-as (${M('p > 0')}) en boven de ${M('x')}-as (${M('k > 0')})?`)}
+      <p>Probeer het zelf in de oefening <b>"Raak de doelparabool"</b>.</p>`,
+    d_schets: () => `<p>Een <b>nauwkeurige schets</b>: teken de top en de symmetrieas, en minstens 3 punten.</p>
+      ${vb(`${M('f(x) = -2(x - 1)^2 + 3')}: top ${M('T(1, 3)')}, ${M('s\\colon x = 1')}.<br>
+      <span class="opl">${M('f(0) = -2(0 - 1)^2 + 3 = 1')}</span>: punt ${M('(0, 1)')}. Spiegel over de as: ${M('(2, 1)')}.
+      <div class="figuur">${grafiek({ xmin: -2, xmax: 4, ymin: -3, ymax: 4, w: 180, krommen: [{ f: x => -2 * (x - 1) * (x - 1) + 3 }], lijnen: [{ x1: 1, y1: -3, x2: 1, y2: 4, stippel: true }] })}</div>`)}`,
+    d_standaard: () => `<p>Merkwaardige producten: ${M('(A + B)^2 = A^2 + 2AB + B^2')} en ${M('(A - B)^2 = A^2 - 2AB + B^2')}.</p>
+      ${vb(`<span>${M('f(x) = 3(x - 2)^2 + 1')}</span><br><span class="opl">${M('= 3(x^2 - 2\\cdot x\\cdot 2 + 2^2) + 1')}</span><br><span class="opl">${M('= 3(x^2 - 4x + 4) + 1')}</span><br>
+      <span class="opl">${M('= 3x^2 - 12x + 12 + 1')}</span><br><span class="opl">${M('= 3x^2 - 12x + 13')}</span> → <span class="opl">${M('a = 3,\\ b = -12,\\ c = 13')}</span>`)}
+      <p class="tip">Vermenigvuldig <b>elke</b> term binnen de haakjes met ${M('a')}, en vergeet ${M('k')} niet.</p>`,
+    d_top: () => `<p>Bij de standaardvorm: ${M('s\\colon x = \\dfrac{-b}{2a}')}. Daarna ${M('y_T = f(x_T)')}.</p>
+      ${vb(`${M('f(x) = 2x^2 - 8x + 3')}<br><span class="opl">${M('s\\colon x = \\dfrac{-b}{2a} = \\dfrac{-(-8)}{2\\cdot 2} = 2')}</span><br><span class="opl">${M('f(2) = 2\\cdot 2^2 - 8\\cdot 2 + 3 = -5')}</span><br><span class="opl">Opl: ${M('T(2, -5)')}</span>`)}
+      <p class="tip">Eerst de formule, dan invullen <b>met haakjes</b> rond negatieve getallen.</p>`,
+    d_voorschrift: () => `<p>Ken je de top ${M('T(p, k)')} en één punt ${M('P')}, vul dan de top in en zoek ${M('a')} met het punt.</p>
+      ${vb(`Top ${M('T(-1, 2)')}, punt ${M('P(1, -6)')}:<br><span class="opl">${M('*\\ f(x) = a(x + 1)^2 + 2')}</span><br><span class="opl">${M('*\\ f(1) = -6')}</span><br>
+      <span class="opl">${M('\\Leftrightarrow a\\cdot(1 + 1)^2 + 2 = -6')}</span><br><span class="opl">${M('\\Leftrightarrow 4a = -8')}</span><br><span class="opl">${M('\\Leftrightarrow a = -2')}</span><br><span class="opl">Opl: ${M('f(x) = -2(x + 1)^2 + 2')}</span>`)}
+      <p>Top in ${M('(0, 0)')}? Dan is ${M('f(x) = ax^2')}: door ${M('P(2, 6)')} geeft ${M('4a = 6')}, dus ${M('a = 1{,}5')}.</p>`,
+    d_vglherken: () => `<p>Eerst alles naar links en uitwerken tot ${M('ax^2 + bx + c = 0')}. Dan kies je de methode:</p>
+      <ul><li>${M('ax^2 = 0')} (geen ${M('b')}, geen ${M('c')})</li><li>${M('ax^2 + c = 0')} (geen ${M('b')})</li><li>${M('ax^2 + bx = 0')} (geen ${M('c')})</li><li>${M('a(x - p)^2 + k = 0')} (p-k-vorm)</li><li>${M('ax^2 + bx + c = 0')} volledig: discriminant</li></ul>
+      ${vb(`${M('x(x + 2) = 3')} → <span class="opl">${M('x^2 + 2x - 3 = 0')}</span>, ${M('a = 1,\\ b = 2,\\ c = -3')}: volledig.`)}`,
+    d_onvolledig: () => `${vb(`${M('2x^2 - 18 = 0')} → <span class="opl">${M('2x^2 = 18')}, ${M('x^2 = 9')}, ${M('x = \\pm 3')}, ${M('V = \\{-3, 3\\}')}</span>`)}
+      ${vb(`${M('2x^2 - 6x = 0')} → <span class="opl">${M('x(2x - 6) = 0')}: ${M('\\swarrow x = 0')} of ${M('\\searrow 2x - 6 = 0,\\ x = 3')}; ${M('V = \\{0, 3\\}')}</span>`)}
+      ${vb(`${M('2(x - 1)^2 - 8 = 0')} → <span class="opl">${M('(x - 1)^2 = 4')}: ${M('x - 1 = -2')} of ${M('x - 1 = 2')}; ${M('V = \\{-1, 3\\}')}</span>`)}
+      <p class="tip">${M('x^2')} = een negatief getal? Dan: <b>geen oplossingen</b>, ${M('V = \\varnothing')}. En vergeet ${M('x = 0')} en de negatieve oplossing niet!</p>`,
+    d_discr: () => `<ol><li>Standaardvorm, noteer ${M('a, b, c')}.</li><li>${M('D = b^2 - 4ac')} (haakjes rond negatieve getallen!)</li>
+      <li>${M('D > 0')}: twee oplossingen ${M('x_1 = \\dfrac{-b + \\sqrt{D}}{2a}')}, ${M('x_2 = \\dfrac{-b - \\sqrt{D}}{2a}')}; ${M('D = 0')}: één oplossing ${M('x = \\dfrac{-b}{2a}')}; ${M('D < 0')}: geen oplossingen.</li><li>Noteer ${M('V')}.</li></ol>
+      ${vb(`${M('2x^2 + 3x - 2 = 0')}: <span class="opl">${M('D = 3^2 - 4\\cdot 2\\cdot(-2) = 25')}, ${M('x_1 = \\frac{-3 + 5}{4} = \\frac{1}{2}')}, ${M('x_2 = \\frac{-3 - 5}{4} = -2')}, ${M('V = \\{-2, \\tfrac{1}{2}\\}')}</span>`)}`,
+    d_aantal: () => `<p>Kijk naar het <b>soort parabool</b> en <b>waar de top ligt</b>:</p>
+      <div class="rij" style="justify-content:center;gap:14px">${[[1, -1.2, '2 nulwaarden'], [1, 0, '1 nulwaarde'], [1, 1, 'geen'], [-1, 1.2, '2 nulwaarden'], [-1, 0, '1 nulwaarde'], [-1, -1, 'geen']].map(c => `<div style="text-align:center">${schetsParabool(c[0], c[1], 90)}<div><small>${c[0] > 0 ? 'dal' : 'berg'}: ${c[2]}</small></div></div>`).join('')}</div>
+      ${vb(`${M('f(x) = 2(x - 1)^2 - 3')}: dalparabool, top ${M('(1, -3)')} ligt <b>onder</b> de ${M('x')}-as, dus <b>2 nulwaarden</b>.`)}`,
+    d_snijpunt: () => `<p><b>Met de ${M('x')}-as</b>: los ${M('f(x) = 0')} op. Noteer ${M('S_{x1}(x_1, 0)')} en ${M('S_{x2}(x_2, 0)')}.<br><b>Met de ${M('y')}-as</b>: ${M('f(0) = c')}, dus ${M('S_y(0, c)')}.</p>
+      ${vb(`${M('f(x) = x^2 - 2x - 8')}: <span class="opl">${M('D = 36')}, ${M('x_1 = 4')}, ${M('x_2 = -2')}</span>, dus <span class="opl">${M('S_{x1}(-2, 0)')}, ${M('S_{x2}(4, 0)')}, ${M('S_y(0, -8)')}</span>.`)}`,
+    d_tabellen: () => `<p><b>Tekentabel</b>: zoek eerst de nulwaarden. Een dalparabool is ${M('+')} buiten de nulwaarden en ${M('-')} ertussen; een bergparabool omgekeerd.</p>
+      <p><b>Verloopschema</b>: de top is het enige extremum: ${M('x_T = \\frac{-b}{2a}')}, ${M('y_T = f(x_T)')}. Dalparabool: ${M('\\searrow')} MIN ${M('\\nearrow')}; bergparabool: ${M('\\nearrow')} MAX ${M('\\searrow')}.</p>
+      ${vb(`${M('f(x) = x^2 - 2x - 8')}, nulwaarden ${M('-2')} en ${M('4')}, top ${M('(1, -9)')}:<div class="rij" style="justify-content:center;gap:20px">${statTeken(['-2', '4'], ['+', '0', '−', '0', '+'])}
+      <table class="schema statisch"><tr class="r1"><td class="kop">x</td><td></td><td>${M('1')}</td><td></td></tr><tr><td class="kop">f(x)</td><td>${M('\\searrow')}</td><td>${M('-9')}</td><td>${M('\\nearrow')}</td></tr><tr><td></td><td></td><td><small>MIN</small></td><td></td></tr></table></div>`)}`,
+    d_vraagstuk: () => `<p>Vertaal elke vraag naar wiskunde:</p>
+      <ul><li>hoogte bij de start (${M('x = 0')}) → ${M('f(0)')}</li><li>hoogste of laagste punt → de top: ${M('x_T = \\frac{-b}{2a}')}, ${M('y_T = f(x_T)')}</li><li>wanneer is de hoogte 1 m? → los ${M('f(x) = 1')} op</li><li>waar raakt het de grond? → los ${M('f(x) = 0')} op</li><li>praktisch domein en bereik → welke ${M('x')} en ${M('y')} hebben zin?</li></ul>
+      <p class="tip">Antwoord altijd met <b>een zin en de eenheid</b>.</p>`,
+  };
+  return L[id] ? L[id]() : '';
+}
+function stijgSchets(i) {
+  const d = ['M5,55 Q55,55 65,5', 'M5,55 Q15,5 65,5', 'M5,5 Q55,5 65,55', 'M5,5 Q15,55 65,55'][i];
+  return `<svg width="70" height="60" viewBox="0 0 70 60"><path d="${d}" fill="none" stroke="#38873c" stroke-width="3" stroke-linecap="round"/></svg>`;
+}
+
+/* =====================================================================
+   OEFENINGEN (generatoren). Elke generator geeft een opgave terug.
+   vorm: mc | invul | sorteer | koppel | orden | fout | tabel | slider | verklaar
+   ===================================================================== */
+const GEN = {};
+function gen(id, titel, maak, opties = {}) { GEN[id] = { id, titel, maak, ex: opties.ex !== false }; }
+
+/* ---------- H1: functie of niet ---------- */
+const FIGFN = {
+  ja: [
+    () => grafiek({ xmin: -3, xmax: 3, ymin: -2, ymax: 3, w: 120, getallen: false, krommen: [{ f: x => 0.5 * x * x - 1.5 }] }),
+    () => grafiek({ xmin: -3, xmax: 3, ymin: -2, ymax: 3, w: 120, getallen: false, krommen: [{ f: x => 0.5 * x + 0.5 }] }),
+    () => grafiek({ xmin: -3, xmax: 3, ymin: -3, ymax: 3, w: 120, getallen: false, krommen: [{ f: x => 0.25 * x * x * x - x }] }),
+    () => grafiek({ xmin: -3, xmax: 3, ymin: -2, ymax: 3, w: 120, getallen: false, krommen: [{ f: x => 1.5 * Math.sin(1.6 * x) + 0.5 }] }),
+    () => grafiek({ xmin: -3, xmax: 3, ymin: -2, ymax: 3, w: 120, getallen: false, krommen: [{ f: x => Math.abs(x) - 1, n: 400 }] }),
+    () => grafiek({ xmin: -3, xmax: 3, ymin: -1, ymax: 3, w: 120, getallen: false, krommen: [{ f: x => Math.sqrt(Math.max(0, 6.25 - x * x)), van: -2.5, tot: 2.5 }] }),
+    () => grafiek({ xmin: -3, xmax: 3, ymin: -2, ymax: 3, w: 120, getallen: false, krommen: [{ f: x => 2 }] }),
+  ],
+  nee: [
+    () => grafiek({ xmin: -3, xmax: 3, ymin: -3, ymax: 3, w: 120, getallen: false, param: [{ t0: -3, t1: 3, x: t => 0.5 * t * t - 2, y: t => t }] }),
+    () => grafiek({ xmin: -3, xmax: 3, ymin: -3, ymax: 3, w: 120, getallen: false, param: [{ t0: 0, t1: 2 * Math.PI, x: t => 2 * Math.cos(t), y: t => 2 * Math.sin(t) }] }),
+    () => grafiek({ xmin: -3, xmax: 3, ymin: -3, ymax: 3, w: 120, getallen: false, param: [{ t0: -3, t1: 3, x: t => 1.2, y: t => t }] }),
+    () => grafiek({ xmin: -3, xmax: 3, ymin: -3, ymax: 3, w: 120, getallen: false, param: [{ t0: -3, t1: 3, x: t => 0.25 * t * t * t - t, y: t => t }] }),
+    () => grafiek({ xmin: -3, xmax: 3, ymin: -3, ymax: 3, w: 120, getallen: false, param: [{ t0: -3, t1: 3, x: t => -0.5 * t * t + 2, y: t => t }] }),
+    () => grafiek({ xmin: -3, xmax: 3, ymin: -3, ymax: 3, w: 120, getallen: false, param: [{ t0: 0, t1: 2 * Math.PI, x: t => 2.4 * Math.cos(t), y: t => 1.3 * Math.sin(t) }] }),
+  ],
+};
+gen('fn_sort', 'Sorteer: functie of geen functie', () => {
+  const ja = schud(FIGFN.ja).slice(0, 3), nee = schud(FIGFN.nee).slice(0, 3);
+  return { vorm: 'sorteer', werkvorm: 'Sorteren',
+    vraag: 'Tik een grafiek aan en tik daarna het juiste vak. Teken in gedachten verticale lijnen.',
+    bakken: ['functie', 'geen functie'], kaarten: schud([...ja.map(f => ({ h: f(), bak: 0 })), ...nee.map(f => ({ h: f(), bak: 1 }))]),
+    hint: 'Snijdt één verticale lijn de grafiek twee keer of meer? Dan is het geen functie.',
+    uitleg: 'Een functie: bij elke x hoort hoogstens één y. Bij de grafieken die geen functie zijn, vind je een verticale lijn die de grafiek minstens twee keer snijdt.' };
+});
+gen('fn_waarom', 'Waarom (geen) functie?', () => {
+  if (Math.random() < 0.5) {
+    const f = kies(FIGFN.nee.slice(0, 2));
+    const fig = f().replace('</g>', '').replace('</svg>', '') + '</g></svg>';
+    return { vorm: 'mc', werkvorm: 'Redeneren', vraag: 'Is deze grafiek een functie? Kies de juiste verklaring.', figuur: f(),
+      opties: [
+        { h: `Nee: bij één ${M('x')}-waarde horen meerdere ${M('y')}-waarden (een verticale lijn snijdt de grafiek meer dan één keer).`, ok: true },
+        { h: `Nee: bij één ${M('y')}-waarde horen meerdere ${M('x')}-waarden.`, tip: 'Dat zie je met horizontale lijnen. Bij een functie kijk je met verticale lijnen.', code: 'horizontale_lijn' },
+        { h: 'Ja: de grafiek is één doorlopende lijn.', tip: 'Doorlopend of niet zegt niets. Teken verticale lijnen!', code: 'begrip' },
+        { h: 'Nee: de grafiek gaat niet door de oorsprong.', tip: 'Door de oorsprong gaan is geen voorwaarde voor een functie.', code: 'begrip' }],
+      uitleg: 'Bij een functie hoort bij elke x hoogstens één y. Hier vind je een verticale lijn die de grafiek twee keer snijdt.' };
+  }
+  const a = kies([0.5, 0.7, 1]), k = kies([-2, -1]);
+  return { vorm: 'mc', werkvorm: 'Redeneren',
+    vraag: 'Een leerling zegt: "Dit is <b>geen</b> functie, want de horizontale stippellijn snijdt de grafiek twee keer." Klopt dat?',
+    figuur: grafiek({ xmin: -3, xmax: 3, ymin: -2, ymax: 4, w: 200, getallen: false, krommen: [{ f: x => a * x * x + k }], lijnen: [{ x1: -3, y1: 1, x2: 3, y2: 1, stippel: true }] }),
+    opties: [
+      { h: `Nee, het <b>is</b> een functie: elke <b>verticale</b> lijn snijdt de grafiek hoogstens één keer.`, ok: true },
+      { h: 'Ja, twee snijpunten betekent altijd: geen functie.', tip: 'Je moet met verticale lijnen werken, niet met horizontale.', code: 'horizontale_lijn' },
+      { h: 'Ja, want een parabool is nooit een functie.', tip: 'Een parabool y = ax² + bx + c is wel een functie (tweedegraadsfunctie).', code: 'begrip' },
+      { h: 'Nee, want de grafiek gaat door de oorsprong.', tip: 'De oorsprong heeft er niets mee te maken.', code: 'begrip' }],
+    uitleg: 'Voor een functie kijk je met verticale lijnen. Een parabool is een functie: voor elke waarde van x is er precies 1 y-waarde.' };
+});
+
+/* ---------- H1: domein en bereik ---------- */
+function intervalTeX(l, a, b, r) { return `${l}${G(a)},\\ ${G(b)}${r}`; }
+gen('db_lees', 'Domein en bereik aflezen', () => {
+  for (let poging = 0; poging < 50; poging++) {
+    const kn = knopenVerloop().slice(0, rnd(3, 4)); const n = kn.length, x = kn[n - 1][0];
+    if (x > 6) continue;
+    const soort = kies(['eindig', 'eindig', 'rechts', 'links']);
+    const kn2 = kn.slice(); let domL = '[', domA = kn[0][0], domB = x, domR = ']';
+    // naar oneindig: de grafiek keert in de laatste (eerste) knoop en loopt dan het rooster uit
+    if (soort === 'rechts') { const op = kn[n - 1][1] > kn[n - 2][1] ? -1 : 1; kn2.push([x + 4, op * 14]); domB = Infinity; domR = '['; }
+    if (soort === 'links') { const op = kn[0][1] > kn[1][1] ? -1 : 1; kn2.unshift([kn[0][0] - 4, op * 14]); domA = -Infinity; domL = ']'; }
+    const ys = kn.map(k => k[1]); let berA = Math.min(...ys), berB = Math.max(...ys), berL = '[', berR = ']';
+    if (soort === 'rechts') { if (kn2[kn2.length - 1][1] > 0) { berB = Infinity; berR = '['; } else { berA = -Infinity; berL = ']'; } }
+    if (soort === 'links') { if (kn2[0][1] > 0) { berB = Infinity; berR = '['; } else { berA = -Infinity; berL = ']'; } }
+    const f = knoopFunctie(kn2);
+    const fig = grafiek({ xmin: -6, xmax: 7, ymin: -4, ymax: 5, w: 330, krommen: [{ f, van: soort === 'links' ? -7 : kn[0][0], tot: soort === 'rechts' ? 8 : x, kleur: '#38873c' }] });
+    return { vorm: 'invul', werkvorm: 'Aflezen en noteren', vraag: 'Lees het domein en het bereik af. Loopt de grafiek tot de rand van het rooster, dan loopt ze verder.', figuur: fig,
+      regels: [`${M('\\text{dom}\\, f =')} {0}`, `${M('\\text{ber}\\, f =')} {1}`],
+      velden: [{ soort: 'interval', antw: { l: domL, a: domA, b: domB, r: domR } }, { soort: 'interval', antw: { l: berL, a: berA, b: berB, r: berR } }],
+      hint: 'Domein: kijk van links naar rechts (x-as). Bereik: kijk van onder naar boven (y-as).',
+      uitleg: `${M('\\text{dom}\\, f = ' + intervalTeX(domL, domA, domB, domR))} en ${M('\\text{ber}\\, f = ' + intervalTeX(berL, berA, berB, berR))}.` };
+  }
+});
+gen('db_noteer', 'Intervalnotatie kiezen', () => {
+  const a = rndNZ(-6, 3), b = a + rnd(2, 6);
+  const t = kies([
+    [`alle getallen vanaf ${M(G(a))} (${M(G(a))} hoort erbij)`, `[${G(a)},\\ +\\infty[`, [`]${G(a)},\\ +\\infty[`, `[${G(a)},\\ +\\infty]`, `]-\\infty,\\ ${G(a)}]`]],
+    [`alle getallen kleiner dan ${M(G(a))}`, `]-\\infty,\\ ${G(a)}[`, [`]-\\infty,\\ ${G(a)}]`, `[-\\infty,\\ ${G(a)}[`, `]${G(a)},\\ +\\infty[`]],
+    [`van ${M(G(a))} tot ${M(G(b))}, beide getallen horen erbij`, `[${G(a)},\\ ${G(b)}]`, [`]${G(a)},\\ ${G(b)}[`, `[${G(a)},\\ ${G(b)}[`, `[${G(b)},\\ ${G(a)}]`]],
+    [`groter dan ${M(G(a))} en kleiner dan of gelijk aan ${M(G(b))}`, `]${G(a)},\\ ${G(b)}]`, [`[${G(a)},\\ ${G(b)}]`, `]${G(a)},\\ ${G(b)}[`, `[${G(a)},\\ ${G(b)}[`]],
+  ]);
+  return { vorm: 'mc', werkvorm: 'Notatie', vraag: `Welke notatie hoort bij: <b>${t[0]}</b>?`,
+    opties: [{ h: M(t[1]), ok: true }, ...t[2].map(o => ({ h: M(o), tip: 'Kijk naar de haakjes: naar binnen = het getal hoort erbij, naar buiten = het hoort er niet bij. Bij ∞ altijd naar buiten. En het kleinste getal staat eerst.', code: 'haakjes' }))],
+    uitleg: `Juist is ${M(t[1])}.` };
+});
+gen('db_prak', 'Praktisch domein en bereik', () => {
+  const c = kies(['kaars', 'tank', 'batterij']);
+  let tekst, voorschrift, dom, ber, opts;
+  if (c === 'kaars') { const T = rnd(3, 8), r = kies([2, 3, 4]), L = T * r;
+    tekst = `Een kaars is ${L} cm lang en brandt ${r} cm per uur. De hoogte na ${M('t')} uur is ${M('h(t) = ' + L + ' - ' + r + 't')}.`;
+    dom = [0, T]; ber = [0, L]; opts = ['de mogelijke hoogtes van de kaars (in cm)', 'de tijd dat de kaars brandt (in uur)', 'hoeveel cm de kaars per uur korter wordt']; }
+  else if (c === 'tank') { const r = kies([20, 25, 40, 50]), T = rnd(4, 9), V = r * T;
+    tekst = `Een watertank bevat ${V} liter en loopt leeg met ${r} liter per minuut: ${M('V(t) = ' + V + ' - ' + r + 't')} (${M('t')} in minuten).`;
+    dom = [0, T]; ber = [0, V]; opts = ['de mogelijke hoeveelheden water in de tank (in liter)', 'de tijd tot de tank leeg is (in minuten)', 'hoeveel liter er per minuut wegloopt']; }
+  else { const s = kies([10, 20]), r = kies([10, 20]), T = (100 - s) / r;
+    tekst = `Een batterij staat op ${s} % en laadt ${r} % per uur op tot ze vol is (100 %): ${M('B(t) = ' + s + ' + ' + r + 't')}.`;
+    dom = [0, T]; ber = [s, 100]; opts = ['de mogelijke laadtoestanden van de batterij (in %)', 'hoe lang het opladen duurt (in uur)', 'hoeveel procent er per uur bijkomt']; }
+  return { vorm: 'invul', werkvorm: 'Context vertalen', vraag: tekst + '<br>Noteer het praktische domein en bereik, en kies wat het bereik betekent.',
+    regels: [`praktisch domein: {0}`, `praktisch bereik: {1}`, `Het praktische bereik zijn {2}`],
+    velden: [{ soort: 'interval', antw: { l: '[', a: dom[0], b: dom[1], r: ']' } }, { soort: 'interval', antw: { l: '[', a: ber[0], b: ber[1], r: ']' } },
+      { soort: 'keuze', opties: opts, antw: 0, fout: { 1: { code: 'domein_bereik', tip: 'Dat is het domein (de tijd). Het bereik gaat over de y-waarden.' } } }],
+    hint: 'Domein: van welke tijd tot welke tijd heeft het zin? Bereik: welke waarden neemt de grootheid aan, van klein naar groot?',
+    uitleg: `Praktisch domein ${M('[' + G(dom[0]) + ',\\ ' + G(dom[1]) + ']')}, praktisch bereik ${M('[' + G(ber[0]) + ',\\ ' + G(ber[1]) + ']')}: ${opts[0]}.` };
+});
+
+/* ---------- H1: tekentabel ---------- */
+function veeltermMetNulwaarden() {
+  for (let poging = 0; poging < 100; poging++) {
+    const soort = kies(['drie', 'drie', 'raak', 'twee']);
+    let rts, mult;
+    if (soort === 'drie') { rts = schud([-4, -3, -2, -1, 0, 1, 2, 3, 4]).slice(0, 3).sort((a, b) => a - b); mult = [1, 1, 1]; }
+    else if (soort === 'raak') { rts = schud([-3, -2, -1, 0, 1, 2, 3]).slice(0, 2).sort((a, b) => a - b); mult = Math.random() < 0.5 ? [2, 1] : [1, 2]; }
+    else { rts = schud([-4, -3, -2, -1, 1, 2, 3, 4]).slice(0, 2).sort((a, b) => a - b); mult = [1, 1]; }
+    if (rts[rts.length - 1] - rts[0] < 3 || rts.some((r, i) => i > 0 && r - rts[i - 1] < 2)) continue;
+    const g = x => rts.reduce((p, r, i) => p * Math.pow(x - r, mult[i]), 1);
+    let m = 0; for (let x = rts[0]; x <= rts[rts.length - 1]; x += 0.05) m = Math.max(m, Math.abs(g(x)));
+    if (m < 0.5) continue;
+    const c = (Math.random() < 0.5 ? 1 : -1) * 2.6 / m, f = x => c * g(x);
+    const proef = [rts[0] - 0.5]; for (let i = 0; i < rts.length - 1; i++) proef.push((rts[i] + rts[i + 1]) / 2); proef.push(rts[rts.length - 1] + 0.5);
+    const tekens = []; proef.forEach((x, i) => { if (i > 0) tekens.push('0'); tekens.push(f(x) > 0 ? '+' : '−'); });
+    return { f, rts, tekens, c };
+  }
+}
+gen('tt_lees', 'Tekentabel uit een grafiek', () => {
+  const v = veeltermMetNulwaarden();
+  return { vorm: 'tabel', werkvorm: 'Tabel invullen', vraag: 'Vul de tekentabel in: tik de nulwaarden in (van klein naar groot) en klik in elk vakje tot het juiste teken staat.',
+    figuur: grafiek({ xmin: -6, xmax: 6, ymin: -4, ymax: 4, w: 320, krommen: [{ f: v.f, kleur: '#38873c' }] }),
+    soort: 'teken', xs: v.rts, xsInvul: true, tekens: v.tekens,
+    hint: 'De nulwaarden zijn de x-waarden waar de grafiek de x-as snijdt of raakt. Boven de x-as: +, eronder: −.',
+    uitleg: 'Juiste tekentabel:' + statTeken(v.rts.map(String), v.tekens) };
+});
+gen('tt_terug', 'Welke grafiek hoort bij de tekentabel?', () => {
+  const v = veeltermMetNulwaarden();
+  const fig = f => grafiek({ xmin: -6, xmax: 6, ymin: -4, ymax: 4, w: 200, krommen: [{ f, kleur: '#38873c' }] });
+  const verschoven = v.rts.map(r => r + kies([-1, 1]));
+  const g2 = x => -v.f(x);
+  const g3 = x => v.f(x - (verschoven[0] - v.rts[0]));
+  return { vorm: 'mc', werkvorm: 'Omgekeerd denken', figs: true, vraag: 'Welke grafiek hoort bij deze tekentabel?' + statTeken(v.rts.map(r => G(r)), v.tekens),
+    opties: schud([{ h: fig(v.f), ok: true }, { h: fig(g2), tip: 'Bij deze grafiek zijn alle tekens omgekeerd.', code: 'teken' }, { h: fig(g3), tip: 'Kijk goed naar de nulwaarden in de x-rij.', code: 'nulwaarden' }]),
+    vast: true, uitleg: 'De nulwaarden én de tekens moeten kloppen: + waar de grafiek boven de x-as ligt.' };
+});
+
+/* ---------- H1: verloopschema ---------- */
+function knopenVerloop() {
+  // afwisselend stijgen en dalen, waarden tussen −3 en 4, telkens minstens 2 verschil
+  for (;;) {
+    const n = rnd(4, 5); let x = rnd(-5, -3), y = rnd(-2, 1); const kn = [[x, y]]; let op = Math.random() < 0.5 ? 1 : -1, ok = true;
+    for (let i = 1; i < n; i++) { x += rnd(2, 3); const kandidaten = []; for (let v = -3; v <= 4; v++) if (op > 0 ? v >= y + 2 : v <= y - 2) kandidaten.push(v);
+      if (!kandidaten.length) { ok = false; break; } y = kies(kandidaten); kn.push([x, y]); op = -op; }
+    if (ok) return kn;
+  }
+}
+gen('vs_lees', 'Verloopschema uit een grafiek', () => {
+  let kn; do { kn = knopenVerloop(); } while (kn[kn.length - 1][0] > 6);
+  const kolommen = [];
+  kn.forEach((k, i) => { if (i > 0) kolommen.push({ t: 'i', pijl: k[1] > kn[i - 1][1] ? '↗' : '↘' });
+    const lab = (i === 0 || i === kn.length - 1) ? '' : (k[1] > kn[i - 1][1] ? 'MAX' : 'MIN'); kolommen.push({ t: 'p', x: k[0], y: k[1], lab, rand: i === 0 || i === kn.length - 1 }); });
+  return { vorm: 'tabel', werkvorm: 'Tabel invullen', vraag: 'Vul het verloopschema in: de functiewaarden, de pijlen en MAX of MIN onder elke top. (Aan de randen van het domein hoeft er niets onder.)',
+    figuur: grafiek({ xmin: -6, xmax: 7, ymin: -4, ymax: 5, w: 330, krommen: [{ f: knoopFunctie(kn), van: kn[0][0], tot: kn[kn.length - 1][0], kleur: '#38873c' }] }),
+    soort: 'verloop', kolommen, hint: 'Lees de y-waarde af in elk punt van de x-rij. Stijgt de grafiek: ↗, daalt ze: ↘.',
+    uitleg: 'Bij een top waar de grafiek eerst stijgt en dan daalt hoort MAX; eerst dalen en dan stijgen: MIN.' };
+});
+gen('vs_absrel', 'Absoluut of relatief?', () => {
+  for (let p = 0; p < 100; p++) {
+    let kn; do { kn = knopenVerloop(); } while (kn[kn.length - 1][0] > 6);
+    const ys = kn.map(k => k[1]); const mx = Math.max(...ys), mn = Math.min(...ys);
+    if (ys.filter(y => y === mx).length > 1 || ys.filter(y => y === mn).length > 1) continue;
+    const ext = kn.slice(1, -1).map((k, j) => { const i = j + 1, isMax = k[1] > kn[i - 1][1]; const abs = isMax ? k[1] === mx : k[1] === mn; return { x: k[0], y: k[1], isMax, abs }; });
+    if (!ext.some(e => e.abs) || !ext.some(e => !e.abs)) continue;
+    const zin = (e, abs) => `In ${M('x = ' + G(e.x))} is er een <b>${abs ? 'absoluut' : 'relatief'} ${e.isMax ? 'maximum' : 'minimum'}</b> ${M(G(e.y))}.`;
+    const goed = kies(ext);
+    const fouten = ext.filter(e => e !== goed).map(e => ({ h: zin(e, !e.abs), tip: e.abs ? 'Dit is het hoogste/laagste punt van de hele grafiek: absoluut.' : 'Ergens anders op de grafiek (ook aan de rand!) ligt een hoger/lager punt: relatief.', code: 'absoluut_relatief' }));
+    fouten.push({ h: zin(goed, !goed.abs), tip: 'Vergelijk met de hele grafiek, ook met de eindpunten.', code: 'absoluut_relatief' });
+    return { vorm: 'mc', werkvorm: 'Redeneren', vraag: 'Welke uitspraak klopt?',
+      figuur: grafiek({ xmin: -6, xmax: 7, ymin: -4, ymax: 5, w: 330, krommen: [{ f: knoopFunctie(kn), van: kn[0][0], tot: kn[kn.length - 1][0], kleur: '#38873c' }] }),
+      opties: [{ h: zin(goed, goed.abs), ok: true }, ...fouten.slice(0, 3)],
+      uitleg: 'Absoluut = het hoogste (of laagste) punt van de hele grafiek, ook als je de eindpunten meetelt. Relatief = alleen het hoogste (of laagste) in de buurt.' };
+  }
+});
+
+/* ---------- H1: toenemend of afnemend ---------- */
+const SOORTEN_STIJG = ['toenemend stijgen', 'afnemend stijgen', 'toenemend dalen', 'afnemend dalen'];
+gen('ta_koppel', 'Koppel de schetsen', () => {
+  const v = schud([0, 1, 2, 3]);
+  return { vorm: 'koppel', werkvorm: 'Koppelen', vraag: 'Koppel elke schets aan de juiste beschrijving: tik links een schets en dan rechts de beschrijving.',
+    links: v.map(i => stijgSchets(i)), rechts: v.map(i => SOORTEN_STIJG[i]),
+    hint: 'Wordt de grafiek steeds steiler (toenemend) of steeds minder steil (afnemend)? Gaat ze omhoog (stijgen) of omlaag (dalen)?',
+    uitleg: 'Toenemend = steeds steiler, afnemend = steeds minder steil.' };
+});
+const CONTEXT_STIJG = [
+  ['Een kop koffie koelt af: eerst snel, daarna steeds trager.', 3],
+  ['Een plant groeit in het begin snel, daarna steeds trager.', 1],
+  ['Een steen valt van een brug en gaat steeds sneller naar beneden (hoogte in functie van de tijd).', 2],
+  ['Spaargeld met samengestelde intrest: elk jaar komt er een groter bedrag bij.', 0],
+  ['Een bad loopt leeg: eerst snel, op het einde steeds trager.', 3],
+  ['Een nieuwe auto verliest in het begin veel waarde, later steeds minder.', 3],
+  ['Een kind groeit als baby heel snel, daarna steeds trager.', 1],
+  ['Het aantal volgers van een filmpje dat viraal gaat: elke dag komen er meer nieuwe bij.', 0],
+  ['Een houten balk droogt in een droogkamer: hij verliest eerst snel vocht, daarna steeds minder.', 3],
+  ['Een schuif gaat open en de waterhoogte in een vat stijgt steeds trager omdat het vat bovenaan breder is.', 1],
+  ['Een skiër versnelt op een steeds steilere helling naar beneden (hoogte in functie van de tijd).', 2],
+  ['Een ijsblokje smelt steeds sneller naarmate het warmer wordt (grootte in functie van de tijd).', 2],
+];
+gen('ta_context', 'Welke soort stijging of daling?', () => {
+  const [t, j] = kies(CONTEXT_STIJG);
+  return { vorm: 'mc', werkvorm: 'Context herkennen', vraag: `<b>${t}</b><br>Welke grafiek past?`, figs: true,
+    opties: [0, 1, 2, 3].map(i => ({ h: stijgSchets(i) + `<div><small>${SOORTEN_STIJG[i]}</small></div>`, ok: i === j, tip: (i % 2 !== j % 2) ? 'Gaat het steeds sneller (toenemend) of steeds trager (afnemend)?' : 'Gaat de grootheid omhoog (stijgen) of omlaag (dalen)?', code: 'toenemend_afnemend' })),
+    vast: true, uitleg: `Juist: <b>${SOORTEN_STIJG[j]}</b>.` };
+});
+
+/* ---------- H1: symmetrie ---------- */
+gen('sy_lees', 'Symmetrieas of -middelpunt', () => {
+  const s = kies(['as', 'as', 'mp', 'welke']);
+  if (s === 'as') {
+    const h = rnd(-3, 3), k = rnd(-2, 1), f = Math.random() < 0.5 ? (x => 0.5 * (x - h) * (x - h) + k) : (x => 0.08 * Math.pow(x - h, 4) - 0.9 * (x - h) * (x - h) + k + 2);
+    return { vorm: 'invul', werkvorm: 'Aflezen', vraag: 'Deze grafiek heeft een symmetrieas. Noteer de vergelijking.',
+      figuur: grafiek({ xmin: -6, xmax: 6, ymin: -3, ymax: 5, w: 300, krommen: [{ f, kleur: '#38873c' }] }),
+      regels: [`${M('s\\colon x =')} {0}`], velden: [{ soort: 'getal', antw: h }], hint: 'Zoek de verticale lijn waarover de grafiek gespiegeld wordt.', uitleg: `${M('s\\colon x = ' + G(h))}` };
+  }
+  if (s === 'mp') {
+    const h = rnd(-3, 3), k = rnd(-2, 2), c = kies([0.3, 0.5]), f = x => c * Math.pow(x - h, 3) - 1.5 * (x - h) + k;
+    return { vorm: 'invul', werkvorm: 'Aflezen', vraag: 'Deze grafiek heeft een symmetriemiddelpunt. Noteer de coördinaat.',
+      figuur: grafiek({ xmin: -6, xmax: 6, ymin: -4, ymax: 5, w: 300, krommen: [{ f, kleur: '#38873c' }] }),
+      regels: ['( {0} , {1} )'], velden: [{ soort: 'getal', antw: h }, { soort: 'getal', antw: k }], hint: 'Het middelpunt ligt precies in het midden van de grafiek: draai je de grafiek 180° rond dat punt, dan valt ze op zichzelf.', uitleg: `Symmetriemiddelpunt ${M('(' + G(h) + ',\\ ' + G(k) + ')')}.` };
+  }
+  const opt = kies([0, 1, 2]);
+  const f = [x => 0.5 * (x - 1) * (x - 1) - 1, x => 0.4 * Math.pow(x - 1, 3) - 1.5 * (x - 1) + 1, knoopFunctie([[-7, 3], [-3, -2], [0, 3], [2, 0], [7, 4]])][opt];
+  return { vorm: 'mc', werkvorm: 'Herkennen', vraag: 'Wat heeft deze grafiek?', figuur: grafiek({ xmin: -5, xmax: 5, ymin: -3, ymax: 4, w: 280, krommen: [{ f, kleur: '#38873c' }] }),
+    opties: [{ h: 'een symmetrieas', ok: opt === 0, code: 'symmetrie', tip: 'Een as: spiegelen over een verticale lijn.' }, { h: 'een symmetriemiddelpunt', ok: opt === 1, code: 'symmetrie', tip: 'Een middelpunt: 180° draaien rond een punt.' }, { h: 'geen van beide', ok: opt === 2, code: 'symmetrie', tip: 'Probeer te spiegelen of te draaien.' }],
+    vast: true, uitleg: ['Spiegel je over de verticale lijn door de top, dan valt de grafiek op zichzelf: symmetrieas.', 'Draai je de grafiek 180° rond het middelste punt, dan valt ze op zichzelf: symmetriemiddelpunt.', 'Spiegelen of draaien lukt nergens: geen symmetrie.'][opt] };
+});
+
+/* ---------- H1: periodiciteit ---------- */
+gen('pe_lees', 'Periode en functiewaarden', () => {
+  const p = rnd(3, 5); const patroon = []; for (let i = 0; i < p; i++) { let v; do { v = rnd(0, 3); } while (i > 0 && v === patroon[i - 1]); patroon.push(v); }
+  if (patroon[p - 1] === patroon[0]) patroon[p - 1] = (patroon[0] + 2) % 4;
+  const kn = []; for (let x = -2; x <= 18; x++) kn.push([x, patroon[((x % p) + p) % p]]);
+  const f = knoopFunctie(kn), N = rnd(23, 61), r = N % p, n = (N - r) / p, xmaxG = Math.min(14, 3 * p);
+  return { vorm: 'invul', werkvorm: 'Stappen invullen', vraag: `De grafiek herhaalt zich. Bepaal de periode en bereken ${M('f(' + N + ')')}.`,
+    figuur: grafiek({ xmin: -1, xmax: xmaxG, ymin: -1, ymax: 4, w: 460, krommen: [{ f, kleur: '#38873c' }] }),
+    regels: [`${M('p =')} {0}`, `${M('f(' + N + ') = f(' + N + ' -')} {1} ${M('\\cdot\\, p) = f(')}{2}${M(')=')} {3}`],
+    velden: [{ soort: 'getal', antw: p }, { soort: 'getal', antw: n }, { soort: 'getal', antw: r }, { soort: 'getal', antw: patroon[r] }],
+    controle(w) { // elk ander juist aantal keer p aftrekken mag ook, zolang je op de grafiek uitkomt
+      const okp = gelijk(w[0], p), nn = w[1], xx = w[2]; const okx = Number.isInteger(nn) && gelijk(xx, N - nn * p) && xx >= 0 && xx <= xmaxG; const okn = okx; const okv = okx && gelijk(w[3], patroon[((Math.round(xx) % p) + p) % p]);
+      return [okp, okn, okx, okv];
+    },
+    hint: 'Zoek twee punten waar de grafiek opnieuw hetzelfde doet: de afstand ertussen is de periode. Trek dan zo vaak p af tot je in de grafiek zit.',
+    uitleg: `${M('p = ' + p)} en ${M('f(' + N + ') = f(' + N + ' - ' + n + '\\cdot ' + p + ') = f(' + r + ') = ' + patroon[r])}.` };
+});
+
+/* ---------- H2: herkennen ---------- */
+gen('hk_sort', 'Tweedegraadsfunctie of niet?', () => {
+  const a = rndNZ(-3, 3), b = rndNZ(-5, 5), c = rnd(2, 9), m = rnd(1, 4), n = rnd(1, 5);
+  const ja = schud([`${c} - ${Math.abs(a) === 1 ? '' : Math.abs(a)}x^2 + ${Math.abs(b)}x`, `(x + ${m})(x - ${n})`, `x(x - ${n}) + ${m}`, `(x - ${m})^2`, `${n} - 2x^2`, `\\tfrac{1}{2}x^2`]).slice(0, 3);
+  const nee = schud([`2x^3 - x`, `${n}x + ${m}`, `x^2\\cdot x`, `${m} - ${n}x`, `x^3 + x^2`, `(x^2 + 1)\\cdot x`]).slice(0, 3);
+  return { vorm: 'sorteer', werkvorm: 'Sorteren', vraag: 'Sorteer de voorschriften. Werk in gedachten de haakjes uit.',
+    bakken: ['tweedegraadsfunctie', 'geen tweedegraadsfunctie'], kaarten: schud([...ja.map(t => ({ h: M('f(x) = ' + t), bak: 0 })), ...nee.map(t => ({ h: M('f(x) = ' + t), bak: 1 }))]),
+    hint: 'De hoogste macht van x moet precies 2 zijn. Werk haakjes eerst uit: x²·x = x³.', uitleg: 'Een tweedegraadsfunctie heeft als hoogste macht x², met een getal verschillend van 0 ervoor.' };
+});
+gen('hk_abc', 'Coëfficiënten a, b en c', () => {
+  const s = kies(['volgorde', 'product', 'haakje']);
+  let tex, a, b, c;
+  if (s === 'volgorde') { a = rndNZ(-4, 4); b = rndNZ(-6, 6); c = rndNZ(-8, 8); const tc = c, tb = b;
+    tex = `${tc} ${tb < 0 ? '-' : '+'} ${Math.abs(tb) === 1 ? '' : Math.abs(tb)}x ${a < 0 ? '-' : '+'} ${Math.abs(a) === 1 ? '' : Math.abs(a)}x^2`; }
+  else if (s === 'product') { const m = rndNZ(-5, 5), n = rndNZ(-5, 5); a = 1; b = m + n; c = m * n; tex = `(x ${m < 0 ? '-' : '+'} ${Math.abs(m)})(x ${n < 0 ? '-' : '+'} ${Math.abs(n)})`; }
+  else { const m = rndNZ(-6, 6), n = rndNZ(-6, 6); a = 1; b = m; c = n; tex = `x(x ${m < 0 ? '-' : '+'} ${Math.abs(m)}) ${n < 0 ? '-' : '+'} ${Math.abs(n)}`; }
+  return { vorm: 'invul', werkvorm: 'Herleiden', vraag: `Noteer ${M('a')}, ${M('b')} en ${M('c')} van ${M('f(x) = ' + tex)}.` + (s !== 'volgorde' ? ' Werk eerst de haakjes uit.' : ''),
+    regels: [`${M('a =')} {0} &nbsp; ${M('b =')} {1} &nbsp; ${M('c =')} {2}`],
+    velden: [{ soort: 'getal', antw: a, fouten: [{ w: c, code: 'volgorde_abc', tip: 'a hoort bij x², niet bij het losse getal.' }] }, { soort: 'getal', antw: b, fouten: [{ w: -b, code: 'teken', tip: 'Let op het teken voor de term met x.' }] }, { soort: 'getal', antw: c, fouten: [{ w: a, code: 'volgorde_abc', tip: 'c is het getal zonder x.' }, { w: -c, code: 'teken', tip: 'Let op het teken.' }] }],
+    hint: 'a staat bij x², b bij x en c is het getal zonder x. Het teken hoort erbij!', uitleg: `${M('f(x) = ' + pol(a, b, c))}, dus ${M('a = ' + G(a) + ',\\ b = ' + G(b) + ',\\ c = ' + G(c))}.` };
+});
+
+/* ---------- H2: p-k-vorm ---------- */
+const A_WAARDEN = [-3, -2, -1, -0.5, 0.5, 1, 2, 3];
+gen('pk_lees', 'Kenmerken uit de p-k-vorm', () => {
+  const a = kies(A_WAARDEN), p = rndNZ(-5, 5), k = rnd(-5, 5);
+  return { vorm: 'invul', werkvorm: 'Aflezen', vraag: `Gegeven: ${M('f(x) = ' + pk(a, p, k))}.`,
+    regels: ['Het is een {0} parabool.', `${M('s\\colon x =')} {1} &nbsp;&nbsp; top ${M('T(')}{2} , {3}${M(')')}`, `{4} &nbsp; ${M('\\text{ber}\\, f =')} {5}`],
+    velden: [{ soort: 'keuze', opties: ['dal-', 'berg-'], antw: a > 0 ? 0 : 1, fout: { [a > 0 ? 1 : 0]: { code: 'teken_a', tip: `Kijk naar het teken van a: a = ${String(a).replace('.', ',')}.` } } },
+      { soort: 'getal', antw: p, fouten: [{ w: -p, code: 'teken_p', tip: `Valkuil! ${pk(1, p, 0).replace(/\^2/, '²')}: het teken van p is omgekeerd.` }] },
+      { soort: 'getal', antw: p, fouten: [{ w: -p, code: 'teken_p', tip: 'De x van de top is p, met het omgekeerde teken van wat tussen de haakjes staat.' }] },
+      { soort: 'getal', antw: k, fouten: [{ w: -k, code: 'teken_k', tip: 'k neem je over zoals het er staat (met zijn teken).' }] },
+      { soort: 'keuze', opties: ['MAX', 'MIN'], antw: a < 0 ? 0 : 1 },
+      { soort: 'interval', antw: a > 0 ? { l: '[', a: k, b: Infinity, r: '[' } : { l: ']', a: -Infinity, b: k, r: ']' } }],
+    hint: 'f(x) = a(x − p)² + k: top T(p, k). a > 0: dal, a < 0: berg. Het bereik begint of eindigt bij k.',
+    uitleg: `${a > 0 ? 'Dalparabool' : 'Bergparabool'} (${M('a = ' + F(a))}), ${M('s\\colon x = ' + G(p))}, ${M('T(' + G(p) + ',\\ ' + G(k) + ')')}, ${a < 0 ? 'MAX' : 'MIN'} ${M(G(k))}, ${M('\\text{ber}\\, f = ' + (a > 0 ? '[' + G(k) + ',\\ +\\infty[' : ']-\\infty,\\ ' + G(k) + ']'))}.` };
+});
+gen('pk_top', 'Valkuil: de top', () => {
+  const a = kies(A_WAARDEN), p = rndNZ(-5, 5), k = rndNZ(-5, 5);
+  const T = (x, y) => M('T(' + G(x) + ',\\ ' + G(y) + ')');
+  return { vorm: 'mc', werkvorm: 'Snel ophalen', vraag: `Wat is de top van ${M('f(x) = ' + pk(a, p, k))}?`,
+    opties: [{ h: T(p, k), ok: true }, { h: T(-p, k), tip: 'Het teken van p is omgekeerd: (x + 3)² betekent p = −3.', code: 'teken_p' }, { h: T(p, -k), tip: 'k neem je over met zijn eigen teken.', code: 'teken_k' }, { h: T(-p, -k), tip: 'Alleen het teken van p draait om, niet dat van k.', code: 'teken_p' }],
+    uitleg: `${M('f(x) = a(x - p)^2 + k')} heeft top ${M('T(p, k)')}, hier ${T(p, k)}.` };
+});
+
+/* ---------- H2: a, p en k ---------- */
+gen('apk_doel', 'Raak de doelparabool', () => {
+  let a, p, k; do { a = kies([-2, -1, -0.5, 0.5, 2]); p = rnd(-3, 3); k = rnd(-3, 3); } while (a === 1 && p === 0 && k === 0);
+  return { vorm: 'slider', werkvorm: 'Ontdekken', vraag: 'Schuif met a, p en k tot jouw parabool (blauw) precies op de doelparabool (rode stippellijn) ligt. Let op wat elke schuif doet!',
+    doelPar: { a, p, k }, uitleg: `Het voorschrift van de doelparabool is ${M('f(x) = ' + pk(a, p, k))}: top ${M('T(' + G(p) + ',\\ ' + G(k) + ')')}.` };
+}, { ex: false });
+gen('apk_voorspel', 'Voorspel: wat doet a, p of k?', () => {
+  const a = kies([-2, -1, 1, 2]), p = rnd(-2, 2), k = rnd(-2, 2), wat = kies(['k', 'p', 'a']);
+  let a2 = a, p2 = p, k2 = k, juist, opts;
+  if (wat === 'k') { const d = rndNZ(-3, 3); k2 = k + d; juist = `De parabool schuift ${Math.abs(d)} naar ${d > 0 ? 'boven' : 'onder'}.`;
+    opts = [`De parabool schuift ${Math.abs(d)} naar ${d > 0 ? 'onder' : 'boven'}.`, `De parabool schuift ${Math.abs(d)} naar ${d > 0 ? 'rechts' : 'links'}.`, 'De parabool wordt smaller.']; }
+  else if (wat === 'p') { const d = rndNZ(-3, 3); p2 = p + d; juist = `De parabool schuift ${Math.abs(d)} naar ${d > 0 ? 'rechts' : 'links'}.`;
+    opts = [`De parabool schuift ${Math.abs(d)} naar ${d > 0 ? 'links' : 'rechts'}.`, `De parabool schuift ${Math.abs(d)} naar ${d > 0 ? 'boven' : 'onder'}.`, 'De parabool keert om.']; }
+  else { a2 = kies([-a, 3 * a, a / 2]);
+    juist = a2 === -a ? 'De parabool keert om (berg wordt dal of omgekeerd).' : Math.abs(a2) > Math.abs(a) ? 'De parabool wordt smaller (steiler).' : 'De parabool wordt breder.';
+    opts = ['De parabool keert om (berg wordt dal of omgekeerd).', 'De parabool wordt smaller (steiler).', 'De parabool wordt breder.', 'De parabool schuift naar boven.'].filter(o => o !== juist).slice(0, 3); }
+  const van = M('f(x) = ' + pk(a, p, k)), naar = M('g(x) = ' + pk(a2, p2, k2));
+  return { vorm: 'mc', werkvorm: 'Voorspellen', vraag: `Je vertrekt van ${van} (zie grafiek). Je verandert het voorschrift in ${naar}. Wat gebeurt er met de parabool?`,
+    figuur: grafiek({ xmin: -6, xmax: 6, ymin: -6, ymax: 6, w: 260, krommen: [{ f: x => a * (x - p) * (x - p) + k }] }),
+    opties: [{ h: juist, ok: true }, ...opts.map(o => ({ h: o, tip: wat === 'p' ? 'p > 0 schuift naar rechts, p < 0 naar links. Let op het teken tussen de haakjes!' : wat === 'k' ? 'k verschuift naar boven of onder.' : 'a bepaalt de opening: groter (in absolute waarde) = smaller, negatief = omgekeerd.', code: 'invloed_' + wat }))],
+    uitleg: 'Zo ziet het eruit (stippellijn = nieuw):' + `<div class="figuur">${grafiek({ xmin: -6, xmax: 6, ymin: -6, ymax: 6, w: 240, krommen: [{ f: x => a * (x - p) * (x - p) + k }, { f: x => a2 * (x - p2) * (x - p2) + k2, kleur: '#be123c', stippel: true }] })}</div>` };
+});
+gen('apk_koppel', 'Koppel grafiek en voorschrift', () => {
+  const gek = new Set(), fs = [];
+  while (fs.length < 4) { const a = kies([-2, -1, -0.5, 0.5, 1, 2]), p = rnd(-3, 3), k = rnd(-3, 3), s = [Math.sign(a), p, k].join(); if (gek.has(s) || fs.some(f => f.p === p && f.k === k)) continue; gek.add(s); fs.push({ a, p, k }); }
+  const v = schud([0, 1, 2, 3]);
+  return { vorm: 'koppel', werkvorm: 'Koppelen', vraag: 'Koppel elke grafiek aan het juiste voorschrift.',
+    links: fs.map(f => grafiek({ xmin: -5, xmax: 5, ymin: -5, ymax: 5, w: 120, fs: 8, krommen: [{ f: x => f.a * (x - f.p) * (x - f.p) + f.k }] })), rechts: fs.map(f => M('f(x) = ' + pk(f.a, f.p, f.k))),
+    hint: 'Zoek eerst de top T(p, k) op elke grafiek. Kijk dan of het een berg- of dalparabool is.', uitleg: 'De top van a(x − p)² + k is T(p, k); a < 0 geeft een bergparabool.' };
+});
+gen('apk_teken', 'Tekens van a, p en k aflezen', () => {
+  const a = kies([-2, -1, -0.5, 0.5, 1, 2]), p = kies([-3, -2, -1, 0, 1, 2, 3]), k = kies([-3, -2, -1, 0, 1, 2, 3]);
+  const opt = ['> 0', '< 0', '= 0'], idx = v => v > 0 ? 0 : v < 0 ? 1 : 2;
+  return { vorm: 'invul', werkvorm: 'Aflezen', vraag: `De grafiek hoort bij ${M('f(x) = a(x - p)^2 + k')}. Kies het teken van ${M('a')}, ${M('p')} en ${M('k')}.`,
+    figuur: grafiek({ xmin: -5, xmax: 5, ymin: -5, ymax: 5, w: 240, getallen: false, krommen: [{ f: x => a * (x - p) * (x - p) + k }] }),
+    regels: [`${M('a')} {0} &nbsp; ${M('p')} {1} &nbsp; ${M('k')} {2}`],
+    velden: [{ soort: 'keuze', opties: opt.slice(0, 2), antw: idx(a) }, { soort: 'keuze', opties: opt, antw: idx(p), fout: { [idx(-p)]: { code: 'teken_p', tip: 'p is de x van de top: rechts van de y-as is p positief.' } } }, { soort: 'keuze', opties: opt, antw: idx(k) }],
+    hint: 'a: open naar boven of onder? p: ligt de top links of rechts van de y-as (of erop)? k: boven of onder de x-as (of erop)?',
+    uitleg: `De top ligt in ${M('(' + G(p) + ',\\ ' + G(k) + ')')} en het is een ${a > 0 ? 'dal' : 'berg'}parabool.` };
+});
+
+/* ---------- H2: schetsen ---------- */
+gen('sk_punten', 'Punten voor een schets', () => {
+  const a = kies([-2, -1, 1, 2]), p = rndNZ(-3, 3), k = rnd(-4, 4), f0 = a * p * p + k;
+  return { vorm: 'invul', werkvorm: 'Stappen invullen', vraag: `Je maakt een schets van ${M('f(x) = ' + pk(a, p, k))}. Vul aan.`,
+    regels: [`top ${M('T(')}{0} , {1}${M(')')} &nbsp; ${M('s\\colon x =')} {2}`, `${M('f(0) =')} {3} &nbsp; → punt ${M('(0,\\ f(0))')}`, `gespiegeld over de as: punt ( {4} , {5} )`],
+    velden: [{ soort: 'getal', antw: p, fouten: [{ w: -p, code: 'teken_p', tip: 'Let op het teken van p.' }] }, { soort: 'getal', antw: k }, { soort: 'getal', antw: p },
+      { soort: 'getal', antw: f0, fouten: [{ w: a * p + k, code: 'kwadraat', tip: 'Vergeet het kwadraat niet: (0 − p)².' }, { w: -a * p * p + k, code: 'kwadraat', tip: `Een kwadraat is altijd positief: (0 ${p > 0 ? '−' : '+'} ${Math.abs(p)})² = ${p * p}.` }] },
+      { soort: 'getal', antw: 2 * p, fouten: [{ w: -p, code: 'spiegelen', tip: 'Spiegel over de lijn x = p, niet over de y-as.' }] }, { soort: 'getal', antw: f0 }],
+    hint: 'Het gespiegelde punt ligt even ver van de as, maar aan de andere kant. De y-waarde blijft hetzelfde.',
+    uitleg: `${M('f(0) = ' + F(a) + '(0 ' + (p > 0 ? '- ' : '+ ') + Math.abs(p) + ')^2 ' + (k < 0 ? '- ' : '+ ') + Math.abs(k) + ' = ' + G(f0))}. Het punt ${M('(0, ' + G(f0) + ')')} ligt ${Math.abs(p)} links of rechts van de as; het gespiegelde punt is ${M('(' + G(2 * p) + ',\\ ' + G(f0) + ')')}.` +
+      `<div class="figuur">${grafiek({ xmin: -7, xmax: 7, ymin: -6, ymax: 7, w: 240, krommen: [{ f: x => a * (x - p) * (x - p) + k }], lijnen: [{ x1: p, y1: -6, x2: p, y2: 7, stippel: true }] })}</div>` };
+});
+gen('sk_kies', 'Welke schets klopt?', () => {
+  const a = kies([-2, -1, -0.5, 0.5, 1, 2]), p = rndNZ(-3, 3), k = rndNZ(-3, 3);
+  const fig = (A, P, K) => grafiek({ xmin: -5, xmax: 5, ymin: -5, ymax: 5, w: 170, fs: 9, krommen: [{ f: x => A * (x - P) * (x - P) + K }] });
+  return { vorm: 'mc', werkvorm: 'Herkennen', figs: true, vraag: `Welke grafiek hoort bij ${M('f(x) = ' + pk(a, p, k))}?`,
+    opties: schud([{ h: fig(a, p, k), ok: true }, { h: fig(a, -p, k), tip: 'Kijk naar het teken van p: de top ligt aan de andere kant van de y-as.', code: 'teken_p' }, { h: fig(-a, p, k), tip: 'Kijk naar het teken van a: berg of dal?', code: 'teken_a' }, { h: fig(a, p, -k), tip: 'Kijk naar k: ligt de top boven of onder de x-as?', code: 'teken_k' }]), vast: true,
+    uitleg: `Top ${M('T(' + G(p) + ',\\ ' + G(k) + ')')} en een ${a > 0 ? 'dal' : 'berg'}parabool.` };
+});
+
+/* ---------- H2: naar de standaardvorm ---------- */
+function stdStappen(a, p, k) {
+  const A = 'x', B = Math.abs(p), tm = p > 0 ? '-' : '+';
+  const b = -2 * a * p, c = a * p * p + k;
+  return { b, c, regels: [
+    `f(x) = ${pk(a, p, k)}`,
+    `= ${G(a)}(x^2 ${tm} 2\\cdot x\\cdot ${B} + ${B}^2) ${k < 0 ? '-' : '+'} ${Math.abs(k)}`,
+    `= ${G(a)}(x^2 ${tm} ${2 * B}x + ${B * B}) ${k < 0 ? '-' : '+'} ${Math.abs(k)}`,
+    `= ${pol(a, b, a * p * p)} ${k < 0 ? '-' : '+'} ${Math.abs(k)}`,
+    `= ${pol(a, b, c)}`] };
+}
+function pkStd() { let a, p, k, s; do { a = kies([2, 3, -2, -3]); p = rndNZ(-4, 4); k = rndNZ(-6, 6); s = stdStappen(a, p, k); } while (verboden(a, s.b, s.c)); return { a, p, k, ...s }; }
+gen('st_orden', 'Zet de stappen in volgorde', () => {
+  const s = pkStd();
+  return { vorm: 'orden', werkvorm: 'Stappen ordenen', vraag: `Zet de stappen om ${M('f(x) = ' + pk(s.a, s.p, s.k))} naar de standaardvorm te schrijven in de juiste volgorde. De eerste stap staat al goed.`,
+    stappen: s.regels.map(r => M(r)), vast: 1, hint: 'Eerst het merkwaardig product uitschrijven, dan vereenvoudigen, dan a vermenigvuldigen, dan k erbij.',
+    uitleg: `Standaardvorm: ${M('f(x) = ' + pol(s.a, s.b, s.c))}.` };
+});
+gen('st_fout', 'Zoek de fout', () => {
+  const s = pkStd(); const r = s.regels.slice(); const B = Math.abs(s.p), tm = s.p > 0 ? '-' : '+', ks = `${s.k < 0 ? '-' : '+'} ${Math.abs(s.k)}`;
+  const soort = rnd(0, 3); let lijn, reden;
+  if (soort === 0) { lijn = 1; r[1] = `= ${G(s.a)}(x^2 + ${B}^2) ${ks}`; r[2] = `= ${G(s.a)}(x^2 + ${B * B}) ${ks}`; r[3] = `= ${pol(s.a, 0, s.a * B * B)} ${ks}`; r[4] = `= ${pol(s.a, 0, s.a * B * B + s.k)}`; reden = 0; }
+  else if (soort === 1) { lijn = 3; r[3] = `= ${pol(s.a, -2 * s.p, s.p * s.p)} ${ks}`; r[4] = `= ${pol(s.a, -2 * s.p, s.p * s.p + s.k)}`; reden = 1; }
+  else if (soort === 2) { lijn = 2; const tm2 = tm === '-' ? '+' : '-'; r[2] = `= ${G(s.a)}(x^2 ${tm2} ${2 * B}x + ${B * B}) ${ks}`; r[3] = `= ${pol(s.a, -s.b, s.a * B * B)} ${ks}`; r[4] = `= ${pol(s.a, -s.b, s.c)}`; reden = 2; }
+  else { lijn = 4; r[4] = `= ${pol(s.a, s.b, s.a * s.p * s.p)}`; reden = 3; }
+  const REDENEN = ['Het dubbel product 2AB is vergeten.', `Niet elke term binnen de haakjes is met ${M('a')} vermenigvuldigd.`, 'Het teken van de middelste term is fout.', `${M('k')} is vergeten bij het optellen.`];
+  return { vorm: 'fout', werkvorm: 'Fout zoeken', vraag: `Een leerling schreef ${M('f(x) = ' + pk(s.a, s.p, s.k))} in de standaardvorm. In één regel staat de <b>eerste</b> fout. Tik die regel aan en kies wat er misloopt.`,
+    regels: r.map(x => M(x)), foutRegel: lijn, redenen: REDENEN, juisteReden: reden,
+    uitleg: 'Juist is:<br>' + s.regels.map(x => `<span class="opl">${M(x)}</span>`).join('<br>') };
+});
+gen('st_abc', 'Naar de standaardvorm', () => {
+  const s = pkStd();
+  return { vorm: 'invul', werkvorm: 'Uitwerken', vraag: `Schrijf ${M('f(x) = ' + pk(s.a, s.p, s.k))} in de standaardvorm ${M('ax^2 + bx + c')}. Werk op papier en vul ${M('a')}, ${M('b')} en ${M('c')} in.`,
+    regels: [`${M('a =')} {0} &nbsp; ${M('b =')} {1} &nbsp; ${M('c =')} {2}`],
+    velden: [{ soort: 'getal', antw: s.a }, { soort: 'getal', antw: s.b, fouten: [{ w: -s.b, code: 'teken', tip: 'Let op het teken van de middelste term.' }, { w: -2 * s.p, code: 'a_vergeten', tip: 'Vermenigvuldig ook de middelste term met a.' }, { w: 0, code: 'dubbel_product', tip: 'Vergeet het dubbel product 2AB niet!' }] },
+      { soort: 'getal', antw: s.c, fouten: [{ w: s.a * s.p * s.p, code: 'k_vergeten', tip: 'Vergeet k niet bij te tellen.' }, { w: s.p * s.p + s.k, code: 'a_vergeten', tip: 'Ook p² moet je met a vermenigvuldigen.' }] }],
+    hint: '(x − p)² = x² − 2·x·p + p². Vermenigvuldig elke term met a en tel dan k erbij.',
+    uitleg: s.regels.map(x => `<span class="opl">${M(x)}</span>`).join('<br>') };
+});
+
+/* ---------- H2: top bij de standaardvorm ---------- */
+function stdMetTop() { let a, p, k, b, c; do { a = kies([-2, -1, 1, 2, 3]); p = rndNZ(-4, 4); k = rnd(-7, 7); b = -2 * a * p; c = a * p * p + k; } while (verboden(a, b, c) || c === 0); return { a, p, k, b, c }; }
+gen('tp_bereken', 'Top uit de standaardvorm', () => {
+  const t = stdMetTop();
+  return { vorm: 'invul', werkvorm: 'Stappen invullen', vraag: `Bereken de top van ${M('f(x) = ' + pol(t.a, t.b, t.c))}.`,
+    regels: [`${M('s\\colon x = \\dfrac{-b}{2a} =')} {0}`, `${M('y_T = f(x_T) =')} {1}`, `Opl: ${M('T(')}{2} , {3}${M(')')}`],
+    velden: [{ soort: 'getal', antw: t.p, fouten: [{ w: -t.p, code: 'min_b', tip: '−b: neem het tegengestelde van b. Gebruik haakjes: −(…).' }, { w: -t.b / t.a, code: 'twee_a', tip: 'Deel door 2a, niet door a.' }, { w: -2 * t.p, code: 'twee_a', tip: 'Deel door 2a.' }] },
+      { soort: 'getal', antw: t.k }, { soort: 'getal', antw: t.p }, { soort: 'getal', antw: t.k }],
+    hint: `Eerst de formule, dan invullen met haakjes: ${'−(b) / (2·a)'}. Vul daarna x_T in het voorschrift in.`,
+    uitleg: `<span class="opl">${M('s\\colon x = \\dfrac{-' + haak(t.b) + '}{2\\cdot ' + haak(t.a) + '} = ' + G(t.p))}</span><br><span class="opl">${M('f(' + G(t.p) + ') = ' + G(t.a) + '\\cdot ' + haak(t.p) + '^2 ' + (t.b < 0 ? '-' : '+') + ' ' + Math.abs(t.b) + '\\cdot ' + haak(t.p) + ' ' + (t.c < 0 ? '-' : '+') + ' ' + Math.abs(t.c) + ' = ' + G(t.k))}</span><br><span class="opl">Opl: ${M('T(' + G(t.p) + ',\\ ' + G(t.k) + ')')}</span>` };
+});
+gen('tp_fout', 'Zoek de fout bij de top', () => {
+  const t = stdMetTop(); const goed = [
+    `s\\colon x = \\dfrac{-b}{2a}`, `= \\dfrac{-${haak(t.b)}}{2\\cdot ${haak(t.a)}}`, `= ${G(t.p)}`,
+    `f(${G(t.p)}) = ${G(t.a)}\\cdot ${haak(t.p)}^2 ${t.b < 0 ? '-' : '+'} ${Math.abs(t.b)}\\cdot ${haak(t.p)} ${t.c < 0 ? '-' : '+'} ${Math.abs(t.c)}`, `= ${G(t.k)}`, `\\text{Opl: } T(${G(t.p)},\\ ${G(t.k)})`];
+  const r = goed.slice(); let soort = rnd(0, 2); if (soort === 2 && t.p > 0) soort = 0; let lijn, reden;
+  const fy = x => t.a * x * x + t.b * x + t.c;
+  if (soort === 0) { lijn = 1; r[1] = `= \\dfrac{${G(t.b)}}{2\\cdot ${haak(t.a)}}`; r[2] = `= ${G(-t.p)}`; r[3] = `f(${G(-t.p)}) = ${G(t.a)}\\cdot ${haak(-t.p)}^2 ${t.b < 0 ? '-' : '+'} ${Math.abs(t.b)}\\cdot ${haak(-t.p)} ${t.c < 0 ? '-' : '+'} ${Math.abs(t.c)}`; r[4] = `= ${G(fy(-t.p))}`; r[5] = `\\text{Opl: } T(${G(-t.p)},\\ ${G(fy(-t.p))})`; reden = 0; }
+  else if (soort === 1) { lijn = 1; const xx = -t.b / t.a; r[1] = `= \\dfrac{-${haak(t.b)}}{${haak(t.a)}}`; r[2] = `= ${G(xx)}`; r[3] = `f(${G(xx)}) = ${G(t.a)}\\cdot ${haak(xx)}^2 ${t.b < 0 ? '-' : '+'} ${Math.abs(t.b)}\\cdot ${haak(xx)} ${t.c < 0 ? '-' : '+'} ${Math.abs(t.c)}`; r[4] = `= ${G(fy(xx))}`; r[5] = `\\text{Opl: } T(${G(xx)},\\ ${G(fy(xx))})`; reden = 1; }
+  else { lijn = 4; const fout = t.k - 2 * t.a * t.p * t.p; r[4] = `= ${G(fout)}`; r[5] = `\\text{Opl: } T(${G(t.p)},\\ ${G(fout)})`; reden = 2; }
+  return { vorm: 'fout', werkvorm: 'Fout zoeken', vraag: `Een leerling berekende de top van ${M('f(x) = ' + pol(t.a, t.b, t.c))}. Tik de regel met de <b>eerste</b> fout aan en kies wat er misloopt.`,
+    regels: r.map(x => M(x)), foutRegel: lijn, redenen: ['Het tegengestelde van b is fout genomen (haakjes!).', 'Er is gedeeld door a in plaats van door 2a.', 'Rekenfout: het kwadraat van een negatief getal is positief.'], juisteReden: reden,
+    uitleg: 'Juist is:<br>' + goed.map(x => `<span class="opl">${M(x)}</span>`).join('<br>') };
+});
+
+/* ---------- H2: voorschrift opstellen ---------- */
+function topEnPunt() { for (;;) { const a = kies([-3, -2, -1, -0.5, 0.5, 1, 2, 3]), p = rnd(-3, 3), k = rnd(-4, 4); const d = (Math.abs(a) === 0.5) ? kies([-2, 2]) : kies([-2, -1, 1, 2]); const xP = p + d, yP = a * d * d + k;
+  if (!Number.isInteger(yP) || Math.abs(yP) > 12 || (p === 0 && k === 0) || verboden(a, -2 * a * p, a * p * p + k)) continue; return { a, p, k, d, xP, yP }; } }
+gen('vk_voorschrift', 'Kijk en verklaar: voorschrift opstellen', () => {
+  const t = topEnPunt();
+  const st = [
+    { h: `${M('*\\ T(' + G(t.p) + ',\\ ' + G(t.k) + ')\\colon\\ f(x) = a' + xmin(t.p) + '^2 ' + (t.k < 0 ? '- ' + Math.abs(t.k) : '+ ' + t.k))}`, v: 'Waarom mag je hier meteen getallen invullen?',
+      o: [{ h: `In de p-k-vorm ${M('a(x - p)^2 + k')} is de top ${M('T(p, k)')}.`, ok: true }, { h: 'Omdat het punt P op de grafiek ligt.', tip: 'Dat gebruik je pas in de volgende stap.' }, { h: 'Omdat a altijd 1 is.', tip: 'a ken je nog niet: die zoek je.' }] },
+    { h: `${M('*\\ P(' + G(t.xP) + ',\\ ' + G(t.yP) + ')\\colon\\ f(' + G(t.xP) + ') = ' + G(t.yP))}`, v: 'Waarom mag je dit schrijven?',
+      o: [{ h: `Het punt ligt op de grafiek: ${M('x = ' + G(t.xP))} invullen geeft ${M('y = ' + G(t.yP))}.`, ok: true }, { h: 'Dat is de top.', tip: 'Nee, P is een ander punt van de grafiek.' }, { h: 'Omdat f(x) altijd gelijk is aan y.', tip: 'Dat klopt wel, maar waarom precies deze getallen?' }] },
+    { h: `${M('\\Leftrightarrow a\\cdot(' + G(t.xP) + (t.p > 0 ? ' - ' + t.p : t.p < 0 ? ' + ' + (-t.p) : ' - 0') + ')^2 ' + (t.k < 0 ? '- ' + Math.abs(t.k) : '+ ' + t.k) + ' = ' + G(t.yP))}` },
+    { h: `${M('\\Leftrightarrow ' + (t.d * t.d === 1 ? '' : t.d * t.d) + 'a ' + (t.k < 0 ? '- ' + Math.abs(t.k) : '+ ' + t.k) + ' = ' + G(t.yP))}`, v: 'Wat is er gebeurd?',
+      o: [{ h: `${M('(' + G(t.xP) + (t.p > 0 ? ' - ' + t.p : t.p < 0 ? ' + ' + (-t.p) : ' - 0') + ')^2 = ' + G(t.d) + '^2 = ' + t.d * t.d)}: eerst tussen de haakjes, dan kwadrateren.`, ok: true }, { h: 'De haakjes zijn weggelaten.', tip: 'Haakjes weglaten mag niet: reken eerst uit wat ertussen staat.' }, { h: `${M('a')} is gekwadrateerd.`, tip: 'Alleen wat tussen de haakjes staat wordt gekwadrateerd.' }] },
+    { h: `${M('\\Leftrightarrow ' + (t.d * t.d === 1 ? '' : t.d * t.d) + 'a = ' + G(t.yP - t.k))}`, v: 'Wat is er hier gebeurd?',
+      o: [{ h: `Aan beide kanten ${M(t.k < 0 ? '+ ' + Math.abs(t.k) : '- ' + t.k)}: ${M('k')} naar het rechterlid.`, ok: true }, { h: 'Beide kanten gedeeld door k.', tip: 'Er wordt opgeteld of afgetrokken, niet gedeeld.' }, { h: 'De a is weggedeeld.', tip: 'a staat er nog.' }] },
+    { h: `${M('\\Leftrightarrow a = ' + F(t.a))}` },
+    { h: `<b>Opl:</b> ${M('f(x) = ' + pk(t.a, t.p, t.k))}`, v: 'Hoe controleer je dit voorschrift?',
+      o: [{ h: `Vul ${M('x = ' + G(t.xP))} in en kijk of je ${M(G(t.yP))} krijgt.`, ok: true }, { h: 'Kijk of a positief is.', tip: 'Dat zegt niets over juist of fout.' }, { h: 'Je kan het niet controleren.', tip: 'Jawel: het punt moet op de grafiek liggen.' }] },
+  ];
+  return { vorm: 'verklaar', werkvorm: 'Kijk en verklaar', vraag: `Stel het voorschrift op van de parabool met top ${M('T(' + G(t.p) + ',\\ ' + G(t.k) + ')')} door het punt ${M('P(' + G(t.xP) + ',\\ ' + G(t.yP) + ')')}. Bekijk de uitwerking stap voor stap en verklaar elke stap.`, stappen: st,
+    uitleg: 'Zo stel je een voorschrift op: top invullen, punt invullen, a berekenen, voorschrift noteren.' };
+}, { ex: false });
+gen('vo_stappen', 'Voorschrift met top en punt', () => {
+  const t = topEnPunt();
+  return { vorm: 'invul', werkvorm: 'Stappen invullen', vraag: `Stel het voorschrift op van de parabool met top ${M('T(' + G(t.p) + ',\\ ' + G(t.k) + ')')} door ${M('P(' + G(t.xP) + ',\\ ' + G(t.yP) + ')')}.`,
+    regels: [`${M('*\\ f(x) = a(x - ')}{0}${M(')^2 +')} {1} &nbsp; <small>(vul p en k in)</small>`, `${M('*\\ f(' + G(t.xP) + ') = ' + G(t.yP) + '\\ \\Leftrightarrow\\ a\\cdot')} {2} ${M((t.k < 0 ? '- ' + Math.abs(t.k) : '+ ' + t.k) + ' = ' + G(t.yP))}`, `${M('\\Leftrightarrow a =')} {3}`],
+    velden: [{ soort: 'getal', antw: t.p, fouten: [{ w: -t.p, code: 'teken_p', tip: 'Je vult p in, de x van de top. Het minteken staat er al.' }] }, { soort: 'getal', antw: t.k },
+      { soort: 'getal', antw: t.d * t.d, fouten: [{ w: t.d, code: 'kwadraat', tip: 'Vergeet het kwadraat niet.' }, { w: Math.pow(t.xP + t.p, 2), code: 'teken_p', tip: 'Let op het teken: (x − p) met p ingevuld.' }] },
+      { soort: 'getal', antw: t.a, fouten: [{ w: (t.yP + t.k) / (t.d * t.d), code: 'overbrengen', tip: 'k naar het rechterlid: het teken verandert.' }] }],
+    hint: 'Vul eerst de top in, daarna het punt: x = x van P, f(x) = y van P. Reken uit tussen de haakjes, kwadrateer, en los op naar a.',
+    uitleg: `${M('a = ' + F(t.a))}, dus <span class="opl">Opl: ${M('f(x) = ' + pk(t.a, t.p, t.k))}</span>.` };
+});
+gen('vo_orden', 'Stappen voorschrift ordenen', () => {
+  const t = topEnPunt();
+  const r = [`*\\ T(${G(t.p)},\\ ${G(t.k)})\\colon\\ f(x) = a${xmin(t.p)}^2 ${t.k < 0 ? '- ' + Math.abs(t.k) : '+ ' + t.k}`,
+    `*\\ P(${G(t.xP)},\\ ${G(t.yP)})\\colon\\ f(${G(t.xP)}) = ${G(t.yP)}`,
+    `\\Leftrightarrow ${t.d * t.d === 1 ? '' : t.d * t.d}a ${t.k < 0 ? '- ' + Math.abs(t.k) : '+ ' + t.k} = ${G(t.yP)}`,
+    `\\Leftrightarrow ${t.d * t.d === 1 ? '' : t.d * t.d}a = ${G(t.yP - t.k)}`, `\\Leftrightarrow a = ${F(t.a)}`, `\\text{Opl: } f(x) = ${pk(t.a, t.p, t.k)}`];
+  return { vorm: 'orden', werkvorm: 'Stappen ordenen', vraag: `Zet de stappen in de juiste volgorde (top ${M('T(' + G(t.p) + ',\\ ' + G(t.k) + ')')}, punt ${M('P(' + G(t.xP) + ',\\ ' + G(t.yP) + ')')}).`,
+    stappen: r.map(x => M(x)), vast: 1, hint: 'Top invullen, punt invullen, oplossen naar a, voorschrift noteren.', uitleg: 'Eerst de top, dan het punt, dan a berekenen.' };
+});
+gen('vo_ax2', 'f(x) = ax² door een punt', () => {
+  let a, x0; do { a = kies([-3, -2, -1, -0.5, 0.5, 1, 2, 3, 0.25, -0.25]); x0 = kies([-3, -2, -1, 1, 2, 3]); } while (!Number.isInteger(a * x0 * x0));
+  const y0 = a * x0 * x0;
+  return { vorm: 'invul', werkvorm: 'Berekenen', vraag: `Een parabool heeft haar top in de oorsprong en gaat door ${M('P(' + G(x0) + ',\\ ' + G(y0) + ')')}. Bepaal ${M('a')} in ${M('f(x) = ax^2')}.`,
+    regels: [`${M('a\\cdot ' + haak(x0) + '^2 = ' + G(y0) + '\\ \\Leftrightarrow\\ a =')} {0}`],
+    velden: [{ soort: 'getal', antw: a, fouten: [{ w: y0 / x0, code: 'kwadraat', tip: 'Vergeet het kwadraat niet: deel door x².' }, { w: -a, code: 'kwadraat', tip: 'Een kwadraat is positief: (−2)² = 4.' }] }],
+    hint: 'Vul het punt in: a · x² = y, en deel door x².', uitleg: `${M('a\\cdot ' + (x0 * x0) + ' = ' + G(y0))}, dus ${M('a = ' + F(a))} en ${M('f(x) = ' + pk(a, 0, 0))}.` };
+});
+
+/* ---------- H3: vergelijkingen herkennen ---------- */
+const TYPES = [`ax^2 = 0`, `ax^2 + c = 0`, `ax^2 + bx = 0`, `a(x - p)^2 + k = 0`, `\\text{volledig}`];
+function vglVanType(t) {
+  const a = rndNZ(-4, 4), b = rndNZ(-8, 8), c = rndNZ(-20, 20), p = rndNZ(-4, 4), k = rndNZ(-9, 9);
+  return [`${a === 1 ? '' : a === -1 ? '-' : a}x^2 = 0`, `${pol(a, 0, c)} = 0`, `${pol(a, b, 0)} = 0`, `${pk(a, p, k, G)} = 0`, `${pol(a, b, c)} = 0`][t];
+}
+gen('vh_sort', 'Welk type vergelijking?', () => {
+  const ts = schud([0, 1, 2, 3, 4, kies([1, 2, 3, 4])]);
+  return { vorm: 'sorteer', werkvorm: 'Sorteren', vraag: 'Sorteer de vergelijkingen volgens hun type. Zo weet je meteen welke methode je kiest.',
+    bakken: TYPES.map(t => M(t)), kaarten: ts.map(t => ({ h: M(vglVanType(t)), bak: t })),
+    hint: 'Kijk welke termen er zijn: x², x, een getal? Staat er een kwadraat van een haakje, dan is het de p-k-vorm.', uitleg: 'Geen b → ax² + c = 0; geen c → ax² + bx = 0; alles aanwezig → volledig (discriminant).' };
+});
+gen('vh_herleid', 'Herleiden naar de standaardvorm', () => {
+  if (Math.random() < 0.25) {
+    const m = rndNZ(-5, 5), n = rndNZ(-9, 9);
+    return { vorm: 'mc', werkvorm: 'Herkennen', vraag: `Is ${M('x^2 ' + (m < 0 ? '- ' + (-m) : '+ ' + m) + 'x = x^2 ' + (n < 0 ? '- ' + (-n) : '+ ' + n))} een tweedegraadsvergelijking?`,
+      opties: [{ h: `Nee: de ${M('x^2')} vallen weg, het is een eerstegraadsvergelijking.`, ok: true }, { h: `Ja: er staat ${M('x^2')} in.`, tip: 'Breng alles naar links: x² − x² = 0. Er blijft geen x² over.', code: 'herleiden' }, { h: 'Ja, een volledige.', tip: 'Breng eerst alles naar links.', code: 'herleiden' }],
+      uitleg: `Alles naar links: ${M((m) + 'x ' + (n < 0 ? '+ ' + (-n) : '- ' + n) + ' = 0')}. Er is geen ${M('x^2')} meer.` };
+  }
+  let a, b, c, tex;
+  for (;;) { const s = rnd(0, 2), m = rndNZ(-5, 5), n = rndNZ(-9, 9);
+    if (s === 0) { tex = `x(x ${m < 0 ? '-' : '+'} ${Math.abs(m)}) = ${n}`; a = 1; b = m; c = -n; }
+    else if (s === 1) { tex = `(x ${m < 0 ? '-' : '+'} ${Math.abs(m)})^2 = ${n}x`; a = 1; b = 2 * m - n; c = m * m; }
+    else { const q = rndNZ(-6, 6); tex = `2x^2 ${m < 0 ? '-' : '+'} ${Math.abs(m)}x = x^2 ${q < 0 ? '-' : '+'} ${Math.abs(q)}`; a = 1; b = m; c = -q; }
+    if (!verboden(a, b, c)) break; }
+  return { vorm: 'invul', werkvorm: 'Herleiden', vraag: `Herleid ${M(tex)} naar de vorm ${M('ax^2 + bx + c = 0')} en noteer ${M('a, b, c')}.`,
+    regels: [`${M('a =')} {0} &nbsp; ${M('b =')} {1} &nbsp; ${M('c =')} {2}`],
+    velden: [{ soort: 'getal', antw: a }, { soort: 'getal', antw: b, fouten: [{ w: -b, code: 'teken', tip: 'Bij het overbrengen verandert het teken.' }] }, { soort: 'getal', antw: c, fouten: [{ w: -c, code: 'overbrengen', tip: 'Breng het getal naar links: het teken verandert.' }] }],
+    controle(w) { const s = gelijk(w[0], -a) && gelijk(w[1], -b) && gelijk(w[2], -c) ? -1 : 1; return [gelijk(w[0], s * a), gelijk(w[1], s * b), gelijk(w[2], s * c)]; },
+    hint: 'Werk de haakjes uit en breng alles naar links (het teken verandert bij het overbrengen).', uitleg: `${M(pol(a, b, c) + ' = 0')}: ${M('a = ' + G(a) + ',\\ b = ' + G(b) + ',\\ c = ' + G(c))}.` };
+});
+
+/* ---------- H3: onvolledige vergelijkingen ---------- */
+function oplTeX(opl) { if (!opl.length) return '\\text{geen oplossingen},\\ V = \\varnothing'; return 'V = \\{' + opl.slice().sort((x, y) => x - y).map(v => F(v)).join(',\\ ') + '\\}'; }
+gen('ov_type1', 'Los op: ax² = 0', () => {
+  const a = rndNZ(-7, 7);
+  return { vorm: 'invul', werkvorm: 'Oplossen', vraag: `Los op: ${M((a === 1 ? '' : a === -1 ? '-' : a) + 'x^2 = 0')}`, regels: ['{0}'], velden: [{ soort: 'opl', antw: [0] }],
+    hint: 'Deel door a: x² = 0. Welk getal in het kwadraat geeft 0?', uitleg: `<span class="opl">${M('x^2 = 0')}, ${M('x = 0')}, ${M('V = \\{0\\}')}</span>` };
+});
+gen('ov_type2', 'Los op: ax² + c = 0', () => {
+  let a, c, opl, tex, uit;
+  for (;;) { a = rndNZ(-4, 4); const s = Math.random();
+    if (s < 0.65) { const r = rnd(1, 6); c = -a * r * r; opl = [-r, r]; }
+    else if (s < 0.85) { const r = rnd(1, 5); c = a * r * r; opl = []; }
+    else { const q = kies([2, 3, 5, 6, 7]); c = -a * q; opl = [-Math.sqrt(q), Math.sqrt(q)]; }
+    if (!verboden(a, 0, c)) break; }
+  const rhs = -c / a;
+  uit = `<span class="opl">${M(G(a) + 'x^2 = ' + G(-c))}</span><br><span class="opl">${M('x^2 = ' + G(rhs))}</span><br><span class="opl">${M(opl.length ? 'x = \\pm' + (Number.isInteger(Math.sqrt(rhs)) ? Math.sqrt(rhs) : '\\sqrt{' + rhs + '}') + ',\\ V = \\{' + (Number.isInteger(Math.sqrt(rhs)) ? -Math.sqrt(rhs) + ',\\ ' + Math.sqrt(rhs) : '-\\sqrt{' + rhs + '},\\ \\sqrt{' + rhs + '}') + '\\}' : '\\text{geen oplossingen},\\ V = \\varnothing')}</span>`;
+  return { vorm: 'invul', werkvorm: 'Oplossen', vraag: `Los op met de meest aangewezen methode: ${M(pol(a, 0, c) + ' = 0')}` + (opl.length && !Number.isInteger(opl[1]) ? '<br><small>Een wortel typ je zo: √3 (of v3).</small>' : ''),
+    regels: ['{0}'], velden: [{ soort: 'opl', antw: opl, extra: { metWortel: true, r: Math.sqrt(Math.abs(c)) } }],
+    hint: 'Breng c naar rechts, deel door a. Is het rechterlid positief: x = ± de wortel. Negatief: geen oplossingen.', uitleg: uit };
+});
+gen('ov_type3', 'Los op: ax² + bx = 0', () => {
+  let a, b; do { a = rndNZ(-5, 5); const r = rndNZ(-6, 6); b = -a * r; if (Math.random() < 0.3) { b = rndNZ(-9, 9); } } while (!Number.isInteger(-b / a * 2) || verboden(a, b, 0) || b === 0);
+  const r = -b / a;
+  return { vorm: 'invul', werkvorm: 'Oplossen', vraag: `Los op met de meest aangewezen methode: ${M(pol(a, b, 0) + ' = 0')}`,
+    regels: ['{0}'], velden: [{ soort: 'opl', antw: [0, r], extra: { type3: true, a, b } }],
+    hint: 'Zet x buiten haakjes: x(ax + b) = 0. Een product is 0 als één van de factoren 0 is: splits in twee gevallen.',
+    uitleg: `<span class="opl">${M('x' + (a < 0 ? '\\cdot' : '') + '(' + pol(0, a, b) + ') = 0')}</span><br><span class="opl">${M('\\swarrow x = 0')} &nbsp; ${M('\\searrow ' + pol(0, a, b) + ' = 0,\\ x = ' + F(r))}</span><br><span class="opl">${M(oplTeX([0, r]))}</span>` };
+});
+gen('ov_type4', 'Los op: a(x − p)² + k = 0', () => {
+  let a, p, k, opl;
+  for (;;) { a = kies([-3, -2, -1, 1, 2, 3]); p = rndNZ(-5, 5); const r = rnd(1, 4);
+    if (Math.random() < 0.8) { k = -a * r * r; opl = [p - r, p + r]; } else { k = a * r * r; opl = []; }
+    if (!verboden(a, -2 * a * p, a * p * p + k)) break; }
+  const rhs = -k / a, r = Math.sqrt(Math.abs(rhs));
+  return { vorm: 'invul', werkvorm: 'Oplossen', vraag: `Los op met de meest aangewezen methode: ${M(pk(a, p, k, G) + ' = 0')}`,
+    regels: ['{0}'], velden: [{ soort: 'opl', antw: opl, extra: { type4: true, p, r } }],
+    hint: 'Breng k naar rechts en deel door a: (x − p)² = getal. Positief? Splits: x − p = −√ of x − p = +√.',
+    uitleg: opl.length ? `<span class="opl">${M(F(a) + xmin(p) + '^2 = ' + G(-k))}</span><br><span class="opl">${M(xmin(p) + '^2 = ' + G(rhs))}</span><br><span class="opl">${M('\\swarrow ' + xmin(p).replace(/[()]/g, '') + ' = -' + r + ',\\ x = ' + (p - r))} &nbsp; ${M('\\searrow ' + xmin(p).replace(/[()]/g, '') + ' = ' + r + ',\\ x = ' + (p + r))}</span><br><span class="opl">${M(oplTeX(opl))}</span>`
+      : `<span class="opl">${M(xmin(p) + '^2 = ' + G(rhs))}</span>: een kwadraat kan niet negatief zijn, <span class="opl">${M(oplTeX([]))}</span>` };
+});
+gen('ov_fout', 'Zoek de fout (onvolledig)', () => {
+  const s = rnd(0, 4); let vgl, r, lijn, reden;
+  const R = ['De oplossing x = 0 is vergeten (splitsen in twee gevallen).', 'De negatieve oplossing is vergeten.', 'Een kwadraat kan niet negatief zijn: er zijn geen oplossingen.', 'Bij het overbrengen van p klopt het teken niet.', 'Er is niet eerst door a gedeeld voor de wortel.'];
+  if (s === 0) { const a = rnd(2, 5), m = rnd(1, 6) * a; vgl = `${a}x^2 - ${m}x = 0`; r = [`x(${a}x - ${m}) = 0`, `${a}x - ${m} = 0`, `x = ${m / a}`, `V = \\{${m / a}\\}`]; lijn = 1; reden = 0; }
+  else if (s === 1) { const a = rnd(2, 4), q = rnd(2, 6); vgl = `${a}x^2 - ${a * q * q} = 0`; r = [`${a}x^2 = ${a * q * q}`, `x^2 = ${q * q}`, `x = ${q}`, `V = \\{${q}\\}`]; lijn = 2; reden = 1; }
+  else if (s === 2) { const a = rnd(2, 4), q = rnd(2, 5); vgl = `${a}x^2 + ${a * q * q} = 0`; r = [`${a}x^2 = -${a * q * q}`, `x^2 = -${q * q}`, `x = \\pm ${q}`, `V = \\{-${q},\\ ${q}\\}`]; lijn = 2; reden = 2; }
+  else if (s === 3) { const p = rnd(1, 5), q = rnd(1, 4), a = rnd(2, 3); vgl = `${a}(x + ${p})^2 - ${a * q * q} = 0`; r = [`${a}(x + ${p})^2 = ${a * q * q}`, `(x + ${p})^2 = ${q * q}`, `x + ${p} = -${q}\\ \\text{ of }\\ x + ${p} = ${q}`, `x = ${p - q}\\ \\text{ of }\\ x = ${p + q}`, `V = \\{${Math.min(p - q, p + q)},\\ ${Math.max(p - q, p + q)}\\}`]; lijn = 3; reden = 3; }
+  else { const a = rnd(2, 3), q = rnd(2, 4); vgl = `${a}x^2 - ${a * q * q} = 0`; r = [`${a}x^2 = ${a * q * q}`, `x = \\pm\\sqrt{${a * q * q}}`, `V = \\{-\\sqrt{${a * q * q}},\\ \\sqrt{${a * q * q}}\\}`]; lijn = 1; reden = 4; }
+  return { vorm: 'fout', werkvorm: 'Fout zoeken', vraag: `Een leerling loste ${M(vgl)} op. Tik de regel met de <b>eerste</b> fout aan en kies wat er misloopt.`,
+    regels: r.map(x => M(x)), foutRegel: lijn, redenen: R, juisteReden: reden, uitleg: R[reden] };
+});
+
+/* ---------- H3: discriminant ---------- */
+function volledigeVgl() {
+  for (;;) { const s = Math.random(); let a, b, c, opl;
+    if (s < 0.6) { a = kies([1, 1, 2, -1, 3]); let r1 = rnd(-6, 6), r2 = rnd(-6, 6); if (a === 2 && Math.random() < 0.5) r2 = rndNZ(-5, 5) / 2; if (r1 === r2) continue; b = -a * (r1 + r2); c = a * r1 * r2; opl = [r1, r2]; }
+    else if (s < 0.8) { a = kies([1, 2, -1]); const r = rndNZ(-5, 5); b = -2 * a * r; c = a * r * r; opl = [r]; }
+    else { a = kies([1, 2, -1, 3]); const p = rnd(-3, 3), k = a * rnd(1, 5); b = -2 * a * p; c = a * p * p + k; opl = []; }
+    if (!Number.isInteger(b) || !Number.isInteger(c) || b === 0 || c === 0 || verboden(a, b, c) || Math.abs(b) > 20 || Math.abs(c) > 40) continue;
+    return { a, b, c, D: b * b - 4 * a * c, opl: [...new Set(opl)] }; } }
+gen('vk_discriminant', 'Kijk en verklaar: de discriminant', () => {
+  let v; do { v = volledigeVgl(); } while (v.opl.length !== 2);
+  const [x1, x2] = [(-v.b + Math.sqrt(v.D)) / (2 * v.a), (-v.b - Math.sqrt(v.D)) / (2 * v.a)];
+  const st = [
+    { h: M(`a = ${G(v.a)},\\ b = ${G(v.b)},\\ c = ${G(v.c)}`), v: `Waarom noteer je eerst ${M('a, b')} en ${M('c')}?`,
+      o: [{ h: 'Die heb je nodig om in te vullen in de formule van D. Zo vergeet je geen teken.', ok: true }, { h: 'Om te zien of het een functie is.', tip: 'Het is al een vergelijking.' }, { h: 'Dat moet niet, het is versiering.', tip: 'Het helpt fouten met tekens te vermijden.' }] },
+    { h: M(`D = b^2 - 4ac = ${haak(v.b)}^2 - 4\\cdot ${haak(v.a)}\\cdot ${haak(v.c)}`), v: 'Waarom staan er haakjes rond negatieve getallen?',
+      o: [{ h: `Anders reken je bv. ${M('-3^2 = -9')} in plaats van ${M('(-3)^2 = 9')}.`, ok: true }, { h: 'Haakjes zijn altijd verplicht.', tip: 'Rond positieve getallen hoeven ze niet.' }, { h: 'Om de vergelijking mooier te maken.', tip: 'Het gaat om juist rekenen met mintekens.' }] },
+    { h: M(`D = ${v.D}`) },
+    { h: M(`D > 0`) + ': twee oplossingen', v: 'Waarom twee oplossingen?',
+      o: [{ h: `Want ${M('\\sqrt{D}')} bestaat en is niet 0: je krijgt een ${M('+')} en een ${M('-')} versie.`, ok: true }, { h: 'Omdat a positief is.', tip: 'Het teken van a zegt niets over het aantal oplossingen.' }, { h: 'Een tweedegraadsvergelijking heeft altijd twee oplossingen.', tip: 'Niet altijd: bij D = 0 één, bij D < 0 geen.' }] },
+    { h: M(`x_1 = \\dfrac{-b + \\sqrt{D}}{2a} = \\dfrac{${G(-v.b)} + ${Math.sqrt(v.D)}}{${2 * v.a}} = ${F(x1)}`) },
+    { h: M(`x_2 = \\dfrac{-b - \\sqrt{D}}{2a} = \\dfrac{${G(-v.b)} - ${Math.sqrt(v.D)}}{${2 * v.a}} = ${F(x2)}`), v: `Waarom staat er ${M(G(-v.b))} in de teller?`,
+      o: [{ h: `${M('-b')} is het tegengestelde van ${M('b = ' + G(v.b))}.`, ok: true }, { h: `Omdat ${M('b')} altijd negatief is.`, tip: 'b kan positief of negatief zijn; −b is altijd het tegengestelde.' }, { h: 'Het is een fout.', tip: 'Nee: −b betekent het tegengestelde van b.' }] },
+    { h: M(oplTeX(v.opl)) },
+  ];
+  return { vorm: 'verklaar', werkvorm: 'Kijk en verklaar', vraag: `Los op: ${M(pol(v.a, v.b, v.c) + ' = 0')}. Bekijk de uitwerking stap voor stap en verklaar.`, stappen: st, uitleg: 'Stappenplan: a, b, c → D → aantal oplossingen → x₁ en x₂ → V.' };
+}, { ex: false });
+gen('di_los', 'Los op met de discriminant', () => {
+  const v = volledigeVgl();
+  return { vorm: 'invul', werkvorm: 'Oplossen', vraag: `Los op: ${M(pol(v.a, v.b, v.c) + ' = 0')}`,
+    regels: [`${M('D = b^2 - 4ac =')} {0}`, `aantal oplossingen: {1}`, '{2}'],
+    velden: [{ soort: 'getal', antw: v.D, fouten: [{ w: v.b * v.b + 4 * v.a * v.c, code: 'teken_4ac', tip: 'Let op het teken bij − 4ac, zeker als a of c negatief is.' }, { w: -v.b * v.b - 4 * v.a * v.c, code: 'kwadraat_b', tip: 'b² is altijd positief: (−5)² = 25.' }, { w: v.b * v.b - 2 * v.a * v.c, code: 'formule_D', tip: 'De formule is b² − 4ac (4, niet 2).' }] },
+      { soort: 'keuze', opties: ['twee', 'één', 'geen'], antw: v.D > 0 ? 0 : v.D === 0 ? 1 : 2 }, { soort: 'opl', antw: v.opl }],
+    hint: 'Noteer eerst a, b en c. D > 0: twee oplossingen, D = 0: één, D < 0: geen. x = (−b ± √D) / (2a).',
+    uitleg: `<span class="opl">${M('a = ' + G(v.a) + ',\\ b = ' + G(v.b) + ',\\ c = ' + G(v.c))}</span><br><span class="opl">${M('D = ' + haak(v.b) + '^2 - 4\\cdot ' + haak(v.a) + '\\cdot ' + haak(v.c) + ' = ' + v.D)}</span><br><span class="opl">${M(oplTeX(v.opl))}</span>` };
+});
+gen('di_orden', 'Stappenplan discriminant', () => {
+  let v; do { v = volledigeVgl(); } while (v.opl.length !== 2);
+  const x1 = (-v.b + Math.sqrt(v.D)) / (2 * v.a), x2 = (-v.b - Math.sqrt(v.D)) / (2 * v.a);
+  const r = [`a = ${G(v.a)},\\ b = ${G(v.b)},\\ c = ${G(v.c)}`, `D = ${haak(v.b)}^2 - 4\\cdot ${haak(v.a)}\\cdot ${haak(v.c)}`, `D = ${v.D} > 0:\\ \\text{twee oplossingen}`,
+    `x_1 = \\dfrac{${G(-v.b)} + ${Math.sqrt(v.D)}}{${2 * v.a}} = ${F(x1)}`, `x_2 = \\dfrac{${G(-v.b)} - ${Math.sqrt(v.D)}}{${2 * v.a}} = ${F(x2)}`, oplTeX(v.opl)];
+  return { vorm: 'orden', werkvorm: 'Stappen ordenen', vraag: `Zet de oplossing van ${M(pol(v.a, v.b, v.c) + ' = 0')} in de juiste volgorde.`, stappen: r.map(x => M(x)), vast: 0,
+    hint: 'a, b, c → D → aantal → x₁ → x₂ → V.', uitleg: 'Zo ziet een volledige oplossing eruit.' };
+});
+gen('di_fout', 'Zoek de fout (discriminant)', () => {
+  let v; do { v = volledigeVgl(); } while (v.opl.length !== 2 || (v.b > 0 && v.c > 0 && v.a > 0));
+  const s = rnd(0, 2); const R = [`${M('b^2')} is fout berekend: het kwadraat van een negatief getal is positief.`, `Het teken bij ${M('-4ac')} is fout.`, `Er is gedeeld door ${M('a')} in plaats van door ${M('2a')}.`];
+  let r, lijn, reden;
+  const goedD = `D = ${haak(v.b)}^2 - 4\\cdot ${haak(v.a)}\\cdot ${haak(v.c)}`;
+  if (s === 0 && v.b < 0) { const Df = -v.b * v.b - 4 * v.a * v.c; r = [`a = ${G(v.a)},\\ b = ${G(v.b)},\\ c = ${G(v.c)}`, goedD, `D = ${-v.b * v.b} ${-4 * v.a * v.c < 0 ? '-' : '+'} ${Math.abs(4 * v.a * v.c)} = ${Df}`, Df < 0 ? `\\text{geen oplossingen}` : `\\ldots`]; lijn = 2; reden = 0; }
+  else if (s <= 1) { const Df = v.b * v.b + 4 * v.a * v.c; r = [`a = ${G(v.a)},\\ b = ${G(v.b)},\\ c = ${G(v.c)}`, goedD, `D = ${v.b * v.b} ${4 * v.a * v.c < 0 ? '-' : '+'} ${Math.abs(4 * v.a * v.c)} = ${Df}`, `\\ldots`]; lijn = 2; reden = 1; }
+  else { const sq = Math.sqrt(v.D); r = [`a = ${G(v.a)},\\ b = ${G(v.b)},\\ c = ${G(v.c)}`, goedD, `D = ${v.D}`, `x_1 = \\dfrac{${G(-v.b)} + ${sq}}{${G(v.a)}} = ${F((-v.b + sq) / v.a)}`, `x_2 = \\dfrac{${G(-v.b)} - ${sq}}{${G(v.a)}} = ${F((-v.b - sq) / v.a)}`]; lijn = 3; reden = 2; }
+  return { vorm: 'fout', werkvorm: 'Fout zoeken', vraag: `Een leerling loste ${M(pol(v.a, v.b, v.c) + ' = 0')} op. Tik de regel met de <b>eerste</b> fout aan en kies wat er misloopt.`,
+    regels: r.map(x => M(x)), foutRegel: lijn, redenen: R, juisteReden: reden, uitleg: `Juist: ${M('D = ' + v.D)} en ${M(oplTeX(v.opl))}.` };
+});
+
+/* ---------- H3: aantal nulwaarden zonder rekenen ---------- */
+gen('an_redeneer', 'Aantal nulwaarden zonder rekenen', () => {
+  const a = kies(A_WAARDEN), p = rnd(-4, 4), k = kies([-4, -3, -2, -1, 0, 1, 2, 3, 4]);
+  const n = k === 0 ? 1 : (a > 0) === (k < 0) ? 2 : 0;
+  const redenen = ['dalparabool met de top onder de x-as', 'dalparabool met de top boven de x-as', 'bergparabool met de top boven de x-as', 'bergparabool met de top onder de x-as', 'de top ligt op de x-as'];
+  const juist = k === 0 ? 4 : a > 0 ? (k < 0 ? 0 : 1) : (k > 0 ? 2 : 3);
+  return { vorm: 'invul', werkvorm: 'Redeneren', vraag: `Hoeveel nulwaarden heeft ${M('f(x) = ' + pk(a, p, k))}? Reken niet: redeneer met de top en het soort parabool.`,
+    regels: ['aantal nulwaarden: {0}', 'want het is een {1}'], velden: [{ soort: 'keuze', opties: ['0', '1', '2'], antw: n }, { soort: 'keuze', opties: redenen, antw: juist }],
+    hint: 'Teken een kleine schets: waar ligt de top T(p, k)? Gaat de parabool naar boven of naar onder open?',
+    uitleg: `Top ${M('T(' + G(p) + ',\\ ' + G(k) + ')')}, ${redenen[juist]}: ${n} nulwaarde${n === 1 ? '' : 'n'}.<div class="figuur">${grafiek({ xmin: -6, xmax: 6, ymin: -6, ymax: 6, w: 200, krommen: [{ f: x => a * (x - p) * (x - p) + k }] })}</div>` };
+});
+gen('an_koppel', 'Koppel parabool en tekentabel', () => {
+  const gevallen = [[1, -1.2, ['+', '0', '−', '0', '+']], [1, 0, ['+', '0', '+']], [1, 1, ['+']], [-1, 1.2, ['−', '0', '+', '0', '−']], [-1, 0, ['−', '0', '−']], [-1, -1, ['−']]];
+  const g = schud(gevallen).slice(0, 4);
+  const tab = t => t.length === 5 ? statTeken(['x_1', 'x_2'], t) : t.length === 3 ? statTeken(['x_1'], t) : statTeken([], t);
+  return { vorm: 'koppel', werkvorm: 'Koppelen', vraag: 'Koppel elke parabool aan de juiste tekentabel.', links: g.map(c => schetsParabool(c[0], c[1], 110)), rechts: g.map(c => tab(c[2])),
+    hint: 'Tel eerst de snijpunten met de x-as (nulwaarden). Ligt de grafiek daarbuiten boven (+) of onder (−) de x-as?', uitleg: 'Dalparabool: + buiten de nulwaarden. Bergparabool: − buiten de nulwaarden.' };
+});
+
+/* ---------- H3: snijpunten met de assen ---------- */
+gen('sn_assen', 'Snijpunten met de assen', () => {
+  const v = volledigeVgl();
+  return { vorm: 'invul', werkvorm: 'Berekenen', vraag: `Bereken de snijpunten van de grafiek van ${M('f(x) = ' + pol(v.a, v.b, v.c))} met de assen.`,
+    regels: [`met de ${M('x')}-as: los ${M('f(x) = 0')} op. De ${M('x')}-waarden van de snijpunten: {0}`, `met de ${M('y')}-as: ${M('S_y(0,')} {1}${M(')')}`],
+    velden: [{ soort: 'opl', antw: v.opl, geenTekst: 'geen snijpunten met de x-as' }, { soort: 'getal', antw: v.c, fouten: [{ w: 0, code: 'sy', tip: 'Vul x = 0 in: f(0) = c.' }] }],
+    hint: 'x-as: y = 0, dus f(x) = 0 oplossen (discriminant). y-as: x = 0, dus f(0) = c.',
+    uitleg: (v.opl.length ? 'Snijpunten met de x-as: ' + v.opl.map((x, i) => M('S_{x' + (v.opl.length > 1 ? i + 1 : '') + '}(' + F(x) + ',\\ 0)')).join(' en ') : 'Geen snijpunten met de x-as (D < 0).') + ` Met de y-as: ${M('S_y(0,\\ ' + G(v.c) + ')')}.` };
+});
+
+/* ---------- H3: tekentabel en verloopschema van een parabool ---------- */
+gen('tb_teken', 'Tekentabel van een parabool', () => {
+  const v = volledigeVgl(); const opl = v.opl.slice().sort((x, y) => x - y);
+  const buiten = v.a > 0 ? '+' : '−', binnen = v.a > 0 ? '−' : '+';
+  const tekens = opl.length === 2 ? [buiten, '0', binnen, '0', buiten] : opl.length === 1 ? [buiten, '0', buiten] : [buiten];
+  return { vorm: 'tabel', werkvorm: 'Tabel invullen', vraag: `Stel de tekentabel op van ${M('f(x) = ' + pol(v.a, v.b, v.c))}. Bereken eerst de nulwaarden (op papier), tik ze in en klik de tekens aan.` + (opl.length ? '' : ''),
+    soort: 'teken', xs: opl, xsInvul: true, tekens, nulKeuze: true,
+    hint: 'Nulwaarden: los f(x) = 0 op. Dalparabool (a > 0): + buiten de nulwaarden. Bergparabool: − buiten de nulwaarden.',
+    uitleg: `Nulwaarden: ${opl.length ? opl.map(F).map(M).join(' en ') : 'geen'} (${M('D = ' + v.D)}). ` + statTeken(opl.map(F), tekens) };
+});
+gen('tb_verloop', 'Verloopschema van een parabool', () => {
+  const t = stdMetTop();
+  return { vorm: 'tabel', werkvorm: 'Tabel invullen', vraag: `Stel het verloopschema op van ${M('f(x) = ' + pol(t.a, t.b, t.c))}. Bereken de top op papier.`,
+    soort: 'verloop', kolommen: [{ t: 'i', pijl: t.a > 0 ? '↘' : '↗' }, { t: 'p', x: t.p, y: t.k, lab: t.a > 0 ? 'MIN' : 'MAX', xInvul: true }, { t: 'i', pijl: t.a > 0 ? '↗' : '↘' }],
+    hint: 'x_T = −b/(2a), y_T = f(x_T). Dalparabool: eerst dalen, dan stijgen (MIN).',
+    uitleg: `${M('x_T = \\frac{-' + haak(t.b) + '}{2\\cdot ' + haak(t.a) + '} = ' + G(t.p))}, ${M('y_T = ' + G(t.k))}, ${t.a > 0 ? 'dalparabool: ↘ MIN ↗' : 'bergparabool: ↗ MAX ↘'}.` };
+});
+
+/* ---------- H3: vraagstukken ---------- */
+const VERTAAL = [
+  ['Hoe hoog is de bal bij de start?', 'f(0) berekenen'],
+  ['Wat is de grootste hoogte?', 'de y-coördinaat van de top'],
+  ['Op welke afstand is de bal het hoogst?', 'de x-coördinaat van de top: −b/(2a)'],
+  ['Waar raakt de bal de grond?', 'f(x) = 0 oplossen'],
+  ['Wanneer is de bal 2 m hoog?', 'f(x) = 2 oplossen'],
+  ['Welke x-waarden hebben zin?', 'het praktische domein'],
+];
+gen('vr_vertaal', 'Vertaal de vraag', () => {
+  const v = schud(VERTAAL).slice(0, 5);
+  return { vorm: 'koppel', werkvorm: 'Koppelen', vraag: `Een bal volgt de baan ${M('h(x) = ax^2 + bx + c')}. Koppel elke vraag aan wat je wiskundig moet doen.`,
+    links: v.map(x => x[0]), rechts: v.map(x => x[1]), hint: 'Hoogte = y, afstand = x. Grond = hoogte 0.', uitleg: 'Vertaal eerst de vraag, reken daarna.' };
+});
+gen('vr_context', 'Vraagstuk met een parabool', () => {
+  const s = kies(['straal', 'boog']);
+  if (s === 'straal') {
+    let r1, r2, a; for (;;) { a = kies([-1, -0.5]); r1 = -rnd(1, 4); r2 = rnd(4, 9); if ((r1 + r2) % 2 !== 0) continue; const h = (r2 - r1) / 2; if (a === -0.5 && h % 2 !== 0) continue; if (verboden(a, -a * (r1 + r2), a * r1 * r2)) continue; break; }
+    const b = -a * (r1 + r2), c = a * r1 * r2, xT = (r1 + r2) / 2, yT = a * (xT - r1) * (xT - r2);
+    return { vorm: 'invul', werkvorm: 'Vraagstuk', vraag: `Een waterstraal van een sproeier in een houtzagerij volgt de baan ${M('h(x) = ' + pol(a, b, c))} (${M('x')} = horizontale afstand in m, ${M('h')} = hoogte in m).`,
+      figuur: grafiek({ xmin: -1, xmax: r2 + 1, ymin: -1, ymax: Math.ceil(yT) + 1, w: 300, krommen: [{ f: x => a * (x - r1) * (x - r2), van: 0, tot: r2 }] }),
+      regels: [`Op welke hoogte vertrekt de straal? {0} m`, `Hoe ver van de sproeier is de straal het hoogst? {1} m`, `Wat is de grootste hoogte? {2} m`, `Op welke afstand komt de straal op de grond? {3} m`, `praktisch domein: {4}`],
+      velden: [{ soort: 'getal', antw: c }, { soort: 'getal', antw: xT, fouten: [{ w: -xT, code: 'min_b', tip: '−b: het tegengestelde van b.' }] }, { soort: 'getal', antw: yT }, { soort: 'getal', antw: r2, fouten: [{ w: r1, code: 'praktisch', tip: 'Die nulwaarde ligt achter de sproeier: die heeft geen zin.' }] }, { soort: 'interval', antw: { l: '[', a: 0, b: r2, r: ']' } }],
+      hint: 'Start: h(0). Hoogste punt: de top (x_T = −b/(2a), y_T = h(x_T)). Grond: h(x) = 0 oplossen (alleen de positieve oplossing heeft zin).',
+      uitleg: `Start: ${M('h(0) = ' + G(c))} m. Top: ${M('x_T = ' + G(xT))} m, ${M('y_T = ' + G(yT))} m. Grond: ${M('h(x) = 0')} geeft ${M('x = ' + r1)} (geen zin) of ${M('x = ' + r2)}: na ${r2} m. Praktisch domein ${M('[0,\\ ' + r2 + ']')}.` };
+  }
+  let w, a; for (;;) { w = kies([4, 6, 8]); a = kies([-0.5, -1, -0.25]); const yT = -a * (w / 2) * (w / 2); if (!Number.isInteger(yT) || yT > 9 || yT < 2) continue; if (verboden(a, a * -w, 0)) continue; break; }
+  const b = -a * w, xT = w / 2, yT = a * xT * (xT - w), x1 = 1, y1 = a * x1 * (x1 - w);
+  return { vorm: 'invul', werkvorm: 'Vraagstuk', vraag: `Een schrijnwerker maakt een houten boog voor een poort. De boog volgt ${M('h(x) = ' + pol(a, b, 0))} (${M('x')} en ${M('h')} in dm). De boog staat met beide voeten op de grond.`,
+    figuur: grafiek({ xmin: -1, xmax: w + 1, ymin: -1, ymax: yT + 1, w: 280, krommen: [{ f: x => a * x * (x - w), van: 0, tot: w, kleur: '#92400e' }] }),
+    regels: [`Hoe breed is de boog? {0} dm`, `Hoe hoog is de boog in het midden? {1} dm`, `Hoe hoog is de boog op 1 dm van de linkervoet? {2} dm`, `praktisch bereik: {3}`],
+    velden: [{ soort: 'getal', antw: w }, { soort: 'getal', antw: yT }, { soort: 'getal', antw: y1 }, { soort: 'interval', antw: { l: '[', a: 0, b: yT, r: ']' } }],
+    hint: 'Breedte = afstand tussen de nulwaarden (los h(x) = 0 op: x buiten haakjes!). Het midden is de top. Op 1 dm: bereken h(1).',
+    uitleg: `${M('h(x) = 0')}: ${M('x = 0')} of ${M('x = ' + w)}, breedte ${w} dm. Top in ${M('x = ' + xT)}: ${M('h(' + xT + ') = ' + G(yT))} dm. ${M('h(1) = ' + G(y1))} dm. Praktisch bereik ${M('[0,\\ ' + G(yT) + ']')}.` };
+});
+
+/* =====================================================================
+   OPSLAG (per leerlingcode in deze browser)
+   ===================================================================== */
+const ST = { scherm: 'start', doel: null, sessie: null };
+function opslagSleutel() { let c = ''; try { c = (typeof leerlingCode === 'function' ? leerlingCode() : '') || ''; } catch (e) { } return 'rf5du_v1_' + (c || 'anon'); }
+function laadV() { try { const v = JSON.parse(localStorage.getItem(opslagSleutel()) || 'null'); if (v && v.doelen) return v; } catch (e) { } return { doelen: {}, fouten: {}, zelf: {} }; }
+function bewaarV() { try { localStorage.setItem(opslagSleutel(), JSON.stringify(ST.v)); } catch (e) { } }
+ST.v = laadV();
+function resultatenDoel(id) { return ST.v.doelen[id] || []; }
+function beheerst(id) { const r = resultatenDoel(id).slice(-5); return r.length >= 4 && r.filter(Boolean).length >= 4; }
+function registreer(doel, genId, ok) {
+  const r = ST.v.doelen[doel] = (ST.v.doelen[doel] || []); r.push(!!ok); if (r.length > 12) r.splice(0, r.length - 12);
+  if (!ok) ST.v.fouten[genId] = (ST.v.fouten[genId] || 0) + 1; else if (ST.v.fouten[genId]) { ST.v.fouten[genId]--; if (!ST.v.fouten[genId]) delete ST.v.fouten[genId]; }
+  bewaarV();
+}
+const doelVanGen = g => DOELEN.find(d => d.gens.includes(g));
+
+/* =====================================================================
+   SCHERMEN
+   ===================================================================== */
+const scherm = () => document.getElementById('scherm');
+function bolletjes(id) { const r = resultatenDoel(id).slice(-5); let s = ''; for (let i = 0; i < 5; i++) s += `<span class="bol ${i < r.length ? (r[i] ? 'j' : 'f') : ''}"></span>`; return `<span class="bolletjes" title="laatste 5 oefeningen">${s}</span>`; }
+function toonStart() {
+  ST.scherm = 'start'; ST.doel = null; ST.v = laadV();
+  const aantalFout = Object.keys(ST.v.fouten).length;
+  const zwak = DOELEN.filter(d => !beheerst(d.id)).sort((a, b) => (ST.v.zelf[a.id] || 2) - (ST.v.zelf[b.id] || 2) || resultatenDoel(a.id).length - resultatenDoel(b.id).length)[0];
+  let h = `<h1>Reële functies</h1><p class="sub">Leerstof voor het kerstexamen. Lees per leerdoel de leerkaart en oefen met telkens andere werkvormen. Groene bolletjes = meteen juist.</p>`;
+  h += `<div class="kaart ex"><div class="rij" style="justify-content:space-between"><div><h2 style="margin:0">Examentraining</h2><div class="sub" style="margin:4px 0 0">12 vragen door elkaar uit alle hoofdstukken, zoals op het examen. Met een rapport als pdf.</div></div>
+    <div class="rij"><button class="knop rood" onclick="startSessie('examen')">Start examentraining</button>${aantalFout ? `<button class="knop licht" onclick="startSessie('fouten')">Herhaal mijn fouten (${aantalFout})</button>` : ''}</div></div>
+    ${zwak ? `<div class="advies" style="margin-top:12px">💡 <b>Volgende stap:</b> ${esc(zwak.naam)}. <button class="knop klein" onclick="toonLeerkaart('${zwak.id}')">Begin hier</button></div>` : '<div class="advies" style="margin-top:12px">🎉 Je beheerst alle leerdoelen. Doe nog een examentraining!</div>'}</div>`;
+  h += '<div class="start-grid">';
+  HOOFDSTUKKEN.forEach(hs => {
+    h += `<div class="kaart ${hs.kleur}"><div class="rij" style="justify-content:space-between"><span class="badge ${hs.kleur}">Hoofdstuk ${hs.nr}</span><button class="knop klein licht" onclick="startSessie('hoofdstuk','${hs.id}')">Gemengd oefenen</button></div><h2 style="margin-top:8px">${hs.naam}</h2>`;
+    DOELEN.filter(d => d.h === hs.id).forEach(d => {
+      const z = ST.v.zelf[d.id] || 0;
+      h += `<div class="doel"><div class="tekst"><div class="naam">${esc(d.naam)}${beheerst(d.id) ? '<span class="beheerst">✓ beheerst</span>' : ''}</div><div class="kan">${esc(d.kan)}</div>
+        <div>${bolletjes(d.id)}</div><div class="zelf"><span class="lbl">Ik kan dit:</span>${['😕', '🙂', '😀'].map((e, i) => `<button title="${['nog niet', 'een beetje', 'goed'][i]}" class="${z === i + 1 ? 'aan' : ''}" onclick="zetZelf('${d.id}',${i + 1})">${e}</button>`).join('')}</div></div>
+        <div class="knoppen"><button class="knop klein licht" onclick="toonLeerkaart('${d.id}')">Leerkaart</button><button class="knop klein" onclick="startSessie('doel','${d.id}')">Oefen</button></div></div>`;
+    });
+    h += '</div>';
+  });
+  h += '</div>';
+  scherm().innerHTML = h; window.scrollTo(0, 0);
+}
+function zetZelf(id, n) { ST.v.zelf[id] = n; bewaarV(); toonStart(); }
+function toonLeerkaart(id) {
+  const d = doelVan(id), hs = HOOFDSTUKKEN.find(x => x.id === d.h); ST.scherm = 'leerkaart'; ST.doel = id;
+  scherm().innerHTML = `<div class="topbalk"><button class="knop licht" onclick="toonStart()">← Overzicht</button><span class="badge ${hs.kleur}">Hoofdstuk ${hs.nr}</span></div>
+    <div class="kaart ${hs.kleur} leerkaart"><h2>Leerkaart: ${esc(d.naam)}</h2><p class="sub">${esc(d.kan)}</p>${leerkaart(id)}
+    <div class="acties"><button class="knop" onclick="startSessie('doel','${id}')">Oefen dit leerdoel</button><button class="knop licht" onclick="toonStart()">Terug</button></div></div>`;
+  window.scrollTo(0, 0);
+}
+
+/* ---------------- sessies ---------------- */
+function maakItem(genId) { for (let i = 0; i < 20; i++) { try { const it = GEN[genId].maak(); if (it) { it.gen = genId; it.doel = doelVanGen(genId).id; return it; } } catch (e) { console.error('Generator', genId, e); } } return null; }
+function startSessie(modus, id) {
+  let gens = [], n = 6, titel = '', kleur = 'h2';
+  if (modus === 'doel') { const d = doelVan(id); titel = d.naam; kleur = d.h; const g = d.gens; n = Math.max(5, g.length + 2); for (let i = 0; gens.length < n; i++) { if (i % g.length === 0) gens.push(...schud(g)); } gens = gens.slice(0, n); }
+  else if (modus === 'hoofdstuk') { const hs = HOOFDSTUKKEN.find(x => x.id === id); titel = 'Gemengd: ' + hs.naam; kleur = id; n = 8; const pool = DOELEN.filter(d => d.h === id).map(d => d.gens.filter(g => GEN[g].ex)); gens = schud(pool).slice(0, n).map(p => kies(p)); while (gens.length < n) gens.push(kies(kies(pool))); gens = schud(gens); }
+  else if (modus === 'examen') { titel = 'Examentraining'; kleur = 'ex'; n = 12; const per = HOOFDSTUKKEN.map(hs => schud(DOELEN.filter(d => d.h === hs.id)));
+    const verdeling = [4, 4, 4]; per.forEach((ds, i) => { for (let j = 0; j < verdeling[i]; j++) { const d = ds[j % ds.length]; gens.push(kies(d.gens.filter(g => GEN[g].ex))); } }); gens = schud(gens); }
+  else if (modus === 'fouten') { titel = 'Herhaal mijn fouten'; kleur = 'h3'; gens = schud(Object.keys(ST.v.fouten).filter(g => GEN[g])).slice(0, 8); n = gens.length; if (!n) { toonStart(); return; } }
+  const items = gens.map(maakItem).filter(Boolean);
+  ST.sessie = { modus, id, titel, kleur, items, i: 0, start: Date.now() }; ST.scherm = 'oefenen';
+  toonItem();
+}
+function toonItem() {
+  const s = ST.sessie, it = s.items[s.i]; it.pog = 0; it.eersteOk = null; it.code = null; it.klaar = false; it.t0 = Date.now();
+  try { if (window.WiskundeTracker) WiskundeTracker.resetOpgaveTimer(); } catch (e) { }
+  const d = doelVan(it.doel), hs = HOOFDSTUKKEN.find(x => x.id === d.h);
+  scherm().innerHTML = `<div class="topbalk"><button class="knop licht" onclick="stopSessie()">← Stoppen</button><span class="badge ${s.kleur}">${esc(s.titel)}</span><span class="sub" style="margin:0">Opdracht ${s.i + 1} van ${s.items.length}</span></div>
+    <div class="voortgang"><div style="width:${100 * s.i / s.items.length}%"></div></div>
+    <div class="kaart ${s.kleur}"><div class="werkvorm">${esc(it.werkvorm || '')} · ${esc(d.naam)}</div><div class="vraag">${it.vraag}</div>${it.figuur ? `<div class="figuur">${it.figuur}</div>` : ''}<div id="werk"></div><div id="fb"></div>
+    <div class="acties" id="acties"></div></div>`;
+  it.r = RENDER[it.vorm](it, document.getElementById('werk'));
+  const ac = document.getElementById('acties');
+  if (it.vorm !== 'verklaar') ac.innerHTML = `<button class="knop" id="controleer">Controleer</button>` + (s.modus !== 'examen' && it.hint ? `<button class="knop licht" id="hintknop">Tip</button>` : '');
+  const ck = document.getElementById('controleer'); if (ck) ck.onclick = controleerItem;
+  const hk = document.getElementById('hintknop'); if (hk) hk.onclick = () => { fb('info', `💡 ${it.hint}`); it.hintGebruikt = true; };
+  window.scrollTo(0, 0);
+}
+function fb(soort, html) { document.getElementById('fb').innerHTML = `<div class="feedback ${soort}">${html}</div>`; }
+function controleerItem() {
+  const s = ST.sessie, it = s.items[s.i]; if (it.klaar) return;
+  const res = it.r.controleer(); if (res.leeg) { fb('info', 'Vul eerst alles in (of maak alle keuzes).'); return; }
+  it.pog++; if (it.eersteOk === null) { it.eersteOk = res.ok; it.code = res.ok ? null : (res.code || 'fout'); }
+  const tips = (res.tips || []).filter(Boolean);
+  if (res.ok) { fb('ok', `<b>✔ Juist!</b>${it.uitleg ? `<div class="uitleg">${it.uitleg}</div>` : ''}`); return rondAf(); }
+  if (s.modus !== 'examen' && it.pog < 2) {
+    fb('nok', `<b>Nog niet helemaal.</b> ${['invul', 'tabel'].includes(it.vorm) ? 'De rode vakjes kloppen niet. ' : ''}Probeer nog eens.${tips.length ? `<div class="pen" style="margin-top:6px">${[...new Set(tips)].join('<br>')}</div>` : ''}${it.hint ? `<div class="uitleg">💡 ${it.hint}</div>` : ''}`);
+    return;
+  }
+  it.r.oplossing && it.r.oplossing();
+  fb('nok', `<b>Dit is de juiste oplossing.</b>${tips.length ? `<div class="pen" style="margin-top:6px">${[...new Set(tips)].join('<br>')}</div>` : ''}${it.uitleg ? `<div class="uitleg">${it.uitleg}</div>` : ''}`);
+  rondAf();
+}
+function rondAf(okVerklaar, codeVerklaar) {
+  const s = ST.sessie, it = s.items[s.i]; if (it.klaar) return; it.klaar = true;
+  if (okVerklaar !== undefined) { it.eersteOk = okVerklaar; it.code = okVerklaar ? null : (codeVerklaar || 'verklaren'); }
+  it.r.vergrendel && it.r.vergrendel();
+  registreer(it.doel, it.gen, it.eersteOk);
+  try { if (typeof portaalLogOpgave === 'function') portaalLogOpgave(!!it.eersteOk, it.doel, it.code, { oef: it.gen, pog: it.pog, hints: it.hintGebruikt ? 1 : 0, m: s.modus.slice(0, 3) }); } catch (e) { }
+  const ac = document.getElementById('acties'); const laatste = s.i === s.items.length - 1;
+  ac.innerHTML = `<button class="knop" id="volgende">${laatste ? 'Klaar: bekijk resultaat' : 'Volgende →'}</button>`;
+  document.getElementById('volgende').onclick = () => { if (laatste) toonEinde(); else { s.i++; toonItem(); } };
+  document.getElementById('volgende').focus();
+}
+function stopSessie() { const s = ST.sessie; if (s && s.items.some(x => x.klaar) && s.modus === 'examen' && !confirm('Stoppen? Je examentraining wordt dan niet afgewerkt.')) return; ST.sessie = null; toonStart(); }
+function toonEinde() {
+  const s = ST.sessie, gedaan = s.items.filter(x => x.klaar), juist = gedaan.filter(x => x.eersteOk).length, pct = Math.round(100 * juist / Math.max(1, gedaan.length));
+  const duur = Math.round((Date.now() - s.start) / 1000);
+  if (s.modus === 'examen') { try { if (typeof portaalLogToets === 'function') portaalLogToets(pct, duur, 'examentraining', { vragen: gedaan.length, juist }); } catch (e) { } }
+  const perDoel = {}; gedaan.forEach(x => { (perDoel[x.doel] = perDoel[x.doel] || []).push(x.eersteOk); });
+  const zwak = Object.keys(perDoel).filter(d => perDoel[d].some(v => !v));
+  let h = `<div class="kaart ${s.kleur}" id="rapport"><h2>${esc(s.titel)}: resultaat</h2>
+    <div class="rij" style="gap:24px"><div class="grote-score">${juist}/${gedaan.length}</div><div>meteen juist (${pct} %)<br><span class="sub">${new Date().toLocaleString('nl-BE')}${(typeof leerlingCode === 'function' && leerlingCode()) ? ' · code ' + esc(leerlingCode()) : ''}</span></div></div>
+    <table class="resultaat" style="margin-top:12px"><tr><th>#</th><th>Opdracht</th><th>Leerdoel</th><th>Resultaat</th></tr>
+    ${gedaan.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(GEN[x.gen].titel)}</td><td>${esc(doelVan(x.doel).naam)}</td><td>${x.eersteOk ? '<b style="color:var(--goed)">✔ juist</b>' : '<b style="color:var(--fout)">✘ fout</b>'}</td></tr>`).join('')}</table>
+    ${zwak.length ? `<div class="advies" style="margin-top:14px"><b>Herhaal deze leerdoelen:</b><ul>${zwak.map(d => `<li>${esc(doelVan(d).naam)}</li>`).join('')}</ul></div>` : '<div class="advies" style="margin-top:14px">🎉 Alles meteen juist. Knap!</div>'}
+    <div class="naam-rapport" style="text-align:right;color:#94a3b8;font-size:11px;margin-top:8px">© T. Gaerdelen</div></div>
+    <div class="acties" data-html2canvas-ignore>${s.modus === 'examen' ? '<button class="knop" onclick="maakPdf()">Download rapport (pdf)</button>' : ''}${zwak.length ? `<button class="knop licht" onclick="toonLeerkaart('${zwak[0]}')">Leerkaart: ${esc(doelVan(zwak[0]).naam)}</button>` : ''}<button class="knop licht" onclick="toonStart()">Naar het overzicht</button></div>`;
+  scherm().innerHTML = h; window.scrollTo(0, 0);
+}
+async function maakPdf() {
+  const el = document.getElementById('rapport'); if (!window.html2canvas || !window.jspdf) { alert('De pdf kan nu niet gemaakt worden. Probeer het opnieuw.'); return; }
+  const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 });
+  const pdf = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' }); const w = 190, h = canvas.height * w / canvas.width;
+  pdf.addImage(canvas.toDataURL('image/jpeg', 0.85), 'JPEG', 10, 10, w, Math.min(h, 277));
+  const code = (typeof leerlingCode === 'function' && leerlingCode()) || 'zonder-code';
+  pdf.save(`Examentraining reele functies ${code}.pdf`);
+}
+
+/* =====================================================================
+   WEERGAVE PER WERKVORM: elke functie geeft { controleer, oplossing, vergrendel }
+   ===================================================================== */
+const RENDER = {};
+// ---- meerkeuze
+RENDER.mc = (it, el) => {
+  const opties = it.vast ? it.opties : schud(it.opties); let gekozen = -1;
+  el.innerHTML = `<div class="opties ${it.figs ? 'figs' : ''}">${opties.map((o, i) => `<button class="optie" data-i="${i}">${o.h}</button>`).join('')}</div>`;
+  const knoppen = [...el.querySelectorAll('.optie')];
+  knoppen.forEach(b => b.onclick = () => { knoppen.forEach(x => x.classList.remove('gekozen', 'fout')); b.classList.add('gekozen'); gekozen = +b.dataset.i; });
+  return {
+    controleer() { if (gekozen < 0) return { leeg: true }; const o = opties[gekozen]; if (!o.ok) knoppen[gekozen].classList.add('fout'); return { ok: !!o.ok, code: o.code, tips: [o.tip] }; },
+    oplossing() { knoppen.forEach((b, i) => { if (opties[i].ok) b.classList.add('goed'); }); },
+    vergrendel() { knoppen.forEach((b, i) => { b.disabled = true; if (opties[i].ok) b.classList.add('goed'); }); },
+  };
+};
+// ---- invullen (getal, keuze, interval, oplossingsverzameling)
+function veldHtml(v, i) {
+  if (v.soort === 'getal') return `<input class="veld" data-v="${i}" inputmode="text" autocomplete="off">`;
+  if (v.soort === 'keuze') return `<select class="veld" data-v="${i}"><option value="">…</option>${v.opties.map((o, j) => `<option value="${j}">${esc(o)}</option>`).join('')}</select>`;
+  if (v.soort === 'interval') return `<span style="white-space:nowrap"><select class="veld" data-v="${i}" data-d="l"><option value="">…</option><option>[</option><option>]</option></select>
+     <input class="veld" data-v="${i}" data-d="a" autocomplete="off"><button class="infknop" data-zet="${i}a" data-w="-∞" type="button">−∞</button> ,
+     <input class="veld" data-v="${i}" data-d="b" autocomplete="off"><button class="infknop" data-zet="${i}b" data-w="+∞" type="button">+∞</button>
+     <select class="veld" data-v="${i}" data-d="r"><option value="">…</option><option>]</option><option>[</option></select></span>`;
+  if (v.soort === 'opl') return `<span class="oplveld" data-v="${i}"><select class="veld" data-v="${i}" data-d="n"><option value="">aantal …</option><option value="0">${esc(v.geenTekst || 'geen oplossingen')}</option><option value="1">één</option><option value="2">twee</option></select>
+     <span class="oplx"></span></span>`;
+  return '';
+}
+RENDER.invul = (it, el) => {
+  el.innerHTML = it.regels.map(r => `<div class="regel">${r.replace(/\{(\d+)\}/g, (m, i) => veldHtml(it.velden[+i], +i))}</div>`).join('') +
+    `<div class="sub" style="font-size:.85rem;margin-top:6px">Breuk: 1/2 · decimaal: 0,5 · wortel: √3 of v3 · oneindig: knop of oo</div>`;
+  el.querySelectorAll('[data-zet]').forEach(b => b.onclick = () => { const [i, d] = [b.dataset.zet.slice(0, -1), b.dataset.zet.slice(-1)]; el.querySelector(`input[data-v="${i}"][data-d="${d}"]`).value = b.dataset.w; });
+  el.querySelectorAll('select[data-d="n"]').forEach(sel => sel.onchange = () => {
+    const box = sel.parentElement.querySelector('.oplx'); const n = +sel.value || 0;
+    box.innerHTML = n === 0 ? (sel.value === '0' ? ` ${M('V = \\varnothing')}` : '') : ' ' + M('V = \\{') + [...Array(n)].map((_, j) => `<input class="veld" data-v="${sel.dataset.v}" data-d="x${j}" autocomplete="off">`).join(' ; ') + M('\\}');
+  });
+  const inp = (i, d) => el.querySelector(`[data-v="${i}"]${d ? `[data-d="${d}"]` : ''}`);
+  const lees = () => it.velden.map((v, i) => {
+    if (v.soort === 'getal') return leesGetal(inp(i).value);
+    if (v.soort === 'keuze') return inp(i).value === '' ? null : +inp(i).value;
+    if (v.soort === 'interval') return { l: inp(i, 'l').value, a: leesGetal(inp(i, 'a').value), b: leesGetal(inp(i, 'b').value), r: inp(i, 'r').value };
+    if (v.soort === 'opl') { const n = inp(i, 'n').value; if (n === '') return null; const xs = []; for (let j = 0; j < +n; j++) xs.push(leesGetal(inp(i, 'x' + j).value)); return { n: +n, xs }; }
+  });
+  const markeer = (i, ok, d) => { el.querySelectorAll(`[data-v="${i}"]${d ? `[data-d="${d}"]` : ''}`).forEach(e => { if (e.classList.contains('veld')) { e.classList.remove('goed', 'fout'); e.classList.add(ok ? 'goed' : 'fout'); } }); };
+  return {
+    controleer() {
+      const w = lees(); const tips = []; let code = null;
+      for (let i = 0; i < w.length; i++) { const v = it.velden[i], x = w[i];
+        if (x === null || (typeof x === 'number' && isNaN(x)) || (v.soort === 'interval' && (!x.l || !x.r || isNaN(x.a) || isNaN(x.b))) || (v.soort === 'opl' && x.xs.some(isNaN))) return { leeg: true }; }
+      let okLijst = it.controle ? it.controle(w) : null;
+      let alles = true;
+      it.velden.forEach((v, i) => {
+        const x = w[i]; let ok;
+        if (okLijst) ok = okLijst[i];
+        else if (v.soort === 'getal') ok = gelijk(x, v.antw) || (v.alt || []).some(a => gelijk(x, a));
+        else if (v.soort === 'keuze') ok = x === v.antw;
+        else if (v.soort === 'interval') { const A = v.antw; ok = x.l === A.l && x.r === A.r && gelijk(x.a, A.a) && gelijk(x.b, A.b);
+          if (!ok) { if ((x.a === -Infinity && x.l === '[') || (x.b === Infinity && x.r === ']')) { tips.push('Bij ∞ staat het haakje altijd naar buiten.'); code = code || 'haakjes'; }
+            else if (gelijk(x.a, A.b) && gelijk(x.b, A.a)) { tips.push('Het kleinste getal staat eerst.'); code = code || 'volgorde'; }
+            else if (gelijk(x.a, A.a) && gelijk(x.b, A.b)) { tips.push('De getallen kloppen, maar kijk nog eens naar de haakjes.'); code = code || 'haakjes'; } } }
+        else if (v.soort === 'opl') { const A = v.antw.slice().sort((p, q) => p - q), X = x.xs.slice().sort((p, q) => p - q);
+          ok = x.n === A.length && X.every((y, j) => gelijk(y, A[j]));
+          if (!ok) { const e = v.extra || {};
+            if (A.length === 0 && x.n > 0) { tips.push('Een kwadraat kan nooit negatief zijn: dan zijn er geen oplossingen.'); code = code || 'geen_oplossingen'; }
+            else if (x.n > 0 && x.n < A.length && X.every(y => A.some(a => gelijk(a, y)))) { tips.push(e.type3 && !X.some(y => gelijk(y, 0)) ? 'x = 0 is ook een oplossing! Splits in twee gevallen.' : 'Er ontbreekt een oplossing. Vergeet de negatieve oplossing niet.'); code = code || 'oplossing_vergeten'; }
+            else if (x.n === A.length && X.every(y => A.some(a => gelijk(a, -y))) && !X.every(y => gelijk(y, 0))) { tips.push(e.type4 ? 'Let op het teken van p bij het overbrengen.' : 'Kijk naar de tekens van je oplossingen.'); code = code || 'teken'; }
+            else if (e.type3 && x.n === 2 && X.some(y => gelijk(y, 0)) && X.some(y => gelijk(y, -e.a / e.b))) { tips.push('De breuk is omgekeerd: ax + b = 0 geeft x = −b/a.'); code = code || 'breuk_omgekeerd'; }
+            else if (x.n === 0 && A.length > 0) { tips.push('Er zijn wel oplossingen. Kijk naar het teken van het rechterlid.'); code = code || 'geen_oplossingen'; }
+            else if (e.metWortel && X.some(y => gelijk(Math.abs(y), e.r))) { tips.push('Deel eerst door a voor je de wortel neemt.'); code = code || 'delen_door_a'; } } }
+        if (!ok && v.fouten) { const f = v.fouten.find(f => typeof x === 'number' && gelijk(x, f.w)); if (f) { tips.push(f.tip); code = code || f.code; } }
+        if (!ok && v.fout && v.soort === 'keuze' && v.fout[x]) { tips.push(v.fout[x].tip); code = code || v.fout[x].code; }
+        markeer(i, ok); if (!ok) alles = false;
+      });
+      return { ok: alles, code: code || 'rekenfout', tips };
+    },
+    oplossing() {
+      it.velden.forEach((v, i) => {
+        if (v.soort === 'getal') { const e = inp(i); e.value = invoerTekst(v.antw); e.classList.remove('fout'); e.classList.add('goed'); }
+        else if (v.soort === 'keuze') { const e = inp(i); e.value = String(v.antw); e.classList.remove('fout'); e.classList.add('goed'); }
+        else if (v.soort === 'interval') { const A = v.antw; inp(i, 'l').value = A.l; inp(i, 'r').value = A.r; inp(i, 'a').value = A.a === -Infinity ? '-∞' : String(A.a).replace('.', ','); inp(i, 'b').value = A.b === Infinity ? '+∞' : String(A.b).replace('.', ','); markeer(i, true); }
+        else if (v.soort === 'opl') { const s = inp(i, 'n'); s.value = String(v.antw.length); s.onchange(); v.antw.slice().sort((p, q) => p - q).forEach((x, j) => { inp(i, 'x' + j).value = invoerTekst(x); }); markeer(i, true); }
+      });
+    },
+    vergrendel() { el.querySelectorAll('input, select, button').forEach(e => e.disabled = true); },
+  };
+};
+// ---- sorteren
+RENDER.sorteer = (it, el) => {
+  const plaats = it.kaarten.map(() => -1); let gekozen = -1;
+  const teken = () => {
+    const kaart = (k, i) => `<div class="kaartje ${gekozen === i ? 'gekozen' : ''}" data-k="${i}">${k.h}</div>`;
+    el.innerHTML = `<div class="pool" data-b="-1">${it.kaarten.map((k, i) => plaats[i] === -1 ? kaart(k, i) : '').join('') || '<span class="sub">Alles is geplaatst.</span>'}</div>
+      <div class="bakken">${it.bakken.map((b, j) => `<div class="bak" data-b="${j}"><div class="bnaam">${b}</div><div class="inhoud">${it.kaarten.map((k, i) => plaats[i] === j ? kaart(k, i) : '').join('')}</div></div>`).join('')}</div>`;
+    el.querySelectorAll('.kaartje').forEach(k => k.onclick = e => { e.stopPropagation(); if (el.dataset.slot) return; const i = +k.dataset.k; if (plaats[i] !== -1 && gekozen !== i) { plaats[i] = -1; gekozen = -1; } else gekozen = gekozen === i ? -1 : i; teken(); });
+    el.querySelectorAll('.bak, .pool').forEach(b => b.onclick = () => { if (el.dataset.slot || gekozen < 0) return; plaats[gekozen] = +b.dataset.b; gekozen = -1; teken(); });
+  };
+  teken();
+  const markeer = () => el.querySelectorAll('.kaartje').forEach(k => { const i = +k.dataset.k; k.classList.add(plaats[i] === it.kaarten[i].bak ? 'goed' : 'fout'); });
+  return {
+    controleer() { if (plaats.some(p => p === -1)) return { leeg: true }; const ok = plaats.every((p, i) => p === it.kaarten[i].bak); markeer();
+      if (!ok) { const fout = plaats.map((p, i) => p !== it.kaarten[i].bak ? i : -1).filter(i => i >= 0); setTimeout(() => { if (!el.dataset.slot) { fout.forEach(i => plaats[i] = -1); teken(); } }, 1400); }
+      return { ok, code: 'sorteren', tips: ok ? [] : ['De rode kaartjes stonden in het verkeerde vak; ze gaan terug naar boven.'] }; },
+    oplossing() { it.kaarten.forEach((k, i) => plaats[i] = k.bak); el.dataset.slot = '1'; teken(); markeer(); },
+    vergrendel() { el.dataset.slot = '1'; },
+  };
+};
+// ---- koppelen
+RENDER.koppel = (it, el) => {
+  const n = it.links.length, volgR = schud([...Array(n).keys()]); const paar = Array(n).fill(-1); let gekozenL = -1;
+  const KL = ['#1e3a8a', '#c85f14', '#38873c', '#7c3aed', '#be123c', '#0e7490'];
+  const teken = () => {
+    el.innerHTML = `<div class="match"><div class="kol">${it.links.map((h, i) => `<div class="mitem ${gekozenL === i ? 'gekozen' : ''}" data-l="${i}">${paar[i] >= 0 ? `<span class="nr" style="background:${KL[i]}">${i + 1}</span>` : `<span class="nr" style="background:#94a3b8">${i + 1}</span>`}${h}</div>`).join('')}</div>
+      <div class="kol">${volgR.map(j => { const l = paar.indexOf(j); return `<div class="mitem" data-r="${j}">${l >= 0 ? `<span class="nr" style="background:${KL[l]}">${l + 1}</span>` : ''}${it.rechts[j]}</div>`; }).join('')}</div></div>`;
+    el.querySelectorAll('[data-l]').forEach(b => b.onclick = () => { if (el.dataset.slot) return; const i = +b.dataset.l; gekozenL = gekozenL === i ? -1 : i; teken(); });
+    el.querySelectorAll('[data-r]').forEach(b => b.onclick = () => { if (el.dataset.slot) return; const j = +b.dataset.r; const l = paar.indexOf(j); if (gekozenL < 0) { if (l >= 0) { paar[l] = -1; teken(); } return; } if (l >= 0) paar[l] = -1; paar[gekozenL] = j; gekozenL = paar.indexOf(-1); teken(); });
+  };
+  teken();
+  const markeer = () => { el.querySelectorAll('[data-l]').forEach(b => { const i = +b.dataset.l; b.classList.add(paar[i] === i ? 'goed' : 'fout'); }); };
+  return {
+    controleer() { if (paar.some(p => p < 0)) return { leeg: true }; const ok = paar.every((p, i) => p === i); markeer();
+      if (!ok) setTimeout(() => { if (!el.dataset.slot) { paar.forEach((p, i) => { if (p !== i) paar[i] = -1; }); gekozenL = paar.indexOf(-1); teken(); markeer2(); } }, 1400);
+      return { ok, code: 'koppelen', tips: ok ? [] : ['De rode koppels klopten niet; die mag je opnieuw koppelen.'] }; },
+    oplossing() { for (let i = 0; i < n; i++) paar[i] = i; el.dataset.slot = '1'; teken(); markeer(); },
+    vergrendel() { el.dataset.slot = '1'; },
+  };
+  function markeer2() { el.querySelectorAll('[data-l]').forEach(b => { const i = +b.dataset.l; if (paar[i] === i) b.classList.add('goed'); }); }
+};
+// ---- ordenen
+RENDER.orden = (it, el) => {
+  const vast = it.vast || 0; let volg = [...Array(it.stappen.length).keys()];
+  const los = volg.slice(vast); let s; do { s = schud(los); } while (s.length > 1 && s.every((x, i) => x === los[i])); volg = volg.slice(0, vast).concat(s);
+  const teken = () => { el.innerHTML = `<div class="orden">${volg.map((k, i) => `<div class="stap ${i < vast ? 'vast' : ''}" data-i="${i}"><span class="inh">${it.stappen[k]}</span>${i < vast ? '<small class="sub">vast</small>' : `<span class="pk"><button data-op="${i}" ${i <= vast ? 'disabled' : ''}>▲</button><button data-neer="${i}" ${i === volg.length - 1 ? 'disabled' : ''}>▼</button></span>`}</div>`).join('')}</div>`;
+    el.querySelectorAll('[data-op]').forEach(b => b.onclick = () => { if (el.dataset.slot) return; const i = +b.dataset.op; [volg[i - 1], volg[i]] = [volg[i], volg[i - 1]]; teken(); });
+    el.querySelectorAll('[data-neer]').forEach(b => b.onclick = () => { if (el.dataset.slot) return; const i = +b.dataset.neer; [volg[i + 1], volg[i]] = [volg[i], volg[i + 1]]; teken(); }); };
+  teken();
+  const markeer = () => el.querySelectorAll('.stap').forEach(e => { const i = +e.dataset.i; if (i >= vast) e.classList.add(volg[i] === i ? 'goed' : 'fout'); });
+  return { controleer() { const ok = volg.every((k, i) => k === i); markeer(); return { ok, code: 'volgorde', tips: ok ? [] : ['De rode stappen staan nog niet op hun plaats.'] }; },
+    oplossing() { volg = [...Array(it.stappen.length).keys()]; el.dataset.slot = '1'; teken(); markeer(); },
+    vergrendel() { el.dataset.slot = '1'; el.querySelectorAll('button').forEach(b => b.disabled = true); } };
+};
+// ---- fout zoeken
+RENDER.fout = (it, el) => {
+  let lijn = -1, reden = -1;
+  el.innerHTML = `<div class="uitwerking">${it.regels.map((r, i) => `<div class="lijn" data-i="${i}">${r}</div>`).join('')}</div>
+    <div id="redenen" style="margin-top:12px"><div class="sub" style="margin-bottom:6px">Wat loopt er mis in die regel?</div><div class="opties">${it.redenen.map((r, j) => `<button class="optie" data-j="${j}">${r}</button>`).join('')}</div></div>`;
+  const lijnen = [...el.querySelectorAll('.lijn')], red = [...el.querySelectorAll('[data-j]')];
+  lijnen.forEach(l => l.onclick = () => { if (el.dataset.slot) return; lijnen.forEach(x => x.classList.remove('gekozen', 'fout')); l.classList.add('gekozen'); lijn = +l.dataset.i; });
+  red.forEach(b => b.onclick = () => { if (el.dataset.slot) return; red.forEach(x => x.classList.remove('gekozen', 'fout')); b.classList.add('gekozen'); reden = +b.dataset.j; });
+  return {
+    controleer() { if (lijn < 0 || reden < 0) return { leeg: true }; const okL = lijn === it.foutRegel, okR = reden === it.juisteReden; const tips = [];
+      if (!okL) { lijnen[lijn].classList.add('fout'); tips.push(lijn < it.foutRegel ? 'Deze regel is nog juist. De fout zit later.' : 'De fout zit al eerder. Controleer elke regel van boven naar onder.'); }
+      if (!okR) { red[reden].classList.add('fout'); if (okL) tips.push('Je vond de juiste regel! Maar wat loopt er precies mis?'); }
+      return { ok: okL && okR, code: 'fout_zoeken', tips }; },
+    oplossing() { lijnen[it.foutRegel].classList.add('goed'); red[it.juisteReden].classList.add('goed'); },
+    vergrendel() { el.dataset.slot = '1'; lijnen[it.foutRegel].classList.add('goed'); red.forEach(b => b.disabled = true); },
+  };
+};
+// ---- tabel (tekentabel of verloopschema)
+RENDER.tabel = (it, el) => {
+  const CYCLUS = it.soort === 'teken' ? ['', '+', '−', '0'] : ['', '↗', '↘'];
+  let html = '<table class="schema">';
+  if (it.soort === 'teken') {
+    const n = it.nulKeuze ? -1 : it.xs.length, cellen = 2 * n + 1;
+    if (it.nulKeuze) html = `<div class="regel">Aantal nulwaarden: <select class="veld" id="nulN"><option value="">…</option><option>0</option><option>1</option><option>2</option></select> <span class="sub">(kies eerst, dan verschijnt de tabel)</span></div>` + html;
+    let r1 = '<td class="kop">x</td>', r2 = '<td class="kop">f(x)</td>';
+    for (let c = 0; c < cellen; c++) { const punt = c % 2 === 1; r1 += `<td>${punt ? (it.xsInvul ? `<input class="veld" data-x="${(c - 1) / 2}" autocomplete="off">` : M(G(it.xs[(c - 1) / 2]))) : ''}</td>`; r2 += `<td><button class="cel" data-c="${c}"></button></td>`; }
+    html += `<tr class="r1">${r1}</tr><tr>${r2}</tr></table>`;
+  } else {
+    let r1 = '<td class="kop">x</td>', r2 = '<td class="kop">f(x)</td>', r3 = '<td></td>';
+    it.kolommen.forEach((k, c) => { if (k.t === 'i') { r1 += '<td></td>'; r2 += `<td><button class="cel" data-c="${c}"></button></td>`; r3 += '<td></td>'; }
+      else { r1 += `<td>${k.xInvul ? `<input class="veld" data-x="${c}" autocomplete="off">` : M(G(k.x))}</td>`; r2 += `<td><input class="veld" data-y="${c}" autocomplete="off"></td>`; r3 += `<td>${k.rand ? '' : `<select class="veld" data-lab="${c}"><option value="">…</option><option>MAX</option><option>MIN</option></select>`}</td>`; } });
+    html += `<tr class="r1">${r1}</tr><tr>${r2}</tr><tr>${r3}</tr></table>`;
+  }
+  el.innerHTML = '<div class="tabelwrap">' + html + '</div><div class="sub" style="font-size:.85rem;text-align:center">Klik in een vakje om het teken of de pijl te wisselen.</div>';
+  const tekenTabel = () => { // bij een keuze van het aantal nulwaarden: de tabel aanpassen
+    const sel = el.querySelector('#nulN'); if (!sel) return;
+    sel.onchange = () => { const n = +sel.value || 0; const t = el.querySelector('table'); let r1 = '<td class="kop">x</td>', r2 = '<td class="kop">f(x)</td>';
+      for (let c = 0; c < 2 * n + 1; c++) { const punt = c % 2 === 1; r1 += `<td>${punt ? `<input class="veld" data-x="${(c - 1) / 2}" autocomplete="off">` : ''}</td>`; r2 += `<td><button class="cel" data-c="${c}"></button></td>`; }
+      t.innerHTML = `<tr class="r1">${r1}</tr><tr>${r2}</tr>`; koppelCellen(); };
+  };
+  const koppelCellen = () => el.querySelectorAll('.cel').forEach(b => b.onclick = () => { if (el.dataset.slot) return; const i = (CYCLUS.indexOf(b.textContent) + 1) % CYCLUS.length; b.textContent = CYCLUS[i]; b.classList.remove('goed', 'fout'); });
+  koppelCellen(); tekenTabel();
+  const zet = (e, ok) => { e.classList.remove('goed', 'fout'); e.classList.add(ok ? 'goed' : 'fout'); };
+  return {
+    controleer() {
+      let alles = true; const tips = [];
+      if (it.soort === 'teken') {
+        const sel = el.querySelector('#nulN'); if (sel && sel.value === '') return { leeg: true };
+        const n = sel ? +sel.value : it.xs.length;
+        if (n !== it.xs.length) { zet(sel, false); return { ok: false, code: 'nulwaarden', tips: ['Het aantal nulwaarden klopt niet. Los f(x) = 0 op (discriminant).'] }; }
+        if (sel) zet(sel, true);
+        const xs = [...el.querySelectorAll('[data-x]')].map(e => leesGetal(e.value)), cel = [...el.querySelectorAll('.cel')].map(b => b.textContent);
+        if (xs.some(isNaN) || cel.some(c => c === '')) return { leeg: true };
+        el.querySelectorAll('[data-x]').forEach((e, i) => { const ok = gelijk(xs[i], it.xs[i]); zet(e, ok); if (!ok) alles = false; });
+        if (!alles) tips.push('Controleer de nulwaarden (van klein naar groot).');
+        el.querySelectorAll('.cel').forEach((b, i) => { const ok = b.textContent === it.tekens[i]; zet(b, ok); if (!ok) alles = false; });
+        if (cel.some((c, i) => i % 2 === 1 && c !== '0')) tips.push('Bij een nulwaarde staat altijd 0.');
+        return { ok: alles, code: 'tekentabel', tips };
+      }
+      const xs = [...el.querySelectorAll('[data-x]')], ys = [...el.querySelectorAll('[data-y]')], cel = [...el.querySelectorAll('.cel')], lab = [...el.querySelectorAll('[data-lab]')];
+      if (xs.some(e => isNaN(leesGetal(e.value))) || ys.some(e => isNaN(leesGetal(e.value))) || cel.some(b => b.textContent === '') || lab.some(s => s.value === '')) return { leeg: true };
+      xs.forEach(e => { const k = it.kolommen[+e.dataset.x], ok = gelijk(leesGetal(e.value), k.x); zet(e, ok); if (!ok) { alles = false; tips.push('Controleer de x-waarde van de top: x = −b/(2a).'); } });
+      ys.forEach(e => { const k = it.kolommen[+e.dataset.y], ok = gelijk(leesGetal(e.value), k.y); zet(e, ok); if (!ok) alles = false; });
+      cel.forEach(b => { const k = it.kolommen[+b.dataset.c], ok = b.textContent === k.pijl; zet(b, ok); if (!ok) alles = false; });
+      lab.forEach(s => { const k = it.kolommen[+s.dataset.lab], ok = s.value === k.lab; zet(s, ok); if (!ok) { alles = false; tips.push('Eerst stijgen, dan dalen: MAX. Eerst dalen, dan stijgen: MIN.'); } });
+      return { ok: alles, code: 'verloopschema', tips };
+    },
+    oplossing() {
+      if (it.soort === 'teken') { const sel = el.querySelector('#nulN'); if (sel) { sel.value = String(it.xs.length); sel.onchange(); koppelCellen(); }
+        el.querySelectorAll('[data-x]').forEach((e, i) => { const b = breuk(it.xs[i]); e.value = Number.isInteger(it.xs[i]) ? it.xs[i] : b ? b[0] + '/' + b[1] : it.xs[i]; zet(e, true); });
+        el.querySelectorAll('.cel').forEach((b, i) => { b.textContent = it.tekens[i]; zet(b, true); }); return; }
+      el.querySelectorAll('[data-x]').forEach(e => { e.value = it.kolommen[+e.dataset.x].x; zet(e, true); });
+      el.querySelectorAll('[data-y]').forEach(e => { e.value = it.kolommen[+e.dataset.y].y; zet(e, true); });
+      el.querySelectorAll('.cel').forEach(b => { b.textContent = it.kolommen[+b.dataset.c].pijl; zet(b, true); });
+      el.querySelectorAll('[data-lab]').forEach(s => { s.value = it.kolommen[+s.dataset.lab].lab; zet(s, true); });
+    },
+    vergrendel() { el.dataset.slot = '1'; el.querySelectorAll('input, select, button').forEach(e => e.disabled = true); },
+  };
+};
+// ---- schuifregelaars: raak de doelparabool
+RENDER.slider = (it, el) => {
+  const st = { a: 1, p: 0, k: 0 }; const D = it.doelPar;
+  el.innerHTML = `<div class="figuur" id="sfig"></div><div class="sliders">
+    <label>a <input type="range" min="-3" max="3" step="0.5" value="1" data-s="a"><span class="w" id="wa"></span></label>
+    <label>p <input type="range" min="-5" max="5" step="1" value="0" data-s="p"><span class="w" id="wp"></span></label>
+    <label>k <input type="range" min="-5" max="5" step="1" value="0" data-s="k"><span class="w" id="wk"></span></label></div>
+    <div class="figuur" id="sform"></div>`;
+  const teken = () => {
+    el.querySelector('#sfig').innerHTML = grafiek({ xmin: -6, xmax: 6, ymin: -6, ymax: 6, w: 300, krommen: [{ f: x => D.a * (x - D.p) * (x - D.p) + D.k, kleur: '#be123c', stippel: true, dikte: 2.4 }, { f: x => st.a * (x - st.p) * (x - st.p) + st.k }] });
+    ['a', 'p', 'k'].forEach(s => el.querySelector('#w' + s).textContent = String(st[s]).replace('.', ','));
+    el.querySelector('#sform').innerHTML = M('f(x) = ' + pk(st.a, st.p, st.k));
+  };
+  el.querySelectorAll('input[type=range]').forEach(r => r.oninput = () => { let v = +r.value; if (r.dataset.s === 'a' && v === 0) { v = st.a > 0 ? -0.5 : 0.5; r.value = v; } st[r.dataset.s] = v; teken(); });
+  teken();
+  return {
+    controleer() { const ok = gelijk(st.a, D.a) && st.p === D.p && st.k === D.k; const tips = [];
+      if (!ok) { if (st.p !== D.p) tips.push(`De top ligt nog niet op de juiste plaats links/rechts: verander p.`); if (st.k !== D.k) tips.push('De top ligt nog niet op de juiste hoogte: verander k.'); if (!gelijk(st.a, D.a)) tips.push(Math.sign(st.a) !== Math.sign(D.a) ? 'Berg of dal? Verander het teken van a.' : 'De opening is nog niet juist: verander a (smaller of breder).'); }
+      return { ok, code: 'apk', tips }; },
+    oplossing() { Object.assign(st, D); el.querySelectorAll('input[type=range]').forEach(r => r.value = st[r.dataset.s]); teken(); },
+    vergrendel() { el.querySelectorAll('input').forEach(r => r.disabled = true); },
+  };
+};
+// ---- kijk en verklaar (uitgewerkt voorbeeld met waarom-vragen)
+RENDER.verklaar = (it, el) => {
+  let stap = 0, fouten = 0;
+  const volgende = () => {
+    if (stap >= it.stappen.length) { rondAf(fouten === 0, 'verklaren'); fb(fouten === 0 ? 'ok' : 'info', `<b>${fouten === 0 ? '✔ Alles meteen goed verklaard!' : 'Uitwerking afgewerkt.'}</b><div class="uitleg">${it.uitleg || ''}</div>`); return; }
+    const s = it.stappen[stap]; const div = document.createElement('div'); div.className = 'vstap'; div.innerHTML = s.h; el.appendChild(div);
+    if (!s.v) { stap++; setTimeout(volgende, 350); return; }
+    const opts = schud(s.o); const wv = document.createElement('div'); wv.className = 'wv'; let fout1 = false;
+    wv.innerHTML = `<div style="font-weight:700;margin-bottom:6px">❓ ${s.v}</div><div class="opties">${opts.map((o, i) => `<button class="optie" data-i="${i}">${o.h}</button>`).join('')}</div><div class="pen" style="margin-top:4px"></div>`;
+    div.appendChild(wv);
+    wv.querySelectorAll('.optie').forEach(b => b.onclick = () => { const o = opts[+b.dataset.i];
+      if (o.ok) { b.classList.add('goed'); wv.querySelectorAll('.optie').forEach(x => x.disabled = true); wv.querySelector('.pen').textContent = ''; stap++; setTimeout(volgende, 450); }
+      else { b.classList.add('fout'); b.disabled = true; if (!fout1) { fout1 = true; fouten++; } wv.querySelector('.pen').textContent = o.tip || 'Nog eens proberen.'; } });
+  };
+  volgende();
+  return { controleer() { return { leeg: true }; }, vergrendel() { } };
+};
+
+/* ---------------- zelftest (console): alle generatoren 40 keer ---------------- */
+function zelftest() {
+  const problemen = [];
+  for (const id in GEN) { for (let i = 0; i < 40; i++) { try { const it = GEN[id].maak(); if (!it || !RENDER[it.vorm]) problemen.push(id + ': geen opgave');
+        else { if (it.vorm === 'invul') it.velden.forEach(v => { if (v.soort === 'getal' && !isFinite(v.antw)) problemen.push(id + ': antwoord ' + v.antw); if (v.soort === 'opl' && v.antw.some(x => !isFinite(x))) problemen.push(id + ': opl'); });
+          if (/NaN|undefined|Infinity(?!\})/.test(JSON.stringify(it, (k, v) => typeof v === 'function' ? undefined : v).replace(/"a":-?Infinity|"b":-?Infinity/g, ''))) problemen.push(id + ': NaN/undefined in tekst'); } }
+      catch (e) { problemen.push(id + ': ' + e.message); } } }
+  DOELEN.forEach(d => d.gens.forEach(g => { if (!GEN[g]) problemen.push('doel ' + d.id + ' mist ' + g); }));
+  Object.keys(GEN).forEach(g => { if (!doelVanGen(g)) problemen.push('oefening zonder doel: ' + g); });
+  console.log('Zelftest:', problemen.length ? problemen : '0 problemen');
+  return problemen;
+}
+/* LABELS_START */
+const LABELS = { o: Object.fromEntries([...DOELEN.map(d => [d.id, d.naam]), ['examentraining', 'Examentraining']]), x: Object.fromEntries(Object.values(GEN).map(g => [g.id, g.titel])) };
+/* LABELS_END */
+toonStart();
+</script>
+<script src="tracker.js"></script>
+<script>
+  WiskundeTracker.init({ appId: "5du_reele_functies_sem1" });
+  try { WiskundeTracker.volgTheorie(() => ST.scherm === 'leerkaart' ? ST.doel : null); } catch (e) { /* theorie volgen mag de app nooit storen */ }
+</script>
+</body>
+</html>
