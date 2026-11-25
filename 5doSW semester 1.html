@@ -70,6 +70,31 @@
     .modus.oefen { border-color: var(--groen-rand); background: var(--groen-licht); } .modus.oefen b { color: var(--groen-donker); }
     .modus.toets { border-color: var(--rood-rand); background: var(--rood-licht); } .modus.toets b { color: var(--rood-donker); }
     .modus.aan { box-shadow: 0 0 0 3px rgba(30, 58, 138, .25); }
+    /* examentraining en actief leren (2026-11-25) */
+    .modus-grid.vier { grid-template-columns: repeat(4, 1fr); }
+    .modus.examen { border-color: #fcd34d; background: #fffbeb; } .modus.examen b { color: #b45309; }
+    .dagdoel { margin-top: 12px; font-size: .9rem; color: #334155; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .klaar { display: flex; align-items: center; gap: 6px; font-size: .75rem; color: #475569; margin-top: 4px; }
+    .klaar-balk { display: inline-block; width: 70px; height: 7px; background: #e2e8f0; border-radius: 4px; overflow: hidden; vertical-align: middle; }
+    .klaar-balk.groot { width: 140px; height: 9px; }
+    .klaar-balk > span { display: block; height: 100%; }
+    .nakerst { display: block; margin-top: 10px; }
+    .examen-blok { margin-top: 18px; }
+    .ex-uitleg { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 12px; padding: 12px 16px; }
+    .ex-uitleg ol { margin: 6px 0; padding-left: 20px; }
+    .ex-h { margin: 20px 0 6px; font-size: 1.05rem; }
+    table.doelen { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    table.doelen td { padding: 7px 6px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+    td.doel-z { white-space: nowrap; }
+    td.doel-r { min-width: 150px; }
+    button.zelf { font-size: 1.15rem; padding: 2px 5px; border-radius: 8px; border: 2px solid transparent; background: #f1f5f9; opacity: .55; cursor: pointer; }
+    button.zelf.aan { opacity: 1; border-color: #2563eb; background: #dbeafe; }
+    .doel-res { display: inline-block; margin: 4px 0 0 6px; padding: 1px 7px; border-radius: 6px; font-size: .78rem; font-weight: 700; }
+    .doel-res.goed { background: #dcfce7; color: #166534; } .doel-res.matig { background: #fef3c7; color: #92400e; } .doel-res.zwak { background: #fee2e2; color: #991b1b; }
+    .doel-tip { display: block; font-size: .78rem; color: #b91c1c; margin-top: 2px; } .doel-tip.goed { color: #166534; }
+    .zeker-rij { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; font-size: .9rem; color: #334155; }
+    .zeker-fb { margin-top: 12px; padding: 8px 12px; border-radius: 10px; background: #fef2f2; border: 1px solid #fecaca; font-size: .9rem; }
+    .zeker-fb.goed { background: var(--groen-licht); border-color: var(--groen-rand); }
     .sectie-titel { font-size: 1.05rem; color: #334155; margin: 20px 0 10px; font-weight: 800; }
     .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
     .cat { display: flex; gap: 12px; align-items: flex-start; text-align: left; background: #fff; border: 2px solid var(--rand); border-radius: 14px; padding: 12px 14px; }
@@ -287,7 +312,7 @@
         #app { padding: 10px 10px 48px; }
         .kaart-binnen { padding: 14px; }
         .kop h1 { font-size: 1.5rem; }
-        .modus-grid { grid-template-columns: 1fr; }
+        .modus-grid, .modus-grid.vier { grid-template-columns: 1fr; }
         .antw-grid { grid-template-columns: 1fr; }
         .invoer.co { width: 74px; }
         .maker-credit { position: static; display: block; text-align: right; background: none; margin: -40px 12px 14px; }
@@ -1232,6 +1257,7 @@ const FOUTSOORTEN = {
     vorm: { label: 'niet in de gevraagde vorm', tip: 'Lees de opgave goed: in welke vorm moet je het antwoord noteren?' },
     voorwaarde: { label: 'voorschrift voldoet niet aan de voorwaarden', tip: 'Controleer je voorschrift achteraf: vul de nulwaarde en het gegeven punt in, en bereken de asymptoten.' },
     model: { label: 'formule opstellen', tip: 'Zoek in de opgave welke grootheid verandert (de onbekende $x$) en wat vast is. Controleer je formule met een eenvoudig getalvoorbeeld.' },
+    waarfout: { label: 'juist of fout + verklaring', tip: 'Is een uitspraak fout, zoek dan één tegenvoorbeeld. Is ze juist, noem dan de eigenschap of rekenregel die het verklaart.' },
     vraagstuk: { label: 'vraagstuk', tip: 'Schrijf eerst de formule op, vul de gegevens in en los op. Controleer of je antwoord zinvol is en vergeet de eenheid niet.' },
     groeifactor: { label: 'groeifactor', tip: 'Toename van $p\\,\\%$: $a = 1 + \\frac{p}{100}$; afname van $p\\,\\%$: $a = 1 - \\frac{p}{100}$. Omgekeerd: $a = 1{,}07$ is $+7\\,\\%$ en $a = 0{,}93$ is $-7\\,\\%$.' },
     omvormen: { label: 'groeifactor omvormen', tip: 'De groeifactor voor $k$ tijdseenheden is $a^k$, voor een deel van een tijdseenheid bv. $a^{\\frac{1}{12}}$. Percentages mag je nooit zomaar vermenigvuldigen of delen: werk altijd via de groeifactor.' },
@@ -2353,6 +2379,58 @@ regGen({ id: 'h1_vraagstuk', cat: 'h1', niveau: 1, titel: 'Vraagstukken met een 
     };
 } });
 
+// ===================== 1.3 EXTREMUMVRAAGSTUK: ZELF HET VOORSCHRIFT OPSTELLEN (GeoGebra) =====================
+// Eigen contexten (2026-11-25), niet uit cursus of toetsen: hondenren langs een muur, regengoot, pakket bij een pakketdienst.
+regGen({ id: 'h1_extremum', cat: 'h1', niveau: 2, titel: 'Vraagstuk: zelf het voorschrift opstellen en het maximum zoeken', par: '1.3 Grafisch oplossen', geogebra: true, maak(r) {
+    const v = r.int(0, 2);
+    const G2 = L` (GeoGebra, rond af op 2 decimalen)`;
+    if (v === 0 || v === 1) {
+        const ren = v === 0;
+        const L0 = ren ? r.pick([18, 22, 26, 30, 34]) : r.pick([30, 34, 38, 42]);
+        const x0 = ren ? r.pick([3, 4, 5]) : r.pick([5, 6, 7]);
+        const xm = L0 / 4, Am = L0 * L0 / 8, eenh = ren ? 'm' : 'cm';
+        const opgave = ren
+            ? L`Je zet met $${L0}$ m omheining een rechthoekige hondenren af tegen de muur van een huis. Langs de muur is geen omheining nodig. De twee zijden loodrecht op de muur zijn elk $x$ m lang. Gebruik GeoGebra waar nodig.`
+            : L`Een regengoot wordt geplooid uit een strook zink van $${L0}$ cm breed. Aan beide kanten plooi je een rand van $x$ cm recht omhoog; wat overblijft is de bodem. De doorsnede is dus een rechthoek. Gebruik GeoGebra waar nodig.`;
+        const naam = ren ? 'A' : 'A';
+        return {
+            opgave,
+            delen: [
+                ren ? D.getal(L`Hoe groot is de oppervlakte van de ren (in m²) als $x = ${x0}$?`, x0 * (L0 - 2 * x0), { label: 'A =', code: 'vraagstuk', fouten: [{ w: x0 * (L0 - x0), msg: 'Langs de muur is er geen omheining: de omheining bestaat uit twee zijden $x$ en één zijde evenwijdig met de muur.', code: 'model' }] })
+                    : D.getal(L`Hoe breed is de bodem (in cm) als de randen $${x0}$ cm hoog zijn?`, L0 - 2 * x0, { label: L`\text{bodem} =`, code: 'vraagstuk', fouten: [{ w: L0 - x0, msg: 'Er zijn twee randen: je trekt $2x$ af van de breedte van de strook.', code: 'model' }] }),
+                D.uitdr(ren ? 'Stel het voorschrift op van de oppervlakte $A$ (in m²) in functie van $x$.' : 'Stel het voorschrift op van de oppervlakte $A$ (in cm²) van de doorsnede in functie van $x$.', `x*(${L0} - 2x)`, L`x(${L0} - 2x)`, { label: `${naam}(x) =`, code: 'model', fouten: [{ txt: `x*(${L0} - x)`, msg: 'De overkant is niet $' + L0 + ' - x$: er gaan twee stukken van $x$ af.', code: 'model' }, { txt: `x*(${L0 / 2} - x)`, msg: 'Kijk nog eens naar de lengte van de derde zijde: van de volledige lengte gaan twee stukken $x$ af.', code: 'model' }] }),
+                D.verz('Wat is het praktisch domein van $A$?', ivTxt(F(0), naarFr(L0 / 2) || L0 / 2, false, false), { label: L`\text{dom } A =`, code: 'domein' }),
+                D.getal(L`Voor welke $x$ is de oppervlakte maximaal?${G2}`, xm, { label: 'x =', tex: decTex(xm, 2), dec: 2, code: 'afronding' }),
+                D.getal(L`Hoe groot is die maximale oppervlakte (in ${eenh}²)?${G2}`, Am, { label: 'A =', tex: decTex(Am, 2), dec: 2, code: 'afronding', fouten: [{ w: xm, msg: 'Dat is de $x$-coördinaat van het maximum. Gevraagd is de oppervlakte zelf: de $y$-coördinaat.', code: 'vraagstuk' }] })],
+            hints: [ren ? 'Maak een schets: twee zijden van $x$ m en de zijde evenwijdig met de muur. Samen is dat de volledige omheining.' : 'Maak een schets van de doorsnede: twee randen van $x$ cm en de bodem. Samen is dat de breedte van de strook.',
+                'De derde zijde is $' + L0 + ' - 2x$. Oppervlakte $=$ lengte $\\cdot$ breedte.',
+                'Praktisch domein: $x$ moet positief zijn én de derde zijde ook ($' + L0 + ' - 2x > 0$).',
+                'In GeoGebra: typ het voorschrift en gebruik Extremum(A, 0, ' + (L0 / 2) + ').'],
+            stappen: [ren ? L`$A(${x0}) = ${x0} \cdot (${L0} - 2 \cdot ${x0}) = ${x0} \cdot ${L0 - 2 * x0} = ${x0 * (L0 - 2 * x0)}$ m²` : L`Bodem $= ${L0} - 2 \cdot ${x0} = ${L0 - 2 * x0}$ cm`,
+                L`Derde zijde: $${L0} - 2x$, dus $A(x) = x(${L0} - 2x)$`,
+                L`$x > 0$ en $${L0} - 2x > 0 \;\Leftrightarrow\; x < ${decTex(L0 / 2)}$: dom $A = \left]0,\ ${decTex(L0 / 2)}\right[$`,
+                L`GeoGebra: Extremum$(A, 0, ${decTex(L0 / 2)})$ geeft $(${decTex(xm, 2)} ;\ ${decTex(Am, 2)})$`,
+                L`!Maximaal voor $x = ${decTex(xm, 2)}$ ${eenh}; maximale oppervlakte $${decTex(Am, 2)}$ ${eenh}²`],
+        };
+    }
+    const L0 = r.pick([150, 180, 210, 240]), x0 = r.pick([10, 15, 20]);
+    const xm = L0 / 6, Vm = Math.pow(L0, 3) / 108, V0 = x0 * x0 * (L0 - 4 * x0);
+    return {
+        opgave: L`Een pakketdienst neemt een pakket alleen mee als lengte $+$ omtrek van de doorsnede samen hoogstens $${L0}$ cm is. Je maakt een pakket met een vierkante doorsnede van $x$ cm bij $x$ cm en gebruikt de grens volledig. Gebruik GeoGebra waar nodig.`,
+        delen: [D.getal(L`Bereken het volume (in cm³) als $x = ${x0}$.`, V0, { label: 'V =', code: 'vraagstuk', fouten: [{ w: x0 * x0 * (L0 - 2 * x0), msg: 'De omtrek van een vierkant met zijde $x$ is $4x$, niet $2x$.', code: 'model' }] }),
+            D.uitdr('Stel het voorschrift op van het volume $V$ (in cm³) in functie van $x$.', `x^2*(${L0} - 4x)`, L`x^2(${L0} - 4x)`, { label: 'V(x) =', code: 'model', fouten: [{ txt: `x^2*(${L0} - 2x)`, msg: 'De omtrek van de vierkante doorsnede is $4x$: de lengte is dus $' + L0 + ' - 4x$.', code: 'model' }, { txt: `x*(${L0} - 4x)`, msg: 'Volume $=$ oppervlakte van de doorsnede ($x \\cdot x$) $\\cdot$ lengte.', code: 'model' }] }),
+            D.verz('Wat is het praktisch domein van $V$?', ivTxt(F(0), naarFr(L0 / 4) || L0 / 4, false, false), { label: L`\text{dom } V =`, code: 'domein' }),
+            D.getal(L`Voor welke $x$ is het volume maximaal?${G2}`, xm, { label: 'x =', tex: decTex(xm, 2), dec: 2, code: 'afronding' }),
+            D.getal(L`Hoe groot is dat maximale volume (in cm³)?${G2}`, Vm, { label: 'V =', tex: decTex(Vm, 2), dec: 2, code: 'afronding', fouten: [{ w: xm, msg: 'Dat is de $x$-coördinaat van het maximum. Gevraagd is het volume zelf.', code: 'vraagstuk' }] })],
+        hints: ['Omtrek van de vierkante doorsnede: $4x$. Lengte $=$ ' + L0 + ' $- 4x$.', 'Volume $=$ $x \\cdot x \\cdot$ lengte.', 'Praktisch domein: $x > 0$ en de lengte $' + L0 + ' - 4x > 0$.', 'In GeoGebra: Extremum(V, 0, ' + (L0 / 4) + ').'],
+        stappen: [L`Lengte $= ${L0} - 4 \cdot ${x0} = ${L0 - 4 * x0}$ cm, dus $V = ${x0} \cdot ${x0} \cdot ${L0 - 4 * x0} = ${V0}$ cm³`,
+            L`Lengte $= ${L0} - 4x$, dus $V(x) = x^2(${L0} - 4x)$`,
+            L`$x > 0$ en $${L0} - 4x > 0 \;\Leftrightarrow\; x < ${decTex(L0 / 4)}$: dom $V = \left]0,\ ${decTex(L0 / 4)}\right[$`,
+            L`GeoGebra: Extremum$(V, 0, ${decTex(L0 / 4)})$ geeft $(${decTex(xm, 2)} ;\ ${decTex(Vm, 2)})$`,
+            L`!Maximaal voor $x = ${decTex(xm, 2)}$ cm; maximaal volume $${decTex(Vm, 2)}$ cm³`],
+    };
+} });
+
 // ===================== 1.1 GRAFIEK BIJ EEN VERHAAL (afstand-tijd) =====================
 const LOPERS = [
     { t: 'Lotte jogt aan een constant tempo van huis naar het park.', f: t => 0.8 * t, uitleg: 'constant tempo: de afstand neemt gelijkmatig toe (rechte)' },
@@ -2813,7 +2891,42 @@ regGen({ id: 'h2_ongelijkheid2', cat: 'h2', niveau: 3, titel: 'Ongelijkheden: gr
         stappen: u.st,
     };
 } });
-</script>
+
+// ===================== WAAR OF NIET? (met verklaring, herhaling H1–H5) =====================
+// Eigen uitspraken (2026-11-25), niet die van een toets of examen. v[0] is de juiste verklaring.
+const WAAR_FOUT = [
+    { u: 'Een veeltermfunctie van graad 3 heeft altijd minstens één nulwaarde.', j: true, v: ['Bij oneven graad gaat de grafiek van $-\\infty$ naar $+\\infty$ (of omgekeerd), dus ze snijdt zeker de $x$-as.', 'Elke veeltermfunctie heeft evenveel nulwaarden als haar graad.', 'De constante term van een veelterm is nooit 0.'] },
+    { u: 'Als $f(3) = 0$, dan is $x - 3$ een deler van $f(x)$.', j: true, v: ['Reststelling: de rest bij deling door $x - 3$ is $f(3) = 0$.', 'Want $3$ is altijd een deler van de constante term.', 'Want dan is ook $x + 3$ een deler.'] },
+    { u: 'Als de som van de coëfficiënten van $f(x)$ gelijk is aan 0, dan is $x + 1$ een deler van $f(x)$.', j: false, v: ['De som van de coëfficiënten is $f(1)$: dan is $x - 1$ een deler, niet (zeker) $x + 1$.', 'Dat geldt alleen als de graad even is.', 'Het klopt: de som van de coëfficiënten is $f(-1)$.'] },
+    { u: 'Bij een dubbele nulwaarde verandert het teken van een veeltermfunctie.', j: false, v: ['Bij een dubbele nulwaarde raakt de grafiek de $x$-as: er is geen tekenwissel.', 'Het klopt: bij een nulwaarde verandert het teken altijd.', 'Het teken hangt alleen af van de constante term.'] },
+    { u: 'Elke rationale functie heeft een verticale asymptoot.', j: false, v: ['Tegenvoorbeeld: $f(x) = \\frac{1}{x^2 + 1}$; de noemer wordt nooit 0.', 'Het klopt: elke breuk heeft een noemer die 0 kan worden.', 'Een rationale functie heeft alleen horizontale asymptoten.'] },
+    { u: 'Elke oneven functie gaat door de oorsprong.', j: false, v: ['Tegenvoorbeeld: $f(x) = \\frac{1}{x}$ is oneven, maar $0$ ligt niet in het domein.', 'Oneven functies gaan altijd door $(0, 1)$.', 'Het klopt: $f(-0) = -f(0)$ geldt voor elke functie.'] },
+    { u: 'De grafiek van $f(x) = \\frac{1}{x^4}$ ligt volledig boven de $x$-as.', j: true, v: ['$x^4 > 0$ voor elke $x \\neq 0$, dus $f(x) > 0$.', 'Want de grafiek is symmetrisch t.o.v. de oorsprong.', 'Want $f(0) = 1$.'] },
+    { u: '$\\sqrt[3]{x}$ bestaat niet voor negatieve $x$.', j: false, v: ['Een oneven machtswortel bestaat voor elk reëel getal: $\\sqrt[3]{-8} = -2$.', 'Het klopt: een wortel uit een negatief getal bestaat nooit.', 'Het klopt, behalve voor $x = -1$.'] },
+    { u: 'Als $f(-x) = f(x)$ voor elke $x$ in het domein, dan is de grafiek symmetrisch t.o.v. de $y$-as.', j: true, v: ['Dan liggen $(x, y)$ en $(-x, y)$ allebei op de grafiek: $f$ is even.', 'Want dan is $f$ oneven.', 'Want dan gaat de grafiek door de oorsprong.'] },
+    { u: 'Bij exponentiële groei is het verschil tussen twee opeenvolgende waarden constant.', j: false, v: ['Bij exponentiële groei is het quotiënt constant (de groeifactor); een constant verschil hoort bij lineaire groei.', 'Het klopt: dat verschil is de groeifactor.', 'Het verschil is bij exponentiële groei altijd 0.'] },
+    { u: 'Een daling van 15 % per jaar geeft een groeifactor $0{,}85$ per jaar.', j: true, v: ['$a = 1 - \\frac{15}{100} = 0{,}85$.', 'Want bij een daling is $a = 0{,}15$.', 'Want bij een daling is $a = 1{,}15$.'] },
+    { u: 'Een stijging van 4 % per jaar gedurende 10 jaar is in totaal een stijging van 40 %.', j: false, v: ['Over 10 jaar is de groeifactor $1{,}04^{10} \\approx 1{,}48$: ongeveer 48 %, geen 40 %.', 'Het klopt: $10 \\cdot 4\\,\\% = 40\\,\\%$.', 'Het is in totaal maar 14 %.'] },
+    { u: 'Een homografische functie heeft als bereik $\\mathbb{R}$.', j: false, v: ['De H.A. $y = \\frac{a}{c}$ wordt nooit bereikt: ber $f = \\mathbb{R} \\setminus \\{\\frac{a}{c}\\}$.', 'Het bereik is altijd $\\mathbb{R}^+$.', 'Het klopt, want het domein is ook $\\mathbb{R}$.'] },
+    { u: 'De grafiek van $f(x + 3)$ is de grafiek van $f(x)$, 3 eenheden naar links verschoven.', j: true, v: ['$f(x - c)$ verschuift $c$ eenheden naar rechts; hier is $c = -3$: 3 naar links.', 'Een plus betekent een verschuiving naar boven.', 'Een plus betekent altijd naar rechts.'] },
+    { u: '$\\left(a^{\\frac{1}{2}}\\right)^4 = a^2$ (met $a > 0$).', j: true, v: ['$(a^p)^q = a^{p \\cdot q}$ en $\\frac12 \\cdot 4 = 2$.', 'Want $\\frac12 + 4 = 2$.', 'Want $\\sqrt{a^4} = a^4$.'] },
+    { u: '$\\sqrt{a^2 + 9} = a + 3$ (met $a > 0$).', j: false, v: ['Een wortel van een som is niet de som van de wortels: met $a = 4$ is $\\sqrt{25} = 5 \\neq 7$.', 'Het klopt, want $\\sqrt{a^2} = a$ en $\\sqrt{9} = 3$.', 'Het klopt alleen als $a$ even is.'] },
+];
+regGen({ id: 'h2_waar_fout', cat: 'h2', niveau: 2, titel: 'Waar of niet? Kies ook de verklaring', par: 'Herhaling H1–H5', maak(r) {
+    const twee = r.neemN(WAAR_FOUT, 2);
+    const delen = [];
+    twee.forEach(s => {
+        delen.push(D.janee(L`Uitspraak: «${s.u}» Is dit waar?`, s.j, s.j ? '' : 'Deze uitspraak is niet waar: zoek een tegenvoorbeeld.', s.j ? 'Deze uitspraak is wel waar: zoek de eigenschap die het verklaart.' : '', { waar: true, punten: 0.5, code: 'waarfout' }));
+        const opt = r.shuffle(s.v.map((t, i) => ({ t, uitleg: i === 0 ? '' : 'Deze verklaring klopt niet.', ok: i === 0 })));
+        delen.push(D.keuze('Welke verklaring past bij je antwoord?', opt.map(o => ({ t: o.t, uitleg: o.uitleg, code: 'waarfout' })), opt.findIndex(o => o.ok), { punten: 0.5, code: 'waarfout' }));
+    });
+    return {
+        opgave: 'Zijn deze uitspraken waar of niet? Kies telkens ook de verklaring die het bewijst. Denk eerst zelf na voor je de keuzes leest: zoek bij een foute uitspraak een tegenvoorbeeld.',
+        delen,
+        hints: ['Probeer een eenvoudig voorbeeld: kies zelf een functie of een getal en kijk of de uitspraak klopt.', 'Eén tegenvoorbeeld is genoeg om te bewijzen dat een uitspraak fout is.'],
+        stappen: twee.map(s => L`«${s.u}» — ${s.j ? 'waar' : 'niet waar'}: ${s.v[0]}`).concat(['!Fout? Eén tegenvoorbeeld volstaat. Juist? Noem de eigenschap of de rekenregel.']),
+    };
+} });</script>
 
 
 <!-- =====================================================================
@@ -4232,7 +4345,7 @@ function bouwTheorie() {
             { titel: 'Periodieke functies', gens: ['h1_periode'], html:
                 KADER(L`$f$ is <b>periodiek</b> met periode $p$ als $f(x + p) = f(x)$ voor alle $x$ (en $p$ is de kleinste zo'n positieve waarde). Dan is ook $f(x + k \cdot p) = f(x)$ voor elk geheel getal $k$.`)
                 + L`<p>Voorbeeld met $p = 6$: $\;f(38) = f(2 + 6 \cdot 6) = f(2)$ en $f(-20) = f(4 - 4 \cdot 6) = f(4)$.</p>` },
-            { titel: 'Grafisch oplossen', gens: ['h1_grafisch'], html:
+            { titel: 'Grafisch oplossen', gens: ['h1_grafisch', 'h1_extremum'], html:
                 L`<ul><li>$f(x) = g(x)$: de $x$-coördinaten van de snijpunten van de grafieken.</li><li>$f(x) > g(x)$: de $x$-waarden waar de grafiek van $f$ <b>boven</b> die van $g$ ligt; $f(x) < g(x)$: eronder.</li><li>Bij $\geq$ en $\leq$ horen de snijpunten erbij (gesloten haakje).</li></ul>` },
             { titel: 'Transformaties van grafieken', gens: ['h1_transfo_besch', 'h1_transfo_vs'], html:
                 `<table class="samenvatting-tabel"><tr><th>Voorschrift</th><th>Transformatie van de grafiek van $f$</th></tr><tr><td>$k \\cdot f(x)$ ($k > 0$)</td><td>verticale uitrekking met factor $k$</td></tr><tr><td>$-f(x)$</td><td>spiegeling om de $x$-as</td></tr><tr><td>$f(x - c)$</td><td>horizontale verschuiving over $c$ (naar rechts als $c > 0$)</td></tr><tr><td>$f(x) + d$</td><td>verticale verschuiving over $d$ (naar boven als $d > 0$)</td></tr></table>`
@@ -4375,27 +4488,83 @@ const CATS = [
     { id: 'h2', naam: 'H2 Veeltermfuncties', kort: 'graad, staartdeling, Horner, reststelling, ontbinden, tekentabel, ongelijkheden', ico: 'H2', kleur: '#7c3aed' },
     { id: 'h3', naam: 'H3 Rationale functies', kort: 'domein, nulwaarden, homografische functies, asymptoten, 1/xⁿ, vraagstukken', ico: 'H3', kleur: '#db2777' },
     { id: 'h4', naam: 'H4 n-demachtswortelfuncties', kort: 'n-demachtswortels, rationale exponenten, a·ⁿ√(x − c) + d, vraagstukken', ico: 'H4', kleur: '#0891b2' },
-    { id: 'h5', naam: 'H5 Exponentiële functies', kort: 'groeifactoren, omvormen, vraagstukken, grafieken b·aˣ + c, exponentiële vergelijkingen', ico: 'H5', kleur: '#ea580c' },
+    { id: 'h5', naam: 'H5 Exponentiële functies', kort: 'lineaire en exponentiële groei, groeifactor, model opstellen, terugrekenen', ico: 'H5', kleur: '#ea580c' },
 ];
 const CAT = Object.fromEntries(CATS.map(c => [c.id, c]));
+// Leerstof die pas na het kerstexamen komt (H5 vanaf 5.1.2: groeifactoren omvormen, halveringstijd, grafieken b·aˣ + c,
+// exponentiële vergelijkingen). Standaard verborgen, nooit gewist: de id's blijven bestaan voor het dashboard.
+const NA_KERST = new Set(['h5_omvormen', 'h5_tijdseenheid', 'h5_halvering', 'h5_kenmerken', 'h5_koppel_grafiek', 'h5_vs_grafiek', 'h5_vs_grafiek_c', 'h5_vgl1', 'h5_vgl2', 'h5_vgl3']);
+const inLeerstof = g => ST.naKerst || !NA_KERST.has(g.id);
+// In het leerlingenportaal staat vóór de app het blok PORTAAL-KOPPELING (leerlingCode, portaalKlas, portaalLogOpgave, ...).
+const IN_PORTAAL = typeof leerlingCode === 'function';
+function portaalZelf(details) { try { if (IN_PORTAAL && window.WiskundeTracker && WiskundeTracker.logModuleVoltooid) WiskundeTracker.logModuleVoltooid('ikkan', details); } catch (e) { /* loggen mag de app nooit storen */ } }
+
+// ===================== EXAMENTRAINING: ik-kan-lijst volgens het kerstexamen =====================
+// Elk doel hoort bij een soort examenvraag (zonder de vragen zelf) en verwijst naar oefensoorten van de app.
+const DOELEN = [
+    { id: 'k1', deel: 1, t: 'Ik koppel een situatie aan het juiste voorschrift, de grafiek en de tabel.', gens: ['h1_wandeling', 'h1_tabel', 'h1_vraagstuk', 'h5_situatie'] },
+    { id: 'k2', deel: 1, t: 'Ik beslis of een uitspraak waar is en geef een verklaring of tegenvoorbeeld.', gens: ['h2_waar_fout'] },
+    { id: 'k3', deel: 1, t: 'Ik lees een tekentabel, een verloopschema en de extrema af uit een grafiek.', gens: ['h1_tt_grafiek', 'h1_verloop', 'h1_domber'] },
+    { id: 'k4', deel: 1, t: 'Ik bepaal domein, bereik, nulwaarden en het gedrag op oneindig van een veeltermfunctie.', gens: ['h2_gedrag', 'h2_nulwaarden', 'h2_graad', 'h1_domein'] },
+    { id: 'k5', deel: 1, t: 'Ik onderzoek de symmetrie algebraïsch met f(−x).', gens: ['h1_symmetrie'] },
+    { id: 'k6', deel: 1, t: 'Ik werk met periodieke functies (periode, f(30), f(−11), …).', gens: ['h1_periode'] },
+    { id: 'k7', deel: 1, t: 'Ik deel veeltermen met de meest geschikte methode (staartdeling of Horner) en controleer met de reststelling.', gens: ['h2_staartdeling', 'h2_horner', 'h2_rest', 'h2_rest_k', 'h2_snelle_test'] },
+    { id: 'k8', deel: 1, t: 'Ik ontbind een veelterm en los een ongelijkheid op met een tekentabel.', gens: ['h2_ontbinden', 'h2_tekentabel', 'h2_ongelijkheid'] },
+    { id: 'k9', deel: 1, t: 'Ik stel het voorschrift van een veeltermfunctie op uit nulwaarden of een tekentabel en een punt.', gens: ['h2_voorschrift', 'h2_grafiek_vs'] },
+    { id: 'k10', deel: 1, t: 'Ik bepaal domein, V.A. en tekentabel van een rationale functie.', gens: ['h3_dom_nulw', 'h3_tekentabel', 'h3_dom_nulw_horner'] },
+    { id: 'k11', deel: 1, t: 'Ik stel het voorschrift van een homografische functie op (uit tabel, asymptoten, punt) en geef het bereik.', gens: ['h3_vs_tabel', 'h3_vs_asym', 'h3_vs_punt', 'h3_a_c', 'h3_homografisch'] },
+    { id: 'k12', deel: 1, t: 'Ik herschrijf een homografische functie als d + k/(x − c) en beschrijf de transformaties t.o.v. 1/x.', gens: ['h3_transfo', 'h1_transfo_besch'] },
+    { id: 'k13', deel: 1, t: 'Ik reken met n-demachtswortels en machten zonder rekenmachine.', gens: ['h4_wortel', 'h4_rat_exp', 'h4_macht_van'] },
+    { id: 'k14', deel: 1, t: 'Ik vereenvoudig met rationale exponenten tot alleen natuurlijke exponenten.', gens: ['h4_vereenvoudig', 'h4_vereenvoudig2', 'h4_omzetten'] },
+    { id: 'k15', deel: 1, t: 'Ik ken de kenmerken van 1/xⁿ voor n even en n oneven.', gens: ['h3_xn', 'h3_koppel_grafiek'] },
+    { id: 'k16', deel: 1, t: 'Ik stel het voorschrift a·ⁿ√(x − c) + d op en voer transformaties in de juiste volgorde uit.', gens: ['h4_grafiek_vs', 'h4_vs_voorwaarde', 'h4_transfo_vs', 'h1_transfo_vs'] },
+    { id: 'k17', deel: 1, t: 'Ik herken in een tabel een lineair of exponentieel verband en geef de formule.', gens: ['h5_tabel', 'h5_groeifactor'] },
+    { id: 'g1', deel: 2, t: 'Ik los vergelijkingen en ongelijkheden grafisch op (GeoGebra).', gens: ['h1_grafisch', 'h2_ongelijkheid2'] },
+    { id: 'g2', deel: 2, t: 'Ik stel zelf een voorschrift op en zoek het maximum met GeoGebra.', gens: ['h1_extremum'] },
+    { id: 'g3', deel: 2, t: 'Ik los een vraagstuk op met een gegeven formule (functiewaarde, wanneer, lange termijn).', gens: ['h3_vraagstuk', 'h4_vraagstuk', 'h1_vraagstuk'] },
+    { id: 'g4', deel: 2, t: 'Ik stel een lineair of exponentieel model op, vergelijk ze en reken terug in de tijd.', gens: ['h5_context', 'h5_steden', 'h5_wanneer', 'h5_formule_lezen', 'h5_beginwaarde', 'h5_rentevoet'] },
+];
+const DOEL = Object.fromEntries(DOELEN.map(d => [d.id, d]));
+const ZELF = { 1: ['😟', 'nog niet'], 2: ['🙂', 'een beetje'], 3: ['😎', 'ik kan het'] };
+const EXAMEN_NAAM = { examen1: 'Examensimulatie deel 1 (zonder laptop)', examen2: 'Examensimulatie deel 2 (met GeoGebra)', examen1k: 'Korte examensimulatie deel 1' };
+const DOEL_TEST_N = 3, DAGDOEL = 10;
 const NIVEAU = { 1: 'eenvoudig', 2: 'gemiddeld', 3: 'uitdagend' };
 const opslag = {
     lees(k, d) { try { const v = localStorage.getItem('fu5_' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
     schrijf(k, v) { try { localStorage.setItem('fu5_' + k, JSON.stringify(v)); } catch (e) { /* geen opslag beschikbaar */ } },
 };
 const APP = document.getElementById('app');
-try { localStorage.removeItem('fu5_naam'); localStorage.removeItem('fu5_klas'); } catch (e) { /* geen opslag */ } // vroeger bewaarde naam wissen
 const ST = {
-    scherm: 'menu', modus: opslag.lees('modus', 'oefen'), naam: '', klas: portaalKlas(),
+    scherm: 'menu', modus: opslag.lees('modus', 'oefen'), naam: IN_PORTAAL ? '' : opslag.lees('naam', ''), klas: IN_PORTAAL ? portaalKlas() : opslag.lees('klas', ''),
     toetsCat: 'mix', toetsPunten: 10, toetsNiveau: 0, mixCats: opslag.lees('mixcats', ['h1', 'h2', 'h3', 'h4', 'h5']), oefen: null, toets: null, log: [], sessieStart: new Date(), theorieCat: null, tvb: null,
+    naKerst: opslag.lees('nakerst', false), reeks: 0,
 };
+if (IN_PORTAAL) { try { localStorage.removeItem('fu5_naam'); localStorage.removeItem('fu5_klas'); } catch (e) { /* geen opslag */ } } // vroeger bewaarde naam wissen
+const catNaamVan = c => (CAT[c] ? CAT[c].naam : EXAMEN_NAAM[c] || 'Gemengd');
+// examenklaar per hoofdstuk: de laatste 8 resultaten (1 = meteen juist, 0,5 = met hulp, 0 = met uitwerking)
+function histVoegToe(cat, waarde) { const h = opslag.lees('hist', {}); h[cat] = [...(h[cat] || []), waarde].slice(-8); opslag.schrijf('hist', h); }
+function examenKlaar(cat) { const l = (opslag.lees('hist', {})[cat]) || []; return l.length >= 3 ? Math.round(100 * l.reduce((a, b) => a + b, 0) / l.length) : null; }
+function vandaagTeller(plus = 0) {
+    const d = new Date().toISOString().slice(0, 10), v = opslag.lees('dag', { d, n: 0 });
+    const w = v.d === d ? v : { d, n: 0 };
+    if (plus) { w.n += plus; opslag.schrijf('dag', w); }
+    return w.n;
+}
+const foutenbak = () => opslag.lees('foutenbak', {});
+function foutenbakBij(id, status) {
+    const fb = foutenbak();
+    if (status !== 'g') fb[id] = 2; // twee keer meteen juist om eruit te geraken
+    else if (fb[id]) { fb[id]--; if (fb[id] <= 0) delete fb[id]; }
+    opslag.schrijf('foutenbak', fb);
+}
+const foutenbakIds = () => Object.keys(foutenbak()).filter(id => GEN.some(g => g.id === id && inLeerstof(g)));
 let THEORIE = null;
 let zaadTeller = 0;
 const nieuwZaad = () => ((Date.now() % 2147483647) ^ Math.floor(Math.random() * 2147483647) ^ Math.imul(++zaadTeller, 2654435761)) >>> 0;
 const fmtPt = x => (Math.round(x * 10) / 10).toString().replace('.', ',');
 const catNaam = c => c === 'mix' ? 'Gemengd (alle hoofdstukken)' : CAT[c].naam;
 const mixNaam = cats => cats.length === CATS.length ? 'Gemengd (alle hoofdstukken)' : `Gemengd (${cats.map(c => c.toUpperCase()).join(', ')})`;
-const toetsNaam = t => t.cat === 'mix' ? mixNaam(t.cats) : CAT[t.cat].naam;
+const toetsNaam = t => t.cat === 'mix' ? mixNaam(t.cats) : catNaamVan(t.cat);
 const vandaag = () => new Date().toLocaleDateString('nl-BE', { day: 'numeric', month: 'long', year: 'numeric' });
 const kies = arr => arr[Math.floor(Math.random() * arr.length)];
 
@@ -4617,49 +4786,125 @@ function vernieuwAllePreviews() { APP.querySelectorAll('input.invoer').forEach(w
 
 // ===================== MENU =====================
 function catStat(c) { const s = opslag.lees('stat', {}); return s[c] || { n: 0, g: 0 }; }
+function kopHtml() {
+    const terug = IN_PORTAAL ? '<div class="portaal-terug-rij" data-html2canvas-ignore><a class="portaal-terug" href="index.html">← Alle apps</a></div>' : '';
+    return `<div class="kop">${terug}<h1>5doSW semester 1</h1><p>Oefenen en testen voor het kerstexamen — kenmerken van functies, veeltermfuncties, rationale functies, n-demachtswortelfuncties en exponentiële groei</p></div>`;
+}
+function klaarBalk(pct) {
+    if (pct === null) return '';
+    const kl = pct >= 75 ? '#16a34a' : pct >= 50 ? '#d97706' : '#dc2626';
+    return `<span class="klaar" title="Examenklaar: gebaseerd op je laatste oefeningen in dit hoofdstuk"><span class="klaar-balk"><span style="width:${pct}%;background:${kl}"></span></span>examenklaar ${pct}%</span>`;
+}
 function renderMenu() {
     const m = ST.modus;
     const catKaart = (id, naam, kort, ico, kleur) => {
         const st = id === 'mix' ? null : catStat(id);
         const aan = m === 'toets' && ST.toetsCat === id;
-        const n = id === 'mix' ? GEN.length : GEN.filter(g => g.cat === id).length;
-        return `<button class="cat ${aan ? 'aan' : ''}" data-act="cat" data-cat="${id}"><span class="ico" style="background:${kleur}">${ico}</span><span><b>${esc(naam)}</b><small>${esc(kort)}${m === 'theorie' ? '' : ` · ${n} soorten oefeningen`}</small>${st && st.n ? `<span class="stat">${st.n} geoefend · ${st.g} meteen juist</span>` : ''}</span></button>`;
+        const n = GEN.filter(g => (id === 'mix' || g.cat === id) && inLeerstof(g)).length;
+        return `<button class="cat ${aan ? 'aan' : ''}" data-act="cat" data-cat="${id}"><span class="ico" style="background:${kleur}">${ico}</span><span><b>${esc(naam)}</b><small>${esc(kort)}${m === 'theorie' ? '' : ` · ${n} soorten oefeningen`}</small>${st && st.n ? `<span class="stat">${st.n} geoefend · ${st.g} meteen juist</span>` : ''}${id !== 'mix' && m !== 'theorie' ? klaarBalk(examenKlaar(id)) : ''}</span></button>`;
     };
-    let s = `<div class="kaart"><div class="kop"><div class="portaal-terug-rij" data-html2canvas-ignore><a class="portaal-terug" href="index.html">← Alle apps</a></div><h1>5doSW semester 1</h1><p>Oefenen en testen voor het examen — kenmerken van functies, veeltermfuncties, rationale functies, n-demachtswortelfuncties en exponentiële functies</p></div><div class="kaart-binnen">
-        <div class="modus-grid">
+    const naamRij = IN_PORTAAL ? '' : `<div class="naam-rij"><label class="veld">Naam<input id="naam" value="${esc(ST.naam)}" placeholder="Voornaam Naam" autocomplete="name"></label><label class="veld">Klas<input id="klas" value="${esc(ST.klas)}" placeholder="bv. 5doSW"></label></div>`;
+    const n = vandaagTeller();
+    let s = `<div class="kaart">${kopHtml()}<div class="kaart-binnen">${naamRij}
+        <div class="dagdoel">🎯 Vandaag: <b>${n}</b> / ${DAGDOEL} oefeningen<span class="klaar-balk groot"><span style="width:${Math.min(100, 100 * n / DAGDOEL)}%;background:${n >= DAGDOEL ? '#16a34a' : '#2563eb'}"></span></span>${n >= DAGDOEL ? ' Dagdoel gehaald! 🎉' : ''}</div>
+        <div class="modus-grid vier">
+            <button class="modus examen ${m === 'examen' ? 'aan' : ''}" data-act="modus" data-m="examen"><b>🎯 Examentraining</b><span>Wat kan je al? Test jezelf per examenvraag, werk je foutenbak weg en doe een examensimulatie.</span></button>
             <button class="modus theorie ${m === 'theorie' ? 'aan' : ''}" data-act="modus" data-m="theorie"><b>📘 Theorie &amp; voorbeelden</b><span>De werkwijze uit de cursus, met telkens nieuwe uitgewerkte voorbeelden.</span></button>
             <button class="modus oefen ${m === 'oefen' ? 'aan' : ''}" data-act="modus" data-m="oefen"><b>✏️ Vrij oefenen</b><span>Telkens nieuwe oefeningen per hoofdstuk, met hints, feedback van je leerkracht en de volledige uitwerking.</span></button>
             <button class="modus toets ${m === 'toets' ? 'aan' : ''}" data-act="modus" data-m="toets"><b>📝 Toets</b><span>Per hoofdstuk of gemengd over alles, op 10, 20 of 30 punten, met PDF-rapport.</span></button>
-        </div>
-        <div class="sectie-titel">${m === 'theorie' ? 'Kies een hoofdstuk om de theorie te bekijken' : m === 'oefen' ? 'Kies een hoofdstuk om te oefenen' : 'Kies het onderdeel van de toets'}</div>
-        <div class="cat-grid">${CATS.map(c => catKaart(c.id, c.naam, c.kort, c.ico, c.kleur)).join('')}${m !== 'theorie' ? catKaart('mix', 'Gemengd (examen)', 'oefeningen uit alle hoofdstukken door elkaar', '★', '#334155') : ''}</div>`;
+        </div>`;
+    if (m === 'examen') s += examenHtml();
+    else {
+        s += `<div class="sectie-titel">${m === 'theorie' ? 'Kies een hoofdstuk om de theorie te bekijken' : m === 'oefen' ? 'Kies een hoofdstuk om te oefenen' : 'Kies het onderdeel van de toets'}</div>
+        <div class="cat-grid">${CATS.map(c => catKaart(c.id, c.naam, c.kort, c.ico, c.kleur)).join('')}${m !== 'theorie' ? catKaart('mix', 'Gemengd (examen)', 'oefeningen uit alle hoofdstukken door elkaar', '★', '#334155') : ''}</div>
+        <label class="klein grijs nakerst"><input type="checkbox" data-act="nakerst" ${ST.naKerst ? 'checked' : ''}> Ook leerstof van ná het kerstexamen tonen (H5: groeifactoren omvormen, halveringstijd, grafieken b·aˣ + c, exponentiële vergelijkingen)</label>`;
+    }
     if (m === 'toets') {
         const mixKeuze = ST.toetsCat !== 'mix' ? '' : `<p class="klein grijs" style="margin:0 0 6px">Welke hoofdstukken komen in de gemengde toets? (klik om aan of uit te zetten)</p><div class="keuze-rij" style="margin-bottom:8px">${CATS.map(c => `<button class="keuze ${ST.mixCats.includes(c.id) ? 'aan' : ''}" data-act="mixcat" data-cat="${c.id}">${ST.mixCats.includes(c.id) ? '✔ ' : ''}${c.ico}<small>${esc(c.naam.replace(/^H\d /, ''))}</small></button>`).join('')}</div>`;
         s += `<div class="instel"><h3>Toets: ${esc(ST.toetsCat === 'mix' ? mixNaam(ST.mixCats) : catNaam(ST.toetsCat))}</h3>${mixKeuze}
-            <div class="keuze-rij">${[10, 20, 30].map(p => `<button class="keuze ${ST.toetsPunten === p ? 'aan' : ''}" data-act="tpunten" data-p="${p}">${p} punten<small>${p === 10 ? 'korte toets' : p === 20 ? 'volledige toets' : 'examensimulatie'}</small></button>`).join('')}</div>
+            <div class="keuze-rij">${[10, 20, 30].map(p => `<button class="keuze ${ST.toetsPunten === p ? 'aan' : ''}" data-act="tpunten" data-p="${p}">${p} punten<small>${p === 10 ? 'korte toets' : p === 20 ? 'volledige toets' : 'lange toets'}</small></button>`).join('')}</div>
             <div class="keuze-rij" style="margin-top:8px">${[0, 1, 2, 3].map(n => `<button class="keuze ${ST.toetsNiveau === n ? 'aan' : ''}" data-act="tniveau" data-n="${n}">${n ? NIVEAU[n] : 'gemengd niveau'}<small>${n ? 'niveau ' + n : 'van eenvoudig tot uitdagend'}</small></button>`).join('')}</div>
-            <p class="klein grijs" style="margin-top:10px">Tijdens de toets krijg je geen hints of feedback. Werk zoals op een echte toets: met pen en papier, zonder rekenmachine. Bij een vraag met het label <b>GeoGebra</b> mag (en moet) je GeoGebra gebruiken. Na het inleveren zie je je score, de feedback van je leerkracht, de juiste antwoorden en de uitwerkingen, en kan je het rapport als PDF downloaden.</p>
+            <p class="klein grijs" style="margin-top:10px">Tijdens de toets krijg je geen hints of feedback. Werk zoals op een echte toets: met pen en papier, zonder rekenmachine. Bij een vraag met het label <b>GeoGebra</b> mag (en moet) je GeoGebra gebruiken. Na het inleveren zie je je score, de feedback van je leerkracht, de juiste antwoorden en de uitwerkingen, en kan je het rapport als PDF downloaden. Een echte examensimulatie vind je bij <b>🎯 Examentraining</b>.</p>
             <div class="knop-rij" style="margin-top:8px"><button class="knop knop-rood knop-groot" data-act="starttoets">Start de toets →</button></div></div>`;
     }
     if (ST.log.length) s += `<div class="melding" style="background:var(--groen-licht);border-color:var(--groen-rand);color:#065f46">Je hebt in deze sessie al ${ST.log.length} oefening${ST.log.length === 1 ? '' : 'en'} gemaakt. <button class="linkknop" data-act="oefenrapport">Download je oefenrapport (PDF)</button></div><div id="pdf-status" class="klein grijs"></div>`;
     s += '</div></div>';
     APP.innerHTML = s;
 }
+// ---------- Examentraining ----------
+function ikKan() { return opslag.lees('ikkan', {}); }
+function doelResultaatHtml(d) {
+    const x = ikKan()[d.id] || {};
+    let s = '';
+    if (x.test) {
+        const pct = Math.round(100 * x.test.score / x.test.n);
+        const kl = pct >= 75 ? 'goed' : pct >= 50 ? 'matig' : 'zwak';
+        s += `<span class="doel-res ${kl}" title="Laatste test (${esc(x.test.datum || '')})">test: ${fmtPt(x.test.score)}/${x.test.n}</span>`;
+        if (x.zelf) {
+            const verw = x.zelf === 3 ? 0.75 : x.zelf === 2 ? 0.5 : 0;
+            if (x.zelf === 3 && pct < 67) s += '<span class="doel-tip">Je schatte jezelf hoger in dan je test. Oefen dit nog!</span>';
+            else if (x.zelf === 1 && pct >= 67) s += '<span class="doel-tip goed">Je kan meer dan je denkt! 💪</span>';
+            else if (pct / 100 >= verw) s += '<span class="doel-tip goed">Goed ingeschat.</span>';
+        }
+    }
+    return s;
+}
+function examenHtml() {
+    const fb = foutenbakIds();
+    const ik = ikKan();
+    const ingevuld = DOELEN.filter(d => ik[d.id] && ik[d.id].zelf).length, getest = DOELEN.filter(d => ik[d.id] && ik[d.id].test).length;
+    const rij = d => {
+        const z = (ik[d.id] || {}).zelf || 0;
+        return `<tr><td class="doel-t">${esc(d.t)}</td><td class="doel-z">${[1, 2, 3].map(k => `<button class="zelf ${z === k ? 'aan' : ''}" data-act="zelf" data-d="${d.id}" data-z="${k}" title="${ZELF[k][1]}">${ZELF[k][0]}</button>`).join('')}</td><td class="doel-r"><button class="knop knop-klein knop-blauw-licht" data-act="doeltest" data-d="${d.id}">Test jezelf (${DOEL_TEST_N})</button>${doelResultaatHtml(d)}</td></tr>`;
+    };
+    return `<div class="examen-blok">
+        <div class="ex-uitleg"><b>Zo oefen je slim voor het examen</b><ol>
+            <li><b>Schat jezelf in</b> bij elke examenvraag: 😟 nog niet · 🙂 een beetje · 😎 ik kan het.</li>
+            <li><b>Test jezelf</b>: ${DOEL_TEST_N} oefeningen van die soort, eerst zelf op papier. Klopt je inschatting?</li>
+            <li>Wat fout ging, komt in je <b>foutenbak</b>. Een oefensoort gaat er pas uit als je ze twee keer meteen juist hebt.</li>
+            <li>Klaar? Doe een <b>examensimulatie</b>, zoals op het echte examen.</li></ol>
+            <div class="klein grijs">Ingeschat: ${ingevuld}/${DOELEN.length} · getest: ${getest}/${DOELEN.length}</div></div>
+        <h3 class="ex-h">1. Ik-kan-lijst — deel 1 (zonder laptop)</h3>
+        <div class="tt-scroll"><table class="doelen">${DOELEN.filter(d => d.deel === 1).map(rij).join('')}</table></div>
+        <h3 class="ex-h">Ik-kan-lijst — deel 2 (met laptop en GeoGebra)</h3>
+        <div class="tt-scroll"><table class="doelen">${DOELEN.filter(d => d.deel === 2).map(rij).join('')}</table></div>
+        <h3 class="ex-h">2. Foutenbak</h3>
+        <p>${fb.length ? `Er zitten <b>${fb.length}</b> oefensoorten in je foutenbak: ${fb.slice(0, 6).map(id => esc(GEN.find(g => g.id === id).titel)).join(' · ')}${fb.length > 6 ? ' …' : ''}` : 'Je foutenbak is leeg. Wat je fout doet bij het oefenen, komt hier terecht.'}</p>
+        <button class="knop knop-geel" data-act="foutenbak" ${fb.length ? '' : 'disabled'}>🔁 Werk je foutenbak weg</button>
+        <h3 class="ex-h">3. Examensimulatie</h3>
+        <p class="klein grijs">Eén oefening per examenvraag, met telkens nieuwe getallen. Geen hints, geen feedback tot je inlevert: werk met pen en papier en hou de tijd in het oog.</p>
+        <div class="keuze-rij">
+            <button class="keuze" data-act="examensim" data-e="examen1k">Kort: deel 1<small>8 examenvragen, ± 35 min</small></button>
+            <button class="keuze" data-act="examensim" data-e="examen1">Volledig: deel 1<small>${DOELEN.filter(d => d.deel === 1).length} examenvragen zonder laptop, ± 90 min</small></button>
+            <button class="keuze" data-act="examensim" data-e="examen2">Deel 2<small>${DOELEN.filter(d => d.deel === 2).length} vragen met GeoGebra, ± 45 min</small></button>
+        </div></div>`;
+}
 
 // ===================== VRIJ OEFENEN =====================
+// ST.oefen.gens (optioneel): vaste lijst oefensoorten (test van een examendoel of de foutenbak).
 function kandidaten() {
     const o = ST.oefen;
-    return GEN.filter(g => (o.cat === 'mix' || g.cat === o.cat) && (o.niveau === 0 || g.niveau === o.niveau) && !o.uit.has(g.id));
+    return GEN.filter(g => (o.gens ? o.gens.includes(g.id) : (o.cat === 'mix' || g.cat === o.cat)) && inLeerstof(g) && (o.gens || o.niveau === 0 || g.niveau === o.niveau) && !o.uit.has(g.id));
 }
-function startOefen(cat, alleenGen = null) {
-    ST.oefen = { cat, niveau: 0, uit: new Set(), inst: null, staat: [], recent: [], typesOpen: false };
+function startOefen(cat, alleenGen = null, extra = {}) {
+    ST.oefen = { cat, niveau: 0, uit: new Set(), inst: null, staat: [], recent: [], typesOpen: false, tag: 'v', ...extra };
     if (alleenGen) GEN.filter(g => g.cat === cat && g.id !== alleenGen).forEach(g => ST.oefen.uit.add(g.id));
     ST.scherm = 'oefen';
     nieuweOefening();
 }
-function nieuweOefening() {
+function startDoelTest(id) {
+    const d = DOEL[id];
+    startOefen('mix', null, { gens: d.gens, doel: id, tag: 'd', titel: 'Test jezelf: ' + d.t, doelRes: [] });
+}
+function startFoutenbak() {
+    const ids = foutenbakIds();
+    if (!ids.length) return;
+    startOefen('mix', null, { gens: ids, tag: 'f', titel: 'Foutenbak' });
+}
+function nieuweOefening(vasteGen = null) {
     const o = ST.oefen;
-    const kand = kandidaten();
+    if (o.tag === 'f') { o.gens = foutenbakIds(); }
+    const kand = vasteGen ? [vasteGen] : kandidaten();
     o.voorbeeld = null;
     if (!kand.length) { o.inst = null; render(); return; }
     let keuze = kand.filter(g => !o.recent.includes(g.id));
@@ -4672,6 +4917,7 @@ function nieuweOefening() {
     o.recent = [g.id, ...o.recent].slice(0, Math.min(4, Math.max(0, kand.length - 1)));
     o.staat = inst.delen.map(() => ({ waarden: {}, fb: null, ok: false }));
     o.pogingen = 0; o.hints = 0; o.uitwerking = false; o.klaar = false; o.gelogd = false; o.start = new Date(); o.codes = new Set();
+    o.zeker = 0; o.pt1 = null; o.zekerFb = null; o.tweeling = !!vasteGen;
     render();
     window.scrollTo({ top: 0 });
 }
@@ -4684,30 +4930,55 @@ function logOefening(status) {
     const o = ST.oefen;
     if (o.gelogd) return;
     o.gelogd = true;
-    ST.log.push({ inst: o.inst, status, pogingen: o.pogingen, hints: o.hints, uitwerking: o.uitwerking, waarden: o.staat.map(s => ({ ...s.waarden })), ok: o.staat.map(s => s.ok), fb: o.staat.map(s => s.fb), codes: [...o.codes], tijd: new Date() });
-    // dashboard: één rij per oefening (g = meteen juist, h = juist met hulp, f = met uitwerking)
-    {
-        const gen = (o.inst && o.inst.gen) || {};
-        const codes = [...(o.codes || []), ...(o.fouten || []), ...(o.staat || []).flatMap(s => s.codes || [])].filter(c => typeof c === 'string' && c);
-        portaalLogOpgave(status === 'g', gen.cat, codes[0], { oef: gen.id, niv: gen.niveau, st: status, pog: o.pogingen, hints: o.hints });
-    }
-    const s = opslag.lees('stat', {}), c = o.inst.gen.cat;
+    const gen = o.inst.gen;
+    ST.log.push({ inst: o.inst, status, pogingen: o.pogingen, hints: o.hints, uitwerking: o.uitwerking, waarden: o.staat.map(s => ({ ...s.waarden })), ok: o.staat.map(s => s.ok), fb: o.staat.map(s => s.fb), codes: [...o.codes], tijd: new Date(), pt: o.pt1 || 0 });
+    const s = opslag.lees('stat', {}), c = gen.cat;
     s[c] = s[c] || { n: 0, g: 0 }; s[c].n++; if (status === 'g') s[c].g++;
     opslag.schrijf('stat', s);
+    histVoegToe(c, status === 'g' ? 1 : status === 'h' ? 0.5 : 0);
+    foutenbakBij(gen.id, status);
+    vandaagTeller(1);
+    ST.reeks = status === 'g' ? ST.reeks + 1 : 0;
+    // punten bij de eerste controle (deelpunten tellen mee); zonder controle = 0
+    const pt = Math.round((o.pt1 || 0) * 10) / 10;
+    if (o.doel && o.doelRes) {
+        o.doelRes.push(status === 'g' ? 1 : status === 'h' ? 0.5 : 0);
+        if (o.doelRes.length === DOEL_TEST_N) {
+            const ik = ikKan(), x = ik[o.doel] || {};
+            const score = o.doelRes.reduce((a, b) => a + b, 0);
+            x.test = { score, n: DOEL_TEST_N, datum: new Date().toLocaleDateString('nl-BE') };
+            ik[o.doel] = x; opslag.schrijf('ikkan', ik);
+            portaalZelf({ doel: o.doel, zelf: x.zelf || 0, test: score, n: DOEL_TEST_N });
+        }
+    }
+    // dashboard: één rij per oefening (g = meteen juist, h = juist met hulp, f = met uitwerking)
+    if (IN_PORTAAL && typeof portaalLogOpgave === 'function') {
+        const codes = [...o.codes].filter(x => typeof x === 'string' && x);
+        portaalLogOpgave(status === 'g', gen.cat, codes[0], { oef: gen.id, niv: gen.niveau, st: status, pog: o.pogingen, hints: o.hints, pt, max: o.inst.punten, zk: o.zeker || 0, m: o.tag || 'v', doel: o.doel || undefined });
+    }
 }
 function controleerOefening() {
     bewaarOefenWaarden();
     const o = ST.oefen;
-    let alleJuist = true, ergensFout = false;
+    let alleJuist = true, ergensFout = false, pt = 0;
     o.inst.delen.forEach((d, i) => {
         const st = o.staat[i];
-        if (st.ok) return;
+        if (st.ok) { pt += d.punten; return; }
         let res;
         try { res = TYPES[d.type].controleer(d, st.waarden); }
         catch (e) { res = e.leesfout ? { ok: false, leesfout: true, msg: e.message } : { ok: false, msg: 'Er liep iets mis bij het nakijken van dit antwoord.', code: 'onbekend' }; if (!e.leesfout) console.error(e); }
         st.fb = res;
-        if (res.ok) st.ok = true; else { alleJuist = false; if (!res.leesfout) { ergensFout = true; codesVan(res).forEach(c => o.codes.add(c)); } }
+        if (res.ok) { st.ok = true; pt += d.punten; } else { alleJuist = false; if (!res.leesfout) { ergensFout = true; pt += res.score || 0; codesVan(res).forEach(c => o.codes.add(c)); } }
     });
+    // de eerste echte controle telt voor de punten en voor de zelfinschatting
+    if (o.pt1 === null && (ergensFout || alleJuist)) {
+        o.pt1 = o.hints || o.uitwerking ? 0 : pt;
+        if (o.zeker) {
+            const z = o.zeker;
+            o.zekerFb = alleJuist ? (z === 3 ? { ok: true, t: 'Je was zeker en het klopt. 💪' } : { ok: true, t: 'Je twijfelde, maar het was juist! Vertrouw meer op je eigen werk.' })
+                : (z === 3 ? { ok: false, t: 'Je was zeker, maar er zit een fout in. Net daarom is dit interessant: lees de feedback goed, hier zit een denkfout die je op het examen punten kan kosten.' } : { ok: false, t: 'Goed ingeschat: je voelde al dat het nog niet zat. Lees de feedback en probeer opnieuw.' });
+        }
+    }
     if (ergensFout) o.pogingen++;
     if (alleJuist) {
         o.klaar = true;
@@ -4723,31 +4994,53 @@ function sessieHtml() {
     ST.log.forEach(l => t[l.status]++);
     return `<div class="sessie"><span>Deze sessie:</span>${ST.log.slice(-40).map(l => `<span class="bolletje ${l.status}" title="${esc(l.inst.gen.titel)}"></span>`).join('')}<span>— ${t.g} meteen juist, ${t.h} juist met hulp, ${t.f} met uitwerking</span></div>`;
 }
+function zekerHtml(o) {
+    if (o.klaar || o.pt1 !== null) return o.zekerFb ? `<div class="zeker-fb ${o.zekerFb.ok ? 'goed' : ''}">🧠 ${esc(o.zekerFb.t)}</div>` : '';
+    return `<div class="zeker-rij"><span>Hoe zeker ben je van je antwoord?</span>${[[1, '😟 gok'], [2, '🤔 twijfel'], [3, '😎 zeker']].map(([z, t]) => `<button class="keuze ${o.zeker === z ? 'aan' : ''}" data-act="zeker" data-z="${z}">${t}</button>`).join('')}</div>`;
+}
+function doelEindeHtml(o) {
+    const d = DOEL[o.doel], x = ikKan()[o.doel] || {}, sc = o.doelRes.reduce((a, b) => a + b, 0);
+    const zelf = x.zelf ? `${ZELF[x.zelf][0]} ${ZELF[x.zelf][1]}` : 'niet ingevuld';
+    const pct = sc / DOEL_TEST_N;
+    const oordeel = pct >= 0.66 ? (x.zelf === 1 ? 'Je kan meer dan je dacht! Pas je inschatting aan.' : 'Dit zit goed. Kies een volgend doel.') : (x.zelf === 3 ? 'Je schatte jezelf hoger in. Bekijk de uitwerkingen en oefen dit nog: het staat nu in je foutenbak.' : 'Hier moet je nog op oefenen. Bekijk de theorie en de uitwerkingen.');
+    return `<div class="leerkracht ${pct >= 0.66 ? 'goed' : ''} lk-groot"><div class="lk-kop">✍ Resultaat van je test</div><p><b>${esc(d.t)}</b></p><p>Score: <b>${fmtPt(sc)} / ${DOEL_TEST_N}</b> (meteen juist = 1, met hulp = ½) · jij dacht: ${zelf}</p><p>${oordeel}</p>
+        <div class="actie-rij"><button class="knop knop-donker" data-act="naarexamen">← Terug naar de ik-kan-lijst</button><button class="knop knop-licht" data-act="doeltest" data-d="${o.doel}">Nog eens testen</button></div></div>`;
+}
 function renderOefen() {
     const o = ST.oefen, inst = o.inst;
-    const kandAlle = GEN.filter(g => (o.cat === 'mix' || g.cat === o.cat) && (o.niveau === 0 || g.niveau === o.niveau));
+    const kandAlle = GEN.filter(g => (o.gens ? o.gens.includes(g.id) : (o.cat === 'mix' || g.cat === o.cat)) && inLeerstof(g) && (o.gens || o.niveau === 0 || g.niveau === o.niveau));
     const juistN = ST.log.filter(l => l.status === 'g').length;
-    let s = `<div class="kaart"><div class="balk oefen"><button class="terug" data-act="menu">← Menu</button><h2>Vrij oefenen · ${esc(catNaam(o.cat))}</h2><span class="teller" title="meteen juist / gemaakt">✔ ${juistN} / ${ST.log.length}</span><button class="terug" data-act="oefenrapport">⬇ Rapport (PDF)</button></div>
-        <div class="niveau-balk"><span>Niveau:</span>${[0, 1, 2, 3].map(n => `<button class="keuze ${o.niveau === n ? 'aan' : ''}" data-act="niveau" data-n="${n}">${n ? NIVEAU[n] : 'alle niveaus'}</button>`).join('')}
-        <details class="typhulp" style="margin:0 0 0 auto" ${o.typesOpen ? 'open' : ''} data-types><summary>Oefentypes (${kandidaten().length}/${kandAlle.length})</summary><div class="inhoud"><div class="types-lijst" style="margin-top:6px">${kandAlle.map(g => `<label class="type-optie"><input type="checkbox" data-act="type" data-id="${g.id}" ${o.uit.has(g.id) ? '' : 'checked'}><span>${esc(g.titel)}${o.cat === 'mix' ? ` <span class="grijs">(${g.cat.toUpperCase()})</span>` : ''}</span><span class="label n${g.niveau} niv">${g.niveau}</span></label>`).join('')}</div><div class="snel klein" style="margin-top:8px"><button class="linkknop" data-act="types-alle">alles aan</button> · <button class="linkknop" data-act="types-geen">alles uit</button></div></div></details></div>
-        <div class="kaart-binnen">`;
-    if (!inst) s += `<div class="melding">Er zijn geen oefentypes die aan je keuze voldoen. Kies een ander niveau of zet meer oefentypes aan.</div>`;
+    const titel = o.titel || 'Vrij oefenen · ' + catNaam(o.cat);
+    const terug = o.tag === 'v' ? 'menu' : 'naarexamen';
+    let s = `<div class="kaart"><div class="balk oefen"><button class="terug" data-act="${terug}">← ${o.tag === 'v' ? 'Menu' : 'Examentraining'}</button><h2>${esc(titel)}</h2><span class="teller" title="meteen juist na elkaar / vandaag">🔥 ${ST.reeks} · 🎯 ${vandaagTeller()}/${DAGDOEL}</span><span class="teller" title="meteen juist / gemaakt">✔ ${juistN} / ${ST.log.length}</span><button class="terug" data-act="oefenrapport">⬇ Rapport (PDF)</button></div>`;
+    if (o.tag === 'v') s += `<div class="niveau-balk"><span>Niveau:</span>${[0, 1, 2, 3].map(n => `<button class="keuze ${o.niveau === n ? 'aan' : ''}" data-act="niveau" data-n="${n}">${n ? NIVEAU[n] : 'alle niveaus'}</button>`).join('')}
+        <details class="typhulp" style="margin:0 0 0 auto" ${o.typesOpen ? 'open' : ''} data-types><summary>Oefentypes (${kandidaten().length}/${kandAlle.length})</summary><div class="inhoud"><div class="types-lijst" style="margin-top:6px">${kandAlle.map(g => `<label class="type-optie"><input type="checkbox" data-act="type" data-id="${g.id}" ${o.uit.has(g.id) ? '' : 'checked'}><span>${esc(g.titel)}${o.cat === 'mix' ? ` <span class="grijs">(${g.cat.toUpperCase()})</span>` : ''}</span><span class="label n${g.niveau} niv">${g.niveau}</span></label>`).join('')}</div><div class="snel klein" style="margin-top:8px"><button class="linkknop" data-act="types-alle">alles aan</button> · <button class="linkknop" data-act="types-geen">alles uit</button></div></div></details></div>`;
+    else if (o.doel) s += `<div class="niveau-balk"><span>Oefening ${Math.min(o.doelRes.length + 1, DOEL_TEST_N)} van ${DOEL_TEST_N}</span>${o.doelRes.map(v => `<span class="bolletje ${v === 1 ? 'g' : v ? 'h' : 'f'}"></span>`).join('')}</div>`;
+    else s += `<div class="niveau-balk"><span>Nog ${foutenbakIds().length} oefensoorten in je foutenbak. Twee keer meteen juist = eruit.</span></div>`;
+    s += '<div class="kaart-binnen">';
+    if (o.doel && o.doelRes.length >= DOEL_TEST_N && o.klaar) s += doelEindeHtml(o);
+    if (!inst) s += o.tag === 'f' ? `<div class="leerkracht goed"><div class="lk-kop">✍ Foutenbak leeg! 🎉</div><p>Alle oefensoorten uit je foutenbak heb je twee keer meteen juist opgelost. Knap!</p><button class="knop knop-donker" data-act="naarexamen">← Examentraining</button></div>` : `<div class="melding">Er zijn geen oefentypes die aan je keuze voldoen. Kies een ander niveau of zet meer oefentypes aan.</div>`;
     else {
+        if (o.tweeling) s += `<div class="feedback info"><span class="ico">🔁</span><div><b>Tweeling-oefening:</b> dezelfde soort, andere getallen. Probeer het nu helemaal zelf, zonder hints.</div></div>`;
         s += opgaveHtml(inst);
         inst.delen.forEach((d, i) => { s += deelHtml(d, i, { waarden: o.staat[i].waarden, fb: o.staat[i].fb, slot: o.staat[i].ok }); });
+        s += zekerHtml(o);
         if (o.klaar) {
             const st = ST.log[ST.log.length - 1].status;
-            s += st === 'g' ? `<div class="leerkracht goed"><div class="lk-kop">✍ ${kies(LOF)}</div><p>Meteen helemaal juist, zonder hulp. Klik op <i>Volgende oefening</i> voor een nieuwe opgave.</p></div>`
-                : `<div class="feedback juist" style="margin-top:14px"><span class="ico">🎉</span><div><b>${st === 'h' ? 'Juist! Goed doorgezet.' : 'Juist (met de uitwerking erbij).'}</b> Klik op <i>Volgende oefening</i> voor een nieuwe opgave.</div></div>`;
+            s += st === 'g' ? `<div class="leerkracht goed"><div class="lk-kop">✍ ${kies(LOF)}</div><p>Meteen helemaal juist, zonder hulp.${ST.reeks >= 3 ? ` Al ${ST.reeks} keer na elkaar! 🔥` : ''} Klik op <i>Volgende oefening</i> voor een nieuwe opgave.</p></div>`
+                : `<div class="feedback juist" style="margin-top:14px"><span class="ico">🎉</span><div><b>${st === 'h' ? 'Juist! Goed doorgezet.' : 'Juist (met de uitwerking erbij).'}</b> Deze soort komt in je foutenbak. Lukt het nu ook zonder hulp? Probeer de <b>tweeling-oefening</b>.</div></div>`;
         } else if (o.pogingen >= 2 && !o.uitwerking) {
             s += `<div class="feedback info" style="margin-top:14px"><span class="ico">💡</span><div>Lukt het niet? Vraag een hint, bekijk de theorie of de uitwerking stap voor stap.</div></div>`;
         }
+        const st = o.klaar ? ST.log[ST.log.length - 1].status : null;
+        const doelKlaar = o.doel && o.doelRes.length >= DOEL_TEST_N;
         s += `<div class="actie-rij">
             <button class="knop knop-groen" data-act="controleer" ${o.klaar ? 'disabled' : ''}>✔ Controleer</button>
             <button class="knop knop-geel" data-act="hint" ${o.hints >= inst.hints.length || o.klaar ? 'disabled' : ''}>💡 Hint (${o.hints}/${inst.hints.length})</button>
             <button class="knop knop-blauw-licht" data-act="uitwerking">${o.uitwerking ? 'Verberg' : 'Toon'} uitwerking</button>
             <button class="knop knop-licht" data-act="voorbeeld">📘 Voorbeeld</button>
-            <button class="knop knop-donker" data-act="volgende">Volgende oefening →</button></div>`;
+            ${st && st !== 'g' && !doelKlaar ? '<button class="knop knop-groen" data-act="tweeling">🔁 Tweeling-oefening</button>' : ''}
+            ${doelKlaar ? '' : '<button class="knop knop-donker" data-act="volgende">Volgende oefening →</button>'}</div>`;
         if (o.hints) s += `<div class="hulp"><h3>Hints</h3><ol>${inst.hints.slice(0, o.hints).map(h => `<li>${wis(h)}</li>`).join('')}</ol></div>`;
         if (o.uitwerking) s += `<div class="uitwerking"><h3>Uitwerking (zoals in de cursus)</h3>${stappenHtml(inst)}<div class="klein grijs" style="margin-top:8px">Juiste antwoord${inst.delen.length > 1 ? 'en' : ''}:</div>${inst.delen.map(d => `<div>${d.letter ? `<b>${d.letter})</b> ` : ''}${juistHtml(d)}</div>`).join('')}</div>`;
         if (o.voorbeeld) s += voorbeeldHtml(o.voorbeeld, false);
@@ -4771,7 +5064,7 @@ function kiesToets1(cats, totaal, niveau, seed) {
     let rest = totaal;
     const GEWICHT = { 1: 0.35, 2: 0.45, 3: 0.2 };
     for (let poging = 0; rest > 1e-9 && poging < 3000; poging++) {
-        let pool = GEN.filter(g => cats.includes(g.cat) && !gebruikt.has(g.id));
+        let pool = GEN.filter(g => cats.includes(g.cat) && inLeerstof(g) && !gebruikt.has(g.id));
         if (niveau) { const p = pool.filter(g => g.niveau === niveau); if (p.length) pool = p; }
         if (!pool.length) { if (!gebruikt.size) break; gebruikt.clear(); vragen.forEach(v => gebruikt.add(v.gen.id)); if (gebruikt.size >= GEN.filter(g => cats.includes(g.cat)).length) gebruikt.clear(); continue; }
         if (cats.length > 1) { const min = Math.min(...cats.map(c => perCat[c] || 0)); const p = pool.filter(g => (perCat[g.cat] || 0) === min); if (p.length) pool = p; }
@@ -4803,6 +5096,22 @@ function startToets() {
     render();
     window.scrollTo({ top: 0 });
 }
+// examensimulatie: één oefening per examendoel, in de volgorde van het examen
+function startExamen(e) {
+    let doelen = DOELEN.filter(d => d.deel === (e === 'examen2' ? 2 : 1));
+    if (e === 'examen1k') { const r = new Rnd(nieuwZaad()); doelen = r.neemN(doelen, 8).sort((a, b) => DOELEN.indexOf(a) - DOELEN.indexOf(b)); }
+    const vragen = [];
+    doelen.forEach(d => {
+        const gens = GEN.filter(g => d.gens.includes(g.id) && inLeerstof(g));
+        for (let i = 0; i < 6 && gens.length; i++) { try { vragen.push(maakOefening(gens[Math.floor(Math.random() * gens.length)], nieuwZaad())); break; } catch (err) { console.error(err); } }
+    });
+    const totaal = vragen.reduce((s, v) => s + v.punten, 0);
+    const cats = [...new Set(vragen.map(v => v.gen.cat))];
+    ST.toets = { vragen, cats, waarden: vragen.map(v => v.delen.map(() => ({}))), huidig: 0, cat: e, totaal, niveau: 0, start: new Date(), klaar: false, toonUitw: true };
+    ST.scherm = 'toets';
+    render();
+    window.scrollTo({ top: 0 });
+}
 function bewaarToetsWaarden() {
     const t = ST.toets;
     if (!t || t.klaar) return;
@@ -4830,12 +5139,14 @@ function nakijkenToets() {
     }));
     t.behaald = t.res.flat().reduce((s, x) => s + x.score, 0);
     t.klaar = true; t.einde = new Date();
-    // dashboard: één rij per toets, met de score en een telling van de soorten fouten
-    {
-        const fouten = {};
+    // dashboard: één rij per toets, met de score, de punten per hoofdstuk en een telling van de soorten fouten
+    if (IN_PORTAAL && typeof portaalLogToets === 'function') {
+        const fouten = {}, pc = {};
         t.res.flat().forEach(r => { const c = r && !r.ok && !r.leeg && (r.code || r.soort); if (typeof c === 'string' && c && (fouten[c] || Object.keys(fouten).length < 8)) fouten[c] = (fouten[c] || 0) + 1; });
+        t.vragen.forEach((v, qi) => { const c = v.gen.cat; pc[c] = pc[c] || [0, 0]; pc[c][0] += t.res[qi].reduce((s, x) => s + x.score, 0); pc[c][1] += v.punten; });
+        Object.keys(pc).forEach(c => { pc[c] = Math.round(100 * pc[c][0] / pc[c][1]); });
         const max = Number(t.totaal) || 0;
-        portaalLogToets(max ? 100 * t.behaald / max : 0, (t.einde - t.start) / 1000, String(t.cat), { punten: max, behaald: Math.round(t.behaald * 10) / 10, niv: t.niveau, vragen: t.vragen.length, fouten });
+        portaalLogToets(max ? 100 * t.behaald / max : 0, (t.einde - t.start) / 1000, String(t.cat), { punten: max, behaald: Math.round(t.behaald * 10) / 10, niv: t.niveau, vragen: t.vragen.length, fouten, pc });
     }
     ST.scherm = 'uitslag';
     render();
@@ -4870,9 +5181,9 @@ function toetsBlokken() {
     const scls = p >= 0.7 ? 'goed' : p >= 0.5 ? 'matig' : 'zwak';
     const duur = Math.max(1, Math.round((t.einde - t.start) / 60000));
     const items = t.vragen.map((v, qi) => ({ cat: v.gen.cat, max: v.punten, score: t.res[qi].reduce((s, x) => s + x.score, 0), codes: t.res[qi].filter(x => !x.ok).flatMap(codesVan) }));
-    const B = [{ html: `<div class="rapport-kop-blok"><h2>Toets 5doSW semester 1</h2><div class="rapport-info">${ST.klas ? esc(ST.klas) + ' · ' : ''}${vandaag()}</div><div class="rapport-info">Onderdeel: ${esc(toetsNaam(t))} · niveau: ${t.niveau ? NIVEAU[t.niveau] : 'gemengd'} · duur: ${duur} min</div><div class="score ${scls}">${fmtPt(t.behaald)} / ${fmtPt(t.totaal)}</div><div class="rapport-info">${Math.round(100 * p)}% · ${fmtPt(Math.round(p * 100) / 10)} / 10</div></div>` }];
+    const B = [{ html: `<div class="rapport-kop-blok"><h2>Toets 5doSW semester 1</h2><div class="rapport-info">${wieHtml()}${vandaag()}</div><div class="rapport-info">Onderdeel: ${esc(toetsNaam(t))} · niveau: ${t.niveau ? NIVEAU[t.niveau] : 'gemengd'} · duur: ${duur} min</div><div class="score ${scls}">${fmtPt(t.behaald)} / ${fmtPt(t.totaal)}</div><div class="rapport-info">${Math.round(100 * p)}% · ${fmtPt(Math.round(p * 100) / 10)} / 10</div></div>` }];
     B.push({ html: samenvattingHtml(items, 'toets') });
-    if (t.cat === 'mix') {
+    if (t.cats.length > 1) {
         const per = {}; items.forEach(x => { per[x.cat] = per[x.cat] || { s: 0, m: 0 }; per[x.cat].s += x.score; per[x.cat].m += x.max; });
         B.push({ html: `<table class="samenvatting-tabel"><tr><th>Hoofdstuk</th><th>Punten</th><th>%</th></tr>${CATS.filter(c => per[c.id]).map(c => `<tr><td>${esc(c.naam)}</td><td>${fmtPt(per[c.id].s)} / ${fmtPt(per[c.id].m)}</td><td>${Math.round(100 * per[c.id].s / per[c.id].m)}%</td></tr>`).join('')}</table>` });
     }
@@ -4880,12 +5191,13 @@ function toetsBlokken() {
     t.vragen.forEach((v, qi) => B.push(...vraagBlokken(v, `Vraag ${qi + 1}`, v.delen.map((d, di) => ({ d, w: t.waarden[qi][di], res: t.res[qi][di] })))));
     return B;
 }
+const wieHtml = () => IN_PORTAAL ? (ST.klas ? esc(ST.klas) + ' · ' : '') : `<b>${esc(ST.naam || 'Naam niet ingevuld')}</b>${ST.klas ? ' · ' + esc(ST.klas) : ''} · `;
 function oefenBlokken() {
     const t = { g: 0, h: 0, f: 0 };
     ST.log.forEach(l => t[l.status]++);
     const duur = Math.max(1, Math.round((new Date() - ST.sessieStart) / 60000));
     const items = ST.log.map(l => ({ cat: l.inst.gen.cat, max: 1, score: l.status === 'g' ? 1 : l.status === 'h' ? 0.5 : 0, codes: l.codes }));
-    const B = [{ html: `<div class="rapport-kop-blok"><h2>Oefenrapport 5doSW semester 1</h2><div class="rapport-info">${ST.klas ? esc(ST.klas) + ' · ' : ''}${vandaag()} · ${duur} min geoefend</div><div class="score goed" style="font-size:1.1rem">${ST.log.length} oefeningen: ${t.g} meteen juist · ${t.h} juist met hulp · ${t.f} met uitwerking</div></div>` }];
+    const B = [{ html: `<div class="rapport-kop-blok"><h2>Oefenrapport 5doSW semester 1</h2><div class="rapport-info">${wieHtml()}${vandaag()} · ${duur} min geoefend</div><div class="score goed" style="font-size:1.1rem">${ST.log.length} oefeningen: ${t.g} meteen juist · ${t.h} juist met hulp · ${t.f} met uitwerking</div></div>` }];
     B.push({ html: samenvattingHtml(items, 'oefen') });
     const perCat = {};
     ST.log.forEach(l => { const c = l.inst.gen.cat; perCat[c] = perCat[c] || { n: 0, g: 0, h: 0, f: 0 }; perCat[c].n++; perCat[c][l.status]++; });
@@ -4956,7 +5268,7 @@ async function downloadPdf(blokken, bestandsnaam) {
             pdf.setFontSize(8); pdf.setTextColor(113, 128, 150);
             pdf.text(`Pagina ${p + 1} van ${paginas.length}`, 105, 290, { align: 'center' });
             pdf.text('© T. Gaerdelen', 198, 290, { align: 'right' });
-            if (leerlingCode()) pdf.text(leerlingCode(), 12, 290);
+            if (IN_PORTAAL && leerlingCode()) pdf.text(leerlingCode(), 12, 290);
         }
         pdf.save(bestandsnaam);
         zet('Het rapport is gedownload (kijk bij je downloads).');
@@ -4968,7 +5280,7 @@ async function downloadPdf(blokken, bestandsnaam) {
         knoppen.forEach(k => { k.disabled = false; });
     }
 }
-const bestandsNaam = soort => `${soort}_5doSW_semester_1_${leerlingCode() || 'leerling'}_${new Date().toISOString().slice(0, 10)}.pdf`;
+const bestandsNaam = soort => `${soort}_5doSW_semester_1_${IN_PORTAAL ? (leerlingCode() || 'leerling') : (ST.naam || 'leerling').trim().replace(/[^\p{L}\p{N}]+/gu, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`;
 
 // ===================== THEORIE =====================
 function renderTheorie() {
@@ -4977,7 +5289,8 @@ function renderTheorie() {
     let s = `<div class="kaart"><div class="balk theorie"><button class="terug" data-act="menu">← Menu</button><h2>Theorie &amp; voorbeelden · ${esc(CAT[cat].naam)}</h2><button class="terug" data-act="oefen-cat" data-cat="${cat}">Oefenen →</button></div><div class="kaart-binnen">
         <p class="grijs">Hieronder vind je de werkwijze uit de cursus. Klik op een voorbeeldknop: de app maakt telkens een nieuw voorbeeld en werkt het volledig uit.</p>`;
     blokken.forEach((b, bi) => {
-        s += `<div class="theorie-blok" id="tb${bi}"><h3>${b.titel}</h3>${wis(b.html)}<div class="voorbeeld-knoppen">${b.gens.filter(id => GEN.some(g => g.id === id)).map(id => `<button class="knop knop-klein knop-blauw-licht" data-act="tvoorbeeld" data-b="${bi}" data-id="${id}">Voorbeeld: ${esc(GEN.find(g => g.id === id).titel)}</button>`).join('')}</div>${ST.tvb && ST.tvb.b === bi ? voorbeeldHtml(ST.tvb.inst, true) : ''}</div>`;
+        const naK = b.gens.length && b.gens.every(id => NA_KERST.has(id));
+        s += `<div class="theorie-blok" id="tb${bi}"><h3>${b.titel}${naK ? ' <span class="label">na het kerstexamen</span>' : ''}</h3>${wis(b.html)}<div class="voorbeeld-knoppen">${b.gens.filter(id => GEN.some(g => g.id === id)).map(id => `<button class="knop knop-klein knop-blauw-licht" data-act="tvoorbeeld" data-b="${bi}" data-id="${id}">Voorbeeld: ${esc(GEN.find(g => g.id === id).titel)}${NA_KERST.has(id) ? ' (na kerst)' : ''}</button>`).join('')}</div>${ST.tvb && ST.tvb.b === bi ? voorbeeldHtml(ST.tvb.inst, true) : ''}</div>`;
     });
     APP.innerHTML = s + '</div></div>';
 }
@@ -4996,6 +5309,8 @@ let laatsteVeld = null;
 APP.addEventListener('focusin', e => { if (e.target.matches('input.invoer')) laatsteVeld = e.target; });
 APP.addEventListener('input', e => {
     const inp = e.target;
+    if (!IN_PORTAAL && inp.id === 'naam') { ST.naam = inp.value; opslag.schrijf('naam', inp.value); return; }
+    if (!IN_PORTAAL && inp.id === 'klas') { ST.klas = inp.value; opslag.schrijf('klas', inp.value); return; }
     if (inp.matches('input.invoer')) {
         const tb = inp.closest('.tt-blok');
         if (tb) ttSync(tb);
@@ -5019,6 +5334,7 @@ APP.addEventListener('change', e => {
         bewaarOefenWaarden();
         if (!o.inst || o.uit.has(o.inst.gen.id)) nieuweOefening(); else render();
     }
+    if (inp.type === 'checkbox' && inp.dataset.act === 'nakerst') { ST.naKerst = inp.checked; opslag.schrijf('nakerst', ST.naKerst); renderMenu(); }
     if (inp.type === 'checkbox' && inp.dataset.act === 'toonuitw') { ST.toets.toonUitw = inp.checked; APP.querySelector('.rapport').classList.toggle('verberg-uitw', !inp.checked); }
 });
 APP.addEventListener('keydown', e => {
@@ -5054,13 +5370,29 @@ APP.addEventListener('click', e => {
         case 'types-geen': GEN.filter(g => ST.oefen.cat === 'mix' || g.cat === ST.oefen.cat).forEach(g => ST.oefen.uit.add(g.id)); ST.oefen.typesOpen = true; nieuweOefening(); break;
         case 'controleer': controleerOefening(); break;
         case 'hint': bewaarOefenWaarden(); ST.oefen.hints++; render(); { const hl = APP.querySelector('.hulp'); if (hl) hl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } break;
-        case 'uitwerking': bewaarOefenWaarden(); ST.oefen.uitwerking = !ST.oefen.uitwerking; render(); if (ST.oefen.uitwerking) { const u = APP.querySelector('.uitwerking'); if (u) u.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } break;
+        case 'uitwerking': if (!ST.oefen.uitwerking && !ST.oefen.klaar && ST.oefen.pt1 === null && !ST.oefen.hints && !window.confirm('Eerst zelf proberen leert je het meest: ook een foute poging helpt je onthouden.\n\nWil je toch al de uitwerking zien?')) break;
+            bewaarOefenWaarden(); ST.oefen.uitwerking = !ST.oefen.uitwerking; render(); if (ST.oefen.uitwerking) { const u = APP.querySelector('.uitwerking'); if (u) u.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } break;
         case 'voorbeeld': bewaarOefenWaarden(); { const o = ST.oefen; o.voorbeeld = o.voorbeeld ? null : maakOefening(o.inst.gen, nieuwZaad()); render(); const v = APP.querySelector('.voorbeeld-vak'); if (v) v.scrollIntoView({ behavior: 'smooth', block: 'start' }); } break;
         case 'volgende': {
             const o = ST.oefen;
-            if (o.inst && !o.klaar && (o.pogingen || o.uitwerking || o.hints)) logOefening('f');
+            if (o.inst && !o.klaar && (o.pogingen || o.uitwerking || o.hints || o.doel)) logOefening('f');
+            if (o.doel && o.doelRes.length >= DOEL_TEST_N) { o.klaar = true; render(); window.scrollTo({ top: 0 }); break; }
             nieuweOefening(); break;
         }
+        case 'tweeling': { const g = ST.oefen.inst.gen; nieuweOefening(g); break; }
+        case 'zeker': bewaarOefenWaarden(); ST.oefen.zeker = +b.dataset.z; render(); break;
+        case 'zelf': {
+            const ik = ikKan(), x = ik[b.dataset.d] || {};
+            x.zelf = +b.dataset.z; ik[b.dataset.d] = x; opslag.schrijf('ikkan', ik);
+            portaalZelf({ doel: b.dataset.d, zelf: x.zelf });
+            const y = window.scrollY; renderMenu(); window.scrollTo({ top: y }); break;
+        }
+        case 'doeltest': startDoelTest(b.dataset.d); break;
+        case 'foutenbak': startFoutenbak(); break;
+        case 'examensim': startExamen(b.dataset.e); break;
+        case 'naarexamen':
+            if (ST.scherm === 'oefen' && ST.oefen && ST.oefen.inst && !ST.oefen.klaar && (ST.oefen.pogingen || ST.oefen.uitwerking)) logOefening('f');
+            ST.modus = 'examen'; opslag.schrijf('modus', 'examen'); ST.scherm = 'menu'; render(); window.scrollTo({ top: 0 }); break;
         case 'ins': {
             const deel = b.closest('.deel');
             let inp = laatsteVeld && deel.contains(laatsteVeld) && !laatsteVeld.disabled ? laatsteVeld : deel.querySelector('input.invoer:not([disabled])');
@@ -5101,7 +5433,7 @@ APP.addEventListener('click', e => {
             nakijkenToets(); break;
         }
         case 'stoptoets': if (window.confirm('Wil je de toets stoppen? Je antwoorden gaan verloren.')) { ST.scherm = 'menu'; ST.toets = null; render(); } break;
-        case 'opnieuwtoets': ST.scherm = 'menu'; ST.modus = 'toets'; render(); break;
+        case 'opnieuwtoets': ST.scherm = 'menu'; ST.modus = String(ST.toets.cat).startsWith('examen') ? 'examen' : 'toets'; render(); break;
         case 'tvoorbeeld': {
             const g = GEN.find(x => x.id === b.dataset.id);
             ST.tvb = { b: +b.dataset.b, inst: maakOefening(g, nieuwZaad()) };
