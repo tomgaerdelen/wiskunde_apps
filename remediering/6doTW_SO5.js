@@ -1,0 +1,41 @@
+REM_REGISTREER({
+  klas: '6doTW', id: 'SO5', titel: 'SO 5 Cyclometrische functies',
+  leerstof: 'Cyclometrische functies: domein van samengestelde functies, afgeleiden, raaklijn, limieten (ook met l\'Hôpital), verloop en asymptoten.',
+  vragen: [
+    { id: 'q1', onderwerp: 'Domein (1)', opgave: 'Bepaal het domein van $f(x)=\\text{Bgsin}(2x-3)$.',
+      velden: [{ type: 'interval', label: '$\\text{dom } f=$', ok: '[1;2]' }],
+      uitwerking: '$-1\\leq 2x-3\\leq 1 \\iff 2\\leq 2x\\leq 4 \\iff 1\\leq x\\leq 2$\n$\\text{dom } f=[1,2]$' },
+    { id: 'q2', onderwerp: 'Domein (2)', opgave: 'Bepaal het domein van $f(x)=\\text{Bgsin}\\left(\\dfrac{x+1}{x}\\right)$.',
+      velden: [{ type: 'interval', label: '$\\text{dom } f=$', ok: ']-inf;-1/2]' }],
+      tip: 'Los de twee ongelijkheden $\\frac{x+1}{x}\\leq 1$ en $\\frac{x+1}{x}\\geq -1$ apart op (alles naar links, gelijke noemer, tekentabel) en neem de doorsnede.',
+      uitwerking: '$\\dfrac{x+1}{x}\\leq 1 \\iff \\dfrac{1}{x}\\leq 0 \\iff x<0$\n$\\dfrac{x+1}{x}\\geq -1 \\iff \\dfrac{2x+1}{x}\\geq 0 \\iff x\\leq -\\frac{1}{2}$ of $x>0$\nDoorsnede: $\\text{dom } f=\\left]-\\infty,-\\frac{1}{2}\\right]$' },
+    { id: 'q3', onderwerp: 'Afgeleide van Bgsin', opgave: 'Bereken: $D\\,\\text{Bgsin}(x^2)$. Typ Bgsin als bgsin.',
+      velden: [{ type: 'expr', label: '$f\'(x)=$', ok: '2x/sqrt(1-x^4)', dom: [-0.9, 0.9], check: { afgVan: 'bgsin(x^2)' } }],
+      uitwerking: '$\\dfrac{1}{\\sqrt{1-(x^2)^2}}\\cdot 2x=\\dfrac{2x}{\\sqrt{1-x^4}}$' },
+    { id: 'q4', onderwerp: 'Afgeleide van Bgtan', opgave: 'Bereken en vereenvoudig: $D\\,\\text{Bgtan}\\left(\\dfrac{1}{x}\\right)$',
+      velden: [{ type: 'expr', label: '$f\'(x)=$', ok: '-1/(1+x^2)', dom: [0.4, 3], check: { afgVan: 'bgtan(1/x)' } }],
+      uitwerking: '$\\dfrac{1}{1+\\frac{1}{x^2}}\\cdot\\left(-\\dfrac{1}{x^2}\\right)=\\dfrac{-1}{x^2+1}$' },
+    { id: 'q5', onderwerp: 'Product met Bgcos', opgave: 'Bereken: $D\\left(x\\cdot\\text{Bgcos}(2x)\\right)$',
+      velden: [{ type: 'expr', label: '$f\'(x)=$', ok: 'bgcos(2x)-2x/sqrt(1-4x^2)', dom: [-0.45, 0.45], check: { afgVan: 'x*bgcos(2x)' } }],
+      uitwerking: '$\\text{Bgcos}(2x)+x\\cdot\\dfrac{-2}{\\sqrt{1-4x^2}}=\\text{Bgcos}(2x)-\\dfrac{2x}{\\sqrt{1-4x^2}}$' },
+    { id: 'q6', onderwerp: 'Raaklijn', opgave: 'Stel de vergelijking op van de raaklijn aan de grafiek van $f(x)=\\text{Bgtan}(2x)+x$ in $x=\\frac{1}{2}$.',
+      velden: [{ type: 'expr', label: '$t: y=$', ok: '2x+pi/4-1/2' }],
+      uitwerking: '$f\\left(\\frac{1}{2}\\right)=\\text{Bgtan}\\,1+\\frac{1}{2}=\\frac{\\pi}{4}+\\frac{1}{2}$\n$f\'(x)=\\dfrac{2}{1+4x^2}+1$, $f\'\\left(\\frac{1}{2}\\right)=1+1=2$\n$y-\\frac{\\pi}{4}-\\frac{1}{2}=2\\left(x-\\frac{1}{2}\\right) \\iff y=2x+\\frac{\\pi}{4}-\\frac{1}{2}$' },
+    { id: 'q7', onderwerp: 'Limiet met l\'Hôpital', opgave: 'Bereken: $\\displaystyle\\lim_{x\\to 0}\\frac{\\text{Bgtan}\\,x-x}{x^3}$',
+      velden: [{ type: 'getal', label: 'Limiet $=$', ok: '-1/3', check: { lim: { f: '(bgtan(x)-x)/x^3', a: 0.001 } } }],
+      uitwerking: '$\\frac{0}{0}$, H: $\\displaystyle\\lim\\frac{\\frac{1}{1+x^2}-1}{3x^2}=\\lim\\frac{\\frac{-x^2}{1+x^2}}{3x^2}=\\lim\\frac{-1}{3(1+x^2)}=-\\frac{1}{3}$' },
+    { id: 'q8', onderwerp: 'Limiet naar oneindig', opgave: 'Bereken: $\\displaystyle\\lim_{x\\to+\\infty} x\\left(\\frac{\\pi}{2}-\\text{Bgtan}\\,x\\right)$',
+      velden: [{ type: 'getal', label: 'Limiet $=$', ok: '1', check: { lim: { f: 'x*(pi/2-bgtan(x))', a: 'inf' } } }],
+      tip: '$\\infty\\cdot 0$: schrijf als $\\dfrac{\\frac{\\pi}{2}-\\text{Bgtan}\\,x}{\\frac{1}{x}}$.',
+      uitwerking: '$\\frac{0}{0}$, H: $\\displaystyle\\lim\\frac{-\\frac{1}{1+x^2}}{-\\frac{1}{x^2}}=\\lim\\frac{x^2}{1+x^2}=1$' },
+    { id: 'q9', onderwerp: 'Extrema', opgave: 'Gegeven: $f(x)=x-2\\,\\text{Bgtan}\\,x$.',
+      velden: [
+        { type: 'verz', label: '$x$-waarden van de extrema:', ok: ['-1', '1'], check: { vgl: '1-2/(1+x^2)=0', bereik: [-10, 10] } },
+        { type: 'getal', label: 'Relatief maximum (exact): $y=$', ok: '-1+pi/2', check: { waarde: '-1-2*bgtan(-1)' } }
+      ],
+      uitwerking: '$f\'(x)=1-\\dfrac{2}{1+x^2}=\\dfrac{x^2-1}{1+x^2}$\n$f\'$: $+\\;0\\;-\\;0\\;+$ met nulwaarden $-1$ en $1$\nMAX in $x=-1$: $f(-1)=-1-2\\cdot\\left(-\\frac{\\pi}{4}\\right)=-1+\\frac{\\pi}{2}$\nMIN in $x=1$: $f(1)=1-\\frac{\\pi}{2}$' },
+    { id: 'q10', onderwerp: 'Schuine asymptoot', opgave: 'Geef de schuine asymptoot van $f(x)=x-2\\,\\text{Bgtan}\\,x$ voor $x\\to+\\infty$.',
+      velden: [{ type: 'expr', label: 'S.A.: $y=$', ok: 'x-pi' }],
+      uitwerking: '$\\displaystyle\\lim_{x\\to+\\infty}\\text{Bgtan}\\,x=\\frac{\\pi}{2}$, dus $f(x)-(x-\\pi)\\to 0$\nS.A. $y=x-\\pi$ (en voor $x\\to-\\infty$: $y=x+\\pi$)' }
+  ]
+});
