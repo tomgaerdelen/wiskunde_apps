@@ -29,6 +29,6 @@ window.REM_LIJST = {
     { id: "SO4", titel: "SO 4 Goniometrische functies", leerstof: "Limieten, afgeleiden, verloop", v: "1.0" },
     { id: "SO5", titel: "SO 5 Cyclometrische functies", leerstof: "Domein, afgeleiden, limieten, verloop", v: "1.0" },
     { id: "SO6", titel: "SO 6 Impliciet afleiden, parameterkrommen, DV", leerstof: "Impliciet, parameterkrommen, kettinglijn, DV, verwante snelheden", v: "1.0" },
-    { id: "SO7", titel: "SO 7 Ruimtemeetkunde", leerstof: "Vergelijkingen van rechten en vlakken", v: "1.0" }
+    { id: "SO7", titel: "SO 7 Ruimtemeetkunde", leerstof: "Vergelijkingen van rechten en vlakken", v: "1.1" }
   ]
 };
