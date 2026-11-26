@@ -662,7 +662,7 @@ function toonVraag() {
   scherm().innerHTML = `<div class="kaart accent">
     <div class="rij" style="justify-content:space-between"><div><span class="badge">${esc(SET.klas)}</span> <b>Remediëring ${esc(SET.titel)}</b></div><button class="knop licht klein" onclick="toonOverzicht()">Klaar? Rapport maken</button></div>
     <div class="navbollen" id="nav"></div>
-    <div class="vraagkop"><span class="nr">Oefening ${HUIDIG + 1} van ${n} · ${esc(v.onderwerp || '')}</span><span>${ggBadge(v)} <span class="badge">1 punt</span></span></div>
+    <div class="vraagkop"><span class="nr">Oefening ${HUIDIG + 1} van ${n} · ${tx(v.onderwerp || '')}</span><span>${ggBadge(v)} <span class="badge">1 punt</span></span></div>
     <div class="opgave">${tx(v.opgave)}</div>
     ${v.fig ? `<div class="figuur">${grafiek(v.fig)}</div>` : ''}
     ${v.velden.map((f, i) => veldHtml(v, f, i)).join('')}
@@ -725,7 +725,7 @@ function rapportHtml(res, score) {
     </div>
     <p class="r-meta" style="margin:8px 0 0">${tx(SET.leerstof || '')}</p></div>
   <div class="pdf-blok"><table class="r-tabel"><tr><th>Nr</th><th>Onderwerp</th><th>Punten</th><th>Zekerheid</th><th>Tip</th></tr>
-    ${res.map((r, j) => `<tr><td>${j + 1}</td><td>${esc(r.v.onderwerp || '')}</td><td class="${r.pt >= 1 ? 'ok-kleur' : r.pt > 0 ? 'half-kleur' : 'fout-kleur'}">${fmtPt(r.pt)} / 1</td><td>${zekerTxt[ST.zeker[r.v.id] || 0]}</td><td>${ST.tips[r.v.id] ? '💡' : ''}</td></tr>`).join('')}
+    ${res.map((r, j) => `<tr><td>${j + 1}</td><td>${tx(r.v.onderwerp || '')}</td><td class="${r.pt >= 1 ? 'ok-kleur' : r.pt > 0 ? 'half-kleur' : 'fout-kleur'}">${fmtPt(r.pt)} / 1</td><td>${zekerTxt[ST.zeker[r.v.id] || 0]}</td><td>${ST.tips[r.v.id] ? '💡' : ''}</td></tr>`).join('')}
   </table>
   ${zekerFout.length ? `<p class="pen" style="margin:8px 0 0">Let op: bij ${zekerFout.length === 1 ? 'oefening ' + (SET.vragen.indexOf(zekerFout[0].v) + 1) + ' was' : 'oefeningen ' + zekerFout.map(r => SET.vragen.indexOf(r.v) + 1).join(', ') + ' was'} je zeker, maar het was niet (helemaal) juist. Bekijk die uitwerking eerst!</p>` : ''}
   ${ST.reflectie ? `<p style="margin:8px 0 0"><b>Vraag aan de leerkracht:</b> ${esc(ST.reflectie)}</p>` : ''}</div>`;
@@ -733,7 +733,7 @@ function rapportHtml(res, score) {
     const kl = r.pt >= 1 ? 'goed' : r.pt > 0 ? 'half' : 'fout';
     const a = ST.antw[r.v.id] || {};
     h += `<div class="pdf-blok"><div class="r-vraag ${kl}">
-      <div class="kopregel"><span>Oefening ${j + 1} · ${esc(r.v.onderwerp || '')} ${r.v.gg ? '<span class="badge gg">🖩 GeoGebra</span>' : ''}</span><span class="${kl === 'goed' ? 'ok-kleur' : kl === 'half' ? 'half-kleur' : 'fout-kleur'}">${kl === 'goed' ? '✔' : kl === 'half' ? '◐' : '✘'} ${fmtPt(r.pt)} / 1</span></div>
+      <div class="kopregel"><span>Oefening ${j + 1} · ${tx(r.v.onderwerp || '')} ${r.v.gg ? '<span class="badge gg">🖩 GeoGebra</span>' : ''}</span><span class="${kl === 'goed' ? 'ok-kleur' : kl === 'half' ? 'half-kleur' : 'fout-kleur'}">${kl === 'goed' ? '✔' : kl === 'half' ? '◐' : '✘'} ${fmtPt(r.pt)} / 1</span></div>
       <div class="r-twee"><div class="r-links">
       <div class="opgave" style="font-size:.98rem;margin-bottom:6px">${tx(r.v.opgave)}</div>
       ${r.v.velden.map((f, i) => `<div class="r-antw">${f.label ? tx(f.label) + '<br>' : ''}<span class="lbl">Jouw antwoord</span> ${r.per[i] >= 1 ? '<span class="ok-kleur">✔</span>' : r.per[i] > 0 ? '<span class="half-kleur">◐</span>' : '<span class="fout-kleur">✘</span>'} ${toonAntwoord(f, a[i])}
@@ -852,6 +852,7 @@ function zelftestSet(set) {
       if (f.type === 'mc') { if (!(f.ok >= 0 && f.ok < f.opties.length)) meld(v, 'mc zonder juist antwoord'); }
       else if (puntenVeld(f, juist) !== 1) meld(v, `veld ${i}: het juiste antwoord wordt niet aanvaard (${juist})`);
       if (f.type === 'kies' && !f.opties.includes(f.ok)) meld(v, `veld ${i}: ok niet in opties`);
+      if (f.type === 'kies' && f.opties.some(o => /[$\\]/.test(o))) meld(v, `veld ${i}: formule in een keuzelijst (kan niet getoond worden)`);
       try {
         const c = f.check || {};
         if (c.afgVan) { // expr = afgeleide van c.afgVan
