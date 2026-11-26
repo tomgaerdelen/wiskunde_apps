@@ -33,7 +33,7 @@ REM_REGISTREER({
       tip: 'Zijn de richtingsvectoren evenwijdig? Ligt het steunpunt van $r_2$ op $r_1$?',
       uitwerking: '$(-4,-2,2)=-2\\cdot(2,1,-1)$: evenwijdige richtingen.\n$(3,1,1)$ op $r_1$? $k=1$ geeft $(3,1,1)$ ✓\nDus samenvallend.' },
     { id: 'q7', onderwerp: 'Ligging van een rechte en een vlak', opgave: 'Gegeven: $r: (x,y,z)=(2,1,0)+k(1,1,1)$ en $\\alpha: x-2y+z=3$.',
-      velden: [{ type: 'kies', label: 'De ligging is', opties: ['$r$ snijdt $\\alpha$', '$r$ is evenwijdig met $\\alpha$ (niet erin)', '$r$ ligt in $\\alpha$'].map(s => s), ok: '$r$ is evenwijdig met $\\alpha$ (niet erin)' }],
+      velden: [{ type: 'kies', label: 'De ligging is', opties: ['r snijdt α', 'r is evenwijdig met α (niet erin)', 'r ligt in α'], ok: 'r is evenwijdig met α (niet erin)' }],
       uitwerking: '$\\vec{RV}\\cdot\\vec{N}=(1,1,1)\\cdot(1,-2,1)=0$: $r$ is evenwijdig met $\\alpha$ of ligt erin.\nPunt $(2,1,0)$: $2-2+0=0\\neq 3$, dus niet in het vlak.' },
     { id: 'q8', onderwerp: 'Ligging van twee vlakken', opgave: 'Gegeven: $\\alpha: 2x-y+z=1$, $\\beta: 4x-2y+2z=5$ en $\\gamma: x+y-z=0$.',
       velden: [
