@@ -3401,7 +3401,7 @@ const Afgeleiden = (() => {
         if (!o || !st || st.gelogd) return;
         st.gelogd = true;
         const meteen = opgelost && !st.fout && !st.uitwerking && !st.hint;
-        portaalLogOpgave(meteen, o.cat, st.code || (opgelost ? null : 'niet_opgelost'), { oef: String(o.id || '').slice(0, 40), niv: o.niveau, st: meteen ? 'g' : opgelost ? 'h' : 'f', hints: st.hint, ...(meteen ? {} : { opg: '$f(x) = ' + o.fTex + '$', jst: "$f'(x) = " + o.dTex + '$', ...(st.f1 || {}) }) }); // portaalFoutDetails
+        portaalLogOpgave(meteen, o.cat, st.code || (opgelost ? null : 'niet_opgelost'), { oef: String(o.id || '').slice(0, 40), niv: o.niveau, st: meteen ? 'g' : opgelost ? 'h' : 'f', hints: st.hint, ...(meteen ? { opg: '$f(x) = ' + o.fTex + '$' } : { opg: '$f(x) = ' + o.fTex + '$', jst: "$f'(x) = " + o.dTex + '$', ...(st.f1 || {}) }) }); // portaalFoutDetails
     }
     function volgendeOefening(eerste) {
         if (!eerste && OEF.status && !OEF.status.opgelost && (OEF.status.fout || OEF.status.hint)) logKettingOefening(OEF.huidig, OEF.status, false);
