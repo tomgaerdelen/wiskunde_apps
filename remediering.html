@@ -800,8 +800,8 @@ function logResultaat(res, score) {
   res.forEach(r => {
     const a = ST.antw[r.v.id] || {};
     const det = { oef: `${module}_${r.v.id}`, pt: r.pt, max: 1, zk: ST.zeker[r.v.id] || 0, tip: ST.tips[r.v.id] ? 1 : 0, poging: ST.poging || 1 };
+    det.opg = (r.v.onderwerp ? r.v.onderwerp + ': ' : '') + String(r.v.opgave).slice(0, 200);
     if (r.pt < 1) {
-      det.opg = (r.v.onderwerp ? r.v.onderwerp + ': ' : '') + String(r.v.opgave).slice(0, 200);
       const i = r.per.findIndex(p => p < 1), f = r.v.velden[i];
       if (f && f.type !== 'teken') det.ant = f.type === 'mc' ? (f.opties[a[i]] || '') : String(a[i] == null ? '' : a[i]).slice(0, 80);
       if (f) det.jst = f.toon || (f.type === 'mc' ? f.opties[f.ok] : (Array.isArray(f.ok) ? f.ok.join(' ; ') : String(f.ok)));
