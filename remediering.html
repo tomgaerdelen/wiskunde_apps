@@ -9,6 +9,7 @@
 <script defer src="lib/html2canvas-1.4.1.min.js"></script>
 <script defer src="lib/jspdf-2.5.1.umd.min.js"></script>
 <script src="remediering/lijst.js"></script>
+<script src="rem-opdrachten.js"></script>
 <style>
   :root { --blauw:#1e3a8a; --blauw2:#172554; --tekst:#1e293b; --grijs:#64748b; --rand:#e2e8f0; --achter:#f1f5f9;
           --goed:#15803d; --fout:#b91c1c; --half:#b45309; --tip:#a16207; --opl:#10309e; }
@@ -75,6 +76,9 @@
   .knoppenrij { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:16px; }
   textarea.reflectie { width:100%; min-height:70px; padding:8px 10px; border:2px solid #cbd5e1; border-radius:8px; }
   .waarschuwing { background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; border-radius:10px; padding:10px 12px; margin:10px 0; }
+  .rem-opdracht-balk { background:#eef2ff; border:1px solid #c7d2fe; border-left:5px solid #4f46e5; color:#1e1b4b; border-radius:10px; padding:10px 12px; margin:10px 0; }
+  .rem-opdracht-balk.te-laat { background:#fef2f2; border-color:#fecaca; border-left-color:#dc2626; color:#7f1d1d; }
+  .rem-privacy { font-size:.85rem; color:#64748b; margin:4px 0 0; }
   .wacht { position:fixed; inset:0; background:rgba(241,245,249,.97); display:flex; align-items:center; justify-content:center; z-index:100; font-size:1.2rem; font-weight:700; color:var(--blauw); text-align:center; padding:20px; }
   /* rapport */
   #rapport-buiten { position:absolute; left:-10000px; top:0; width:780px; }
@@ -586,11 +590,67 @@ function toonLijst() {
   h += `</div>`;
   scherm().innerHTML = h; window.scrollTo(0, 0);
 }
+/* ---------- toegewezen remediëring (via de klasapp van de leerkracht) ---------- */
+function opdrachtBalk() {
+  if (!ST || !ST.opdracht || !window.RemOpdrachten) return '';
+  const laat = Date.parse(ST.opdracht.deadline) < Date.now(), dag = RemOpdrachten.fmtDeadline(ST.opdracht.deadline);
+  return `<div class="rem-opdracht-balk${laat ? ' te-laat' : ''}">📌 Je leerkracht vraagt deze remediëring, ${laat ? `de deadline was <b>${esc(dag)}</b>. Maak ze zo snel mogelijk` : `uiterlijk <b>${esc(dag)}</b>`}. Je rapport gaat automatisch naar je leerkracht.</div>`;
+}
+// Zoekt de open opdracht voor deze remediëring. Weet de pagina het niet (offline), dan blijft alles zoals het was.
+// Geeft true als de pagina het zeker weet (online), anders false.
+async function koppelOpdracht() {
+  if (!window.RemOpdrachten) return false;
+  const open = await RemOpdrachten.mijn(leerlingCode(), KLAS, { strikt: true });
+  if (open === null) return false;
+  const o = open.find(r => r.rem_id === SET.id);
+  if (o) ST.opdracht = { id: o.id, deadline: o.deadline, created_at: o.created_at };
+  else delete ST.opdracht;
+  // rapport gemaakt terwijl de opdracht al bestond maar (bv. door een netwerkfout) niet gekend was: alsnog versturen
+  // (10 min marge voor een klok die wat achterloopt)
+  if (o && ST.ingediend && !ST.ingediend.opdrachtId && !ST.teVersturen && ST.ingediend.datum >= Date.parse(o.created_at) - 10 * 60000) {
+    ST.ingediend.opdrachtId = o.id; ST.teVersturen = o.id;
+  }
+  if (ST.teVersturen && !(o && o.id === ST.teVersturen)) delete ST.teVersturen; // opdracht ingetrokken of al ingediend
+  bewaar();
+  return true;
+}
+function ingediendVoorToewijzing() {
+  return !!(ST && ST.ingediend && ST.opdracht && !ST.teVersturen && ST.ingediend.opdrachtId !== ST.opdracht.id);
+}
+async function verstuurRapport(blob) {
+  if (!window.RemOpdrachten) return false;
+  ST.teVersturen = ST.opdracht.id; ST.ingediend.opdrachtId = ST.opdracht.id; bewaar();
+  const r = await RemOpdrachten.indienen({ id: ST.opdracht.id, code: leerlingCode(), klas: SET.klas, score: ST.ingediend.score,
+    poging: ST.poging || 1, vraag: ST.reflectie || '', pdfBlob: blob });
+  if (r && r.ok) { delete ST.teVersturen; ST.verzonden = Date.now(); }
+  bewaar();
+  return !!(r && r.ok);
+}
+async function maakRapportBlob() {
+  const res = SET.vragen.map((v, j) => ({ v, pt: ST.ingediend.per[j], per: v.velden.map((f, i) => puntenVeld(f, (ST.antw[v.id] || {})[i])) }));
+  document.getElementById('rapport-buiten').innerHTML = rapportHtml(res, ST.ingediend.score);
+  return maakPdf(bestandsnaam(), { alleenBlob: true });
+}
+// Rechtstreekse link vanuit de melding in het portaal: remediering.html?rem=SO3&opdracht=<id>
+async function startVanuitUrl(p) {
+  SET = null; toonLijst();
+  const rem = (p && p.get('rem')) || '';
+  if (!rem) return;
+  const it = /^[A-Za-z0-9]{1,20}$/.test(rem) ? ((window.REM_LIJST || {})[KLAS] || []).find(x => x.id === rem) : null;
+  if (it && isZichtbaar(it)) { await openSet(it.id); return; }
+  scherm().insertAdjacentHTML('afterbegin', '<p class="waarschuwing">Deze remediëring is niet (meer) beschikbaar. Kies hieronder een andere of vraag het aan je leerkracht.</p>');
+}
+
 async function openSet(id) {
   const it = ((window.REM_LIJST || {})[KLAS] || []).find(x => x.id === id); if (!it || !isZichtbaar(it)) { toonLijst(); return; }
   scherm().innerHTML = '<div class="kaart">Laden…</div>';
   try { SET = await laadSet(KLAS, it); } catch (e) { scherm().innerHTML = `<div class="kaart"><p>Deze remediëring kon niet geladen worden. Controleer je internetverbinding en probeer opnieuw.</p><button class="knop" onclick="toonLijst()">← Terug</button></div>`; return; }
   laadST();
+  const zeker = await koppelOpdracht();
+  if (zeker && ST.ingediend && ST.teVersturen && ST.opdracht) {
+    scherm().innerHTML = '<div class="kaart">Je rapport wordt naar je leerkracht gestuurd… even geduld.</div>';
+    try { await verstuurRapport(await maakRapportBlob()); } catch (e) { /* volgende keer opnieuw */ }
+  }
   if (ST.ingediend) { toonResultaat(); return; }
   if (!Object.keys(ST.antw).length) toonIntro(); else { HUIDIG = 0; toonVraag(); }
 }
@@ -604,13 +664,14 @@ function toonIntro() {
     <span class="badge">${esc(SET.klas)}</span>
     <h1 style="margin-top:8px">Remediëring ${esc(SET.titel)}</h1>
     <p class="sub">${tx(SET.leerstof || '')}</p>
+    ${opdrachtBalk()}
     <h2>Zo werkt het</h2>
     <ol style="line-height:1.7;margin-top:0">
       <li>Je krijgt <b>10 oefeningen</b>, elk op <b>1 punt</b>. Maak ze eerst op papier, typ dan je antwoord in.</li>
       <li>Duid bij elke oefening aan <b>hoe zeker</b> je bent. Zo zie je straks of je jezelf goed inschat.</li>
       <li>Vast? Bij sommige oefeningen staat een <b>💡 tip</b>. Je verliest er geen punten door, maar het rapport vermeldt het.</li>
       <li>Je ziet <b>pas je resultaat</b> als je het <b>pdf-rapport</b> maakt. In dat rapport staan ook alle uitwerkingen.</li>
-      <li>Stuur het rapport door via <b>Smartschool of Teams</b>.</li>
+      ${ST.opdracht ? '<li>Je rapport gaat <b>automatisch</b> naar je leerkracht.</li>' : '<li>Stuur het rapport door via <b>Smartschool of Teams</b>.</li>'}
     </ol>
     ${gg ? '<p class="waarschuwing">Bij oefeningen met het label <span class="badge gg">🖩 GeoGebra</span> mag (en moet) je GeoGebra gebruiken. Al de rest los je zonder hulpmiddel op.</p>' : '<p class="sub">Alles los je op zonder rekenmachine of GeoGebra, zoals op de toets.</p>'}
     <p class="sub">Je antwoorden worden bewaard op dit toestel. Je kan dus stoppen en later verdergaan.</p>
@@ -674,6 +735,7 @@ function toonVraag() {
   const actiefVeld = document.activeElement && document.activeElement.id;
   scherm().innerHTML = `<div class="kaart accent">
     <div class="rij" style="justify-content:space-between"><div><span class="badge">${esc(SET.klas)}</span> <b>Remediëring ${esc(SET.titel)}</b></div><button class="knop licht klein" onclick="toonOverzicht()">Klaar? Rapport maken</button></div>
+    ${opdrachtBalk()}
     <div class="navbollen" id="nav"></div>
     <div class="vraagkop"><span class="nr">Oefening ${HUIDIG + 1} van ${n} · ${tx(v.onderwerp || '')}</span><span>${ggBadge(v)} <span class="badge">1 punt</span></span></div>
     <div class="opgave">${tx(v.opgave)}</div>
@@ -699,10 +761,12 @@ function toonOverzicht() {
   const zonderZeker = SET.vragen.map((v, j) => ST.zeker[v.id] ? null : j + 1).filter(Boolean);
   scherm().innerHTML = `<div class="kaart accent">
     <h1>Klaar om je rapport te maken?</h1>
+    ${opdrachtBalk()}
     ${open.length ? `<p class="waarschuwing">Nog niet ingevuld: oefening ${open.join(', ')}. Een lege oefening telt als 0.</p>` : '<p>Je hebt alle oefeningen ingevuld. 👍</p>'}
     ${zonderZeker.length ? `<p class="sub">Nog geen zekerheid aangeduid bij oefening ${zonderZeker.join(', ')}.</p>` : ''}
     <div class="veld-blok"><div class="veld-label">Wat wil je nog vragen aan je leerkracht? (niet verplicht, komt in je rapport)</div>
-      <textarea class="reflectie" maxlength="500" oninput="ST.reflectie=this.value;bewaar()">${esc(ST.reflectie || '')}</textarea></div>
+      <textarea class="reflectie" maxlength="500" oninput="ST.reflectie=this.value;bewaar()">${esc(ST.reflectie || '')}</textarea>
+      <p class="rem-privacy">Je leerkracht leest dit. Schrijf hier geen persoonlijke gegevens (geen namen, adres, gezondheid …).</p></div>
     <p><b>Let op:</b> na het maken van het rapport kan je je antwoorden niet meer wijzigen. Daarna zie je je resultaat en alle uitwerkingen.</p>
     <div class="knoppenrij"><button class="knop licht" onclick="toonVraag()">← Terug naar de oefeningen</button>
       <button class="knop groen" onclick="dienIn()">📄 Maak mijn pdf-rapport</button></div>
@@ -760,7 +824,7 @@ function rapportHtml(res, score) {
   h += `<div class="pdf-blok" style="text-align:right;color:#94a3b8;font-size:11px">© T. Gaerdelen</div></div>`;
   return h;
 }
-async function maakPdf(bestandsnaam) {
+async function maakPdf(bestandsnaam, opties) {
   const buiten = document.getElementById('rapport-buiten');
   const blokken = [...buiten.querySelectorAll('.pdf-blok')];
   const pdf = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
@@ -788,7 +852,9 @@ async function maakPdf(bestandsnaam) {
     pdf.text(`Remediëring ${SET.klas} ${SET.titel} · code ${code} · blz. ${i}/${n}`, marge, 291);
     pdf.text('© T. Gaerdelen', 210 - marge, 291, { align: 'right' });
   }
+  if (opties && opties.alleenBlob) return pdf.output('blob');
   pdf.save(bestandsnaam);
+  return pdf.output('blob');
 }
 const bestandsnaam = () => `Remediering ${SET.klas} ${SET.titel.split(' ').slice(0, 2).join(' ')} ${leerlingCode() || 'zonder-code'}.pdf`.replace(/[\\/:*?"<>|]/g, '');
 async function dienIn() {
@@ -798,14 +864,20 @@ async function dienIn() {
   const datum = Date.now();
   ST.ingediend = { score, datum, per: res.map(r => r.pt) }; // tijdelijk voor het rapport
   document.getElementById('rapport-buiten').innerHTML = rapportHtml(res, score);
+  let blob = null;
   try {
-    await maakPdf(bestandsnaam());
+    blob = await maakPdf(bestandsnaam());
   } catch (e) {
     delete ST.ingediend; document.getElementById('rapport-buiten').innerHTML = ''; wacht.remove();
     alert('Er liep iets mis bij het maken van de pdf. Probeer opnieuw.'); console.error(e); return;
   }
   bewaar(); wacht.remove();
   logResultaat(res, score);
+  if (ST.opdracht) {
+    wacht.textContent = 'Je rapport wordt naar je leerkracht gestuurd…'; document.body.appendChild(wacht);
+    try { await verstuurRapport(blob); } catch (e) { /* ST.teVersturen blijft: volgende keer opnieuw */ }
+    wacht.remove();
+  }
   toonResultaat(true);
 }
 function logResultaat(res, score) {
@@ -831,7 +903,10 @@ function logResultaat(res, score) {
 function toonResultaat(net) {
   const res = SET.vragen.map((v, j) => ({ v, pt: ST.ingediend.per[j], per: v.velden.map((f, i) => puntenVeld(f, (ST.antw[v.id] || {})[i])) }));
   scherm().innerHTML = `<div class="kaart accent">
-    ${net ? '<p class="waarschuwing" style="background:#ecfdf3;border-color:#bbf7d0;color:#166534">✔ Je pdf-rapport is gedownload. <b>Stuur het door via Smartschool of Teams.</b> Vind je het niet? Kijk in je map Downloads of download het opnieuw.</p>' : ''}
+    ${ingediendVoorToewijzing() ? '<p class="rem-opdracht-balk">📌 Je leerkracht vraagt je deze remediëring opnieuw te maken. Klik op <b>↻ Opnieuw maken</b>. Je nieuwe rapport gaat automatisch naar je leerkracht.</p>' : ''}
+    ${ST.teVersturen ? '<p class="waarschuwing">⏳ Je rapport kon nog niet verstuurd worden naar je leerkracht. We proberen opnieuw als je deze remediëring weer opent (met internet).</p>' : ''}
+    ${net && ST.opdracht && !ST.teVersturen ? '<p class="waarschuwing" style="background:#ecfdf3;border-color:#bbf7d0;color:#166534">✔ Je pdf-rapport is gedownload en <b>automatisch bij je leerkracht</b>. Je hoeft het niet meer door te sturen.</p>' : ''}
+    ${net && !ST.opdracht ? '<p class="waarschuwing" style="background:#ecfdf3;border-color:#bbf7d0;color:#166534">✔ Je pdf-rapport is gedownload. <b>Stuur het door via Smartschool of Teams.</b> Vind je het niet? Kijk in je map Downloads of download het opnieuw.</p>' : ''}
     <div class="rij" style="justify-content:space-between"><button class="knop licht klein" onclick="toonLijst()">← Alle remediëringen</button>
       <div class="rij"><button class="knop klein" onclick="herdownload()">📄 Pdf opnieuw downloaden</button><button class="knop licht klein" onclick="opnieuw()">↻ Opnieuw maken</button></div></div>
   </div><div class="kaart">${rapportHtml(res, ST.ingediend.score).replace('id="rapport"', '')}</div>`;
@@ -844,7 +919,10 @@ async function herdownload() {
 }
 function opnieuw() {
   if (!confirm('Opnieuw beginnen? Je vorige antwoorden worden gewist (je pdf heb je al). Het nieuwe rapport vermeldt "poging ' + ((ST.poging || 1) + 1) + '".')) return;
+  // de opdracht gaat enkel mee als ze met dit rapport nog niet ingediend werd
+  const opdracht = ST.opdracht && (!ST.ingediend || ST.ingediend.opdrachtId !== ST.opdracht.id) ? ST.opdracht : null;
   ST = { antw: {}, zeker: {}, tips: {}, poging: (ST.poging || 1) + 1, start: Date.now(), reflectie: '' };
+  if (opdracht) ST.opdracht = opdracht;
   bewaar(); HUIDIG = 0; toonVraag();
 }
 
@@ -905,7 +983,7 @@ window.REM_ZELFTEST_ALLES = async () => {
   return uit;
 };
 
-toonLijst();
+startVanuitUrl(new URLSearchParams(location.search));
 </script>
 <script src="tracker.js"></script>
 <script>
