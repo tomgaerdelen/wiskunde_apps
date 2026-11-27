@@ -549,6 +549,17 @@ function laadSet(klas, item) {
 /* =====================================================================
    SCHERM 1: lijst per klas
    ===================================================================== */
+// Zichtbaarheid (Tom, 27/11/2026): een remediëring van semester 1 (sem: 1) verdwijnt vanaf 1 januari
+// na de datum waarop ze werd opengezet (open: 'jjjj-mm-dd'). Opengezet in sept.–dec. → zichtbaar tot 31 dec.;
+// uitzonderlijk opengezet in jan.–aug. → zichtbaar tot 31 aug. Zonder sem of open: altijd zichtbaar.
+// Testen: window.REM_NU = '2027-01-01' en toonLijst().
+const vandaag = () => window.REM_NU ? new Date(window.REM_NU + 'T12:00:00') : new Date();
+function vervaldatum(it) {
+  if (it.sem !== 1 || !it.open) return null;
+  const d = new Date(it.open + 'T12:00:00'); if (isNaN(d)) return null;
+  return d.getMonth() >= 8 ? new Date(d.getFullYear() + 1, 0, 1) : new Date(d.getFullYear(), 8, 1);
+}
+function isZichtbaar(it) { const v = vervaldatum(it); return !v || vandaag() < v; }
 function toonLijst() {
   SET = null;
   const lijst = window.REM_LIJST || {};
@@ -559,7 +570,7 @@ function toonLijst() {
     h += `<div class="klaskeuze">${KLASSEN.map(k => `<button class="knop ${k === KLAS ? '' : 'licht'} klein" onclick="KLAS='${k}';toonLijst()">${k}</button>`).join('')}</div>`;
   }
   if (!KLAS) { scherm().innerHTML = h + `<div class="kaart"><p class="leeg">Kies eerst je klas.</p></div>`; return; }
-  const items = lijst[KLAS] || [];
+  const items = (lijst[KLAS] || []).filter(isZichtbaar);
   h += `<div class="kaart accent"><h2>Remediëringen voor ${esc(KLAS)}</h2>`;
   if (!items.length) h += `<p class="leeg">Er staat nog geen remediëring open. Je leerkracht zet ze open na een toets.</p>`;
   items.forEach(it => {
@@ -574,7 +585,7 @@ function toonLijst() {
   scherm().innerHTML = h; window.scrollTo(0, 0);
 }
 async function openSet(id) {
-  const it = ((window.REM_LIJST || {})[KLAS] || []).find(x => x.id === id); if (!it) return;
+  const it = ((window.REM_LIJST || {})[KLAS] || []).find(x => x.id === id); if (!it || !isZichtbaar(it)) { toonLijst(); return; }
   scherm().innerHTML = '<div class="kaart">Laden…</div>';
   try { SET = await laadSet(KLAS, it); } catch (e) { scherm().innerHTML = `<div class="kaart"><p>Deze remediëring kon niet geladen worden. Controleer je internetverbinding en probeer opnieuw.</p><button class="knop" onclick="toonLijst()">← Terug</button></div>`; return; }
   laadST();
