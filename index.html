@@ -257,6 +257,17 @@
       margin-bottom: 14px;
     }
     .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+    /* Remediëring te maken (toegewezen door de leerkracht via de klasapp) */
+    .rem-box { max-width: 460px; }
+    .rem-box h2 { display: flex; align-items: center; gap: 8px; }
+    .rem-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; margin-bottom: 10px; border: 1px solid #c7d2fe; border-left: 5px solid var(--primary); border-radius: 10px; background: #f8fafc; }
+    .rem-item strong { display: block; font-size: 0.95rem; color: #1e293b; }
+    .rem-wanneer { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
+    .rem-item.te-laat { border-color: #fecaca; border-left-color: #dc2626; background: #fef2f2; }
+    .rem-item.te-laat .rem-wanneer { color: #b91c1c; font-weight: 600; }
+    .rem-nu { flex-shrink: 0; padding: 9px 14px; background: var(--primary); color: #fff; border-radius: 8px; font-weight: 600; font-size: 0.9rem; text-decoration: none; white-space: nowrap; }
+    .rem-nu:hover { background: var(--primary-hover); }
+    @media (max-width: 420px) { .rem-item { flex-direction: column; align-items: stretch; } .rem-nu { text-align: center; } }
     .btn-cancel {
       padding: 10px 16px;
       border: 1px solid #cbd5e1;
@@ -358,6 +369,8 @@
       deferredPrompt = null;
     }
   </script>
+<script src="remediering/lijst.js" defer></script>
+<script src="rem-opdrachten.js" defer></script>
 </head>
 <body>
 
@@ -396,6 +409,17 @@
 </main>
 
 <div class="copyright-badge">© T. Gaerdelen</div>
+
+<div id="rem-melding" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="rem-melding-titel">
+  <div class="modal-box rem-box">
+    <h2 id="rem-melding-titel">📝 Remediëring te maken</h2>
+    <p>Je leerkracht vraagt je deze remediëring te maken. Je rapport gaat daarna automatisch naar je leerkracht.</p>
+    <div id="rem-melding-lijst"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel rem-later" onclick="remLater()">Doe ik later nog</button>
+    </div>
+  </div>
+</div>
 
 <div id="code-modal" class="modal-overlay">
   <div class="modal-box">
@@ -523,7 +547,7 @@ const APPS = [
     "titel": "Remediëring",
     "beschrijving": "Na elke toets: 10 oefeningen over de leerstof van die toets. Je resultaat zie je pas in je pdf-rapport; stuur dat door via Smartschool of Teams.",
     "bestand": "remediering.html",
-    "versie": "1.4",
+    "versie": "1.5",
     "nieuw": false,
     "onderdeel": "Remediëring",
     "klassen": [
@@ -928,6 +952,7 @@ async function bewaarLeerling() {
   renderKlassen();
   renderApps();
   sluitCodeModal();
+  toonRemMelding();
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
@@ -960,7 +985,40 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (!localStorage.getItem("wisk_leerling_code")) {
     openCodeModal(false);
   }
+  toonRemMelding();
 });
+
+// --- Remediëring te maken (toegewezen via de klasapp; enkel de code gaat naar de server) ---
+function remEsc(t) {
+  return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+let remBeurt = 0;
+const remCode = () => (localStorage.getItem('wisk_leerling_code') || '').trim().toUpperCase();
+async function toonRemMelding() {
+  const vak = document.getElementById('rem-melding');
+  if (!vak || !window.RemOpdrachten) return;
+  vak.classList.remove('open');
+  const beurt = ++remBeurt; // enkel de laatste oproep telt (bv. na het wisselen van code)
+  const code = remCode();
+  const klas = (localStorage.getItem('wisk_leerling_klas') || '').trim();
+  try { if (code && sessionStorage.getItem('rem_later') === code) return; } catch (e) { /* geen opslag */ }
+  if (!code || !klas || klas === 'alle klassen') return;
+  let open = [];
+  try { open = await RemOpdrachten.zichtbareOpen(code, klas); } catch (e) { return; }
+  if (beurt !== remBeurt || !open.length) return;
+  const nu = Date.now();
+  document.getElementById('rem-melding-lijst').innerHTML = open.map(o => {
+    const laat = Date.parse(o.deadline) < nu, dag = RemOpdrachten.fmtDeadline(o.deadline);
+    return `<div class="rem-item${laat ? ' te-laat' : ''}"><div><strong>${remEsc(o.titel || ('Remediëring ' + o.rem_id))}</strong>` +
+      `<div class="rem-wanneer">${laat ? `De deadline was ${remEsc(dag)}. Maak ze zo snel mogelijk.` : `Maak ze uiterlijk ${remEsc(dag)}.`}</div></div>` +
+      `<a class="rem-nu" href="remediering.html?rem=${encodeURIComponent(o.rem_id)}&amp;opdracht=${encodeURIComponent(o.id)}" onclick="remLater()">Nu maken →</a></div>`;
+  }).join('');
+  vak.classList.add('open');
+}
+function remLater() {
+  try { sessionStorage.setItem('rem_later', remCode()); } catch (e) { /* geen opslag */ }
+  document.getElementById('rem-melding').classList.remove('open');
+}
 
 function toonUpdateMelding() {
   const banner = document.getElementById("update-banner");
