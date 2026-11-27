@@ -549,15 +549,17 @@ function laadSet(klas, item) {
 /* =====================================================================
    SCHERM 1: lijst per klas
    ===================================================================== */
-// Zichtbaarheid (Tom, 27/11/2026): een remediëring van semester 1 (sem: 1) verdwijnt vanaf 1 januari
-// na de datum waarop ze werd opengezet (open: 'jjjj-mm-dd'). Opengezet in sept.–dec. → zichtbaar tot 31 dec.;
-// uitzonderlijk opengezet in jan.–aug. → zichtbaar tot 31 aug. Zonder sem of open: altijd zichtbaar.
-// Testen: window.REM_NU = '2027-01-01' en toonLijst().
+// Zichtbaarheid (Tom, 27/11/2026), volgens de datum waarop de remediëring werd opengezet (open: 'jjjj-mm-dd'):
+// - semester 1 (sem: 1) verdwijnt vanaf 1 januari daarna (uitzonderlijk opengezet in jan.–aug.: vanaf 1 september);
+// - semester 2 (sem: 2) verdwijnt bij de start van het nieuwe schooljaar: vanaf 1 september daarna.
+// Zonder sem of open: altijd zichtbaar. Testen: window.REM_NU = '2027-01-01' en toonLijst().
 const vandaag = () => window.REM_NU ? new Date(window.REM_NU + 'T12:00:00') : new Date();
 function vervaldatum(it) {
-  if (it.sem !== 1 || !it.open) return null;
+  if (!(it.sem === 1 || it.sem === 2) || !it.open) return null;
   const d = new Date(it.open + 'T12:00:00'); if (isNaN(d)) return null;
-  return d.getMonth() >= 8 ? new Date(d.getFullYear() + 1, 0, 1) : new Date(d.getFullYear(), 8, 1);
+  const naSept = d.getMonth() >= 8, j = d.getFullYear();
+  if (it.sem === 1) return naSept ? new Date(j + 1, 0, 1) : new Date(j, 8, 1);
+  return naSept ? new Date(j + 1, 8, 1) : new Date(j, 8, 1);
 }
 function isZichtbaar(it) { const v = vervaldatum(it); return !v || vandaag() < v; }
 function toonLijst() {
