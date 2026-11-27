@@ -1,6 +1,7 @@
 // Remediëringen die OPEN staan voor de leerlingen. Enkel de bestanden in deze lijst staan online.
 // Openzetten: remediering/<klas>_<id>.js uploaden en hier een regel toevoegen (zie OVERDRACHT.md, sectie Remediëring).
-// sem: 1 + open: datum → de pagina verbergt de remediëring vanaf 1 januari na die datum (elk jaar opnieuw openzetten).
+// sem + open: datum → de pagina verbergt de remediëring vanzelf: semester 1 vanaf 1 januari, semester 2 vanaf 1 september
+// (start nieuw schooljaar) na die datum. Elk schooljaar opnieuw openzetten op vraag van Tom.
 window.REM_LIJST = {
   "5duHT": [
     { id: "SO1", titel: "SO 1 Begrippen i.v.m. functies", leerstof: "H1 Kenmerken van functies", v: "1.0", sem: 1, open: "2026-11-26" },
