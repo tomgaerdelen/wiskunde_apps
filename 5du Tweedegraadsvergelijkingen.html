@@ -1228,11 +1228,11 @@
 
         // dashboard: opgave, eerste foute antwoord en de uitleg bij die fout
         function portaalFoutDetails(eersteFout) {
-            if (!eersteFout) return {};
+            // zonder fout: alleen de opgave (zie hieronder)
             try {
                 const term = (k, macht, eerste) => k === 0 ? '' : (k < 0 ? (eerste ? '-' : ' - ') : (eerste ? '' : ' + ')) + (Math.abs(k) === 1 && macht ? '' : Math.abs(k)) + macht;
                 const vgl = (term(currentA, 'x^2', true) + term(currentB, 'x', !currentA) + term(currentC, '', !currentA && !currentB)) || '0';
-                const f = dFouten[0] || rootsFouten[0];
+                if (!eersteFout) return { opg: '$' + vgl + ' = 0$' }; const f = dFouten[0] || rootsFouten[0];
                 return {
                     opg: '$' + vgl + ' = 0$',
                     ant: f ? (dFouten[0] ? 'D = ' : '') + String(f.ingevuld) : undefined,
@@ -1939,7 +1939,7 @@
         }
         const res = evaluateAnswer(it, ruw.replace(/\s+/g, '').toLowerCase());
         // dashboard: enkel de eerste poging van elke oefening telt
-        if (it && !it.portaalGelogd) { it.portaalGelogd = true; portaalLogOpgave(res === 'correct', 'onvolledig_type' + it.type, res === 'correct' ? null : (res === 'partial' ? 'een_oplossing_vergeten' : 'fout_antwoord'), res === 'correct' ? {} : { opg: it.eqStr, ant: String(ruw).slice(0, 80), jst: it.correctAnswerText || it.vTekst, ...(() => { try { const a = leesMixAntwoord(ruw); const c = a.ongeldig ? 'O_ANDERS' : classifyOnv(it, a.waarden, a.leeg); return FOUTEN_ONV[c] ? { fs: FOUTEN_ONV[c].titel, fb: FOUTEN_ONV[c].uitleg } : {}; } catch (e) { return {}; } })() }); }
+        if (it && !it.portaalGelogd) { it.portaalGelogd = true; portaalLogOpgave(res === 'correct', 'onvolledig_type' + it.type, res === 'correct' ? null : (res === 'partial' ? 'een_oplossing_vergeten' : 'fout_antwoord'), res === 'correct' ? { opg: it.eqStr } : { opg: it.eqStr, ant: String(ruw).slice(0, 80), jst: it.correctAnswerText || it.vTekst, ...(() => { try { const a = leesMixAntwoord(ruw); const c = a.ongeldig ? 'O_ANDERS' : classifyOnv(it, a.waarden, a.leeg); return FOUTEN_ONV[c] ? { fs: FOUTEN_ONV[c].titel, fb: FOUTEN_ONV[c].uitleg } : {}; } catch (e) { return {}; } })() }); }
         return { fb: fb, res: res };
     }
 
