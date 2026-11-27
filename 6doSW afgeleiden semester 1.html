@@ -4043,7 +4043,7 @@ function logOefening(status) {
     {
         const gen = (o.inst && o.inst.gen) || {};
         const codes = [...(o.codes || []), ...(o.fouten || []), ...(o.staat || []).flatMap(s => s.codes || [])].filter(c => typeof c === 'string' && c);
-        portaalLogOpgave(status === 'g', gen.cat, codes[0], { oef: gen.id, niv: gen.niveau, st: status, pog: o.pogingen, hints: o.hints, ...(status === 'g' ? {} : portaalFoutDetails(o.inst)) });
+        portaalLogOpgave(status === 'g', gen.cat, codes[0], { oef: gen.id, niv: gen.niveau, st: status, pog: o.pogingen, hints: o.hints, ...(status === 'g' ? { opg: portaalFoutDetails(o.inst).opg } : portaalFoutDetails(o.inst)) });
     }
     const s = opslag.lees('stat', {}), c = o.inst.gen.cat;
     s[c] = s[c] || { n: 0, g: 0 }; s[c].n++; if (status === 'g') s[c].g++;
