@@ -1229,7 +1229,7 @@ function rondAf(okVerklaar, codeVerklaar) {
   if (okVerklaar !== undefined) { it.eersteOk = okVerklaar; it.code = okVerklaar ? null : (codeVerklaar || 'verklaren'); }
   it.r.vergrendel && it.r.vergrendel();
   registreer(it.doel, it.gen, it.eersteOk);
-  try { if (typeof portaalLogOpgave === 'function') portaalLogOpgave(!!it.eersteOk, it.doel, it.code, { oef: it.gen, pog: it.pog, hints: it.hintGebruikt ? 1 : 0, m: s.modus.slice(0, 3), ...(it.eersteOk ? {} : { opg: it.vraag, ...(it.f1 || {}) }) }); /* portaalFoutDetails */ } catch (e) { }
+  try { if (typeof portaalLogOpgave === 'function') portaalLogOpgave(!!it.eersteOk, it.doel, it.code, { oef: it.gen, pog: it.pog, hints: it.hintGebruikt ? 1 : 0, m: s.modus.slice(0, 3), ...(it.eersteOk ? { opg: it.vraag } : { opg: it.vraag, ...(it.f1 || {}) }) }); /* portaalFoutDetails */ } catch (e) { }
   const ac = document.getElementById('acties'); const laatste = s.i === s.items.length - 1;
   ac.innerHTML = `<button class="knop" id="volgende">${laatste ? 'Klaar: bekijk resultaat' : 'Volgende →'}</button>`;
   document.getElementById('volgende').onclick = () => { if (laatste) toonEinde(); else { s.i++; toonItem(); } };
