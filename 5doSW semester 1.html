@@ -4968,7 +4968,7 @@ function logOefening(status) {
     // dashboard: één rij per oefening (g = meteen juist, h = juist met hulp, f = met uitwerking)
     if (IN_PORTAAL && typeof portaalLogOpgave === 'function') {
         const codes = [...o.codes].filter(x => typeof x === 'string' && x);
-        portaalLogOpgave(status === 'g', gen.cat, codes[0], { oef: gen.id, niv: gen.niveau, st: status, pog: o.pogingen, hints: o.hints, ...(status === 'g' ? {} : portaalFoutDetails(o.inst)), pt, max: o.inst.punten, zk: o.zeker || 0, m: o.tag || 'v', doel: o.doel || undefined });
+        portaalLogOpgave(status === 'g', gen.cat, codes[0], { oef: gen.id, niv: gen.niveau, st: status, pog: o.pogingen, hints: o.hints, ...(status === 'g' ? { opg: portaalFoutDetails(o.inst).opg } : portaalFoutDetails(o.inst)), pt, max: o.inst.punten, zk: o.zeker || 0, m: o.tag || 'v', doel: o.doel || undefined });
     }
 }
 function controleerOefening() {
