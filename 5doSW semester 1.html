@@ -790,6 +790,8 @@ const Ontleder = (() => {
     class DelingDoorNul extends Error { constructor() { super('deling door 0'); this.deling = true; } }
 
     function normaliseer(s) {
+        // n-demachtswortel zoals op papier: ³√(x), ⁵√(x^2), ∛8 → root(n, …) (zie wortel.js)
+        if (window.WORTEL) s = WORTEL.omzetten(s, (n, a) => n === 2 ? `sqrt(${a})` : ` root ( ${n} # ${a} ) `);   // zonder komma, zodat het ook in lijsten (-2 ; ³√(4)) werkt
         return String(s)
             .replace(/[−–—‒]/g, '-')
             .replace(/\*\*/g, '^')
@@ -874,13 +876,13 @@ const Ontleder = (() => {
                     return k.k === 2 ? { t: 'sqrt', a } : { t: 'root', k: { t: 'num', v: k.k, s: String(k.k) }, a };
                 }
                 case 'rootn': {
-                    if (!kijk() || kijk().t !== '(') throw new LeesFout('Schrijf een n-demachtswortel als root(n, getal), bv. root(3, x) voor de derdemachtswortel van x.');
+                    if (!kijk() || kijk().t !== '(') throw new LeesFout('Kies een n-demachtswortel met de knop ⁿ√ en typ tussen de haakjes, bv. ³√(x).');
                     neem();
                     const n = expr();
-                    if (!kijk() || kijk().t !== '#') throw new LeesFout('Schrijf een n-demachtswortel als root(n, getal), bv. root(3, x).');
+                    if (!kijk() || kijk().t !== '#') throw new LeesFout('Kies een n-demachtswortel met de knop ⁿ√ en typ tussen de haakjes, bv. ³√(x).');
                     neem();
                     const a = expr();
-                    if (!kijk() || kijk().t !== ')') throw new LeesFout('Er ontbreekt een haakje ")" bij root(…).');
+                    if (!kijk() || kijk().t !== ')') throw new LeesFout('Er ontbreekt een haakje ")" bij de wortel.');
                     neem();
                     return { t: 'root', k: n, a };
                 }
@@ -948,7 +950,7 @@ const Ontleder = (() => {
             case 'sqrt': return Math.sqrt(waarde(n.a, env));
             case 'root': {
                 const k = waarde(n.k, env), a = waarde(n.a, env);
-                if (!Number.isInteger(k) || k < 2) throw new LeesFout('De wortelexponent n in root(n, …) moet een natuurlijk getal groter dan 1 zijn.');
+                if (!Number.isInteger(k) || k < 2) throw new LeesFout('De wortelexponent n van een n-demachtswortel moet een natuurlijk getal groter dan 1 zijn.');
                 if (a >= 0) return Math.pow(a, 1 / k);
                 return k % 2 ? -Math.pow(-a, 1 / k) : NaN;
             }
@@ -3442,7 +3444,7 @@ regGen({ id: 'h4_vgl_xn', cat: 'h4', niveau: 1, titel: 'Vergelijkingen xⁿ = a'
     ];
     const lijst = r.neemN(ITEMS, 3).map(f => f());
     return {
-        opgave: 'Los de vergelijkingen op. Geef de exacte oplossing (bv. root(4, 5)) of rond af op drie decimalen.',
+        opgave: 'Los de vergelijkingen op. Geef de exacte oplossing (bv. ⁴√(5), met de knop ⁿ√) of rond af op drie decimalen.',
         delen: lijst.map(it => D.getallen(L`$${it.vgl}$`, it.w, { label: 'x =', txt: it.txt || lijstTxt(it.w), tex: it.tex, dec: 3, plusmin: it.pm, wat: 'oplossingen', code: it.pm ? 'plusmin' : 'wortel_even', geenMsg: 'Een even macht van een reëel getal is nooit negatief: er is geen oplossing.' })),
         hints: ['$x^n = a$ met $n$ oneven: juist één oplossing $x = \\sqrt[n]{a}$.', '$x^n = a$ met $n$ even: twee oplossingen $x = \\pm\\sqrt[n]{a}$ als $a > 0$, geen als $a < 0$.', 'Werk eerst alles om tot $x^n = \\ldots$'],
         stappen: lijst.map(it => L`$${it.vgl}$: ${it.st}`),
@@ -3558,7 +3560,7 @@ regGen({ id: 'h4_vereenvoudig', cat: 'h4', niveau: 2, titel: 'Vereenvoudigen met
     const som = [...teller.map(f => machtTex(f.e)), ...noemer.map(f => '-' + (f.e.n < 0 ? L`\left(${machtTex(f.e)}\right)` : machtTex(f.e)))].join(' + ').replace(/\+ -/g, '- ');
     return {
         opgave: L`Vereenvoudig zo ver mogelijk (met $x > 0$): $$${tex}$$`,
-        delen: [D.uitdr('Het resultaat (als één macht of één wortel van $x$):', xMachtTxt(e), xMachtTex(e), { positief: true, vorm: 'eenvoudig', punten: 2, code: 'macht', ph: 'bv. x^(11/6) of root(6, x^11)' })],
+        delen: [D.uitdr('Het resultaat (als één macht of één wortel van $x$):', xMachtTxt(e), xMachtTex(e), { positief: true, vorm: 'eenvoudig', punten: 2, code: 'macht', ph: 'bv. x^(11/6) of ⁶√(x^11)' })],
         hints: ['Schrijf elke wortel als een macht: $\\sqrt[n]{x^m} = x^{\\frac{m}{n}}$.', '$x^p \\cdot x^q = x^{p+q}$ en $\\frac{x^p}{x^q} = x^{p-q}$.', 'Tel de exponenten op (breuken op gelijke noemer zetten!).'],
         stappen: [L`$${tex} = ${noemer.length ? L`\frac{${teller.map(f => `x^{${machtTex(f.e)}}`).join(L` \cdot `)}}{${noemer.map(f => `x^{${machtTex(f.e)}}`).join(L` \cdot `)}}` : teller.map(f => `x^{${machtTex(f.e)}}`).join(L` \cdot `)}$`, L`>$= x^{${som}} = x^{${machtTex(e)}}$`, L`!$${xMachtTex(e)}$`],
     };
@@ -3591,7 +3593,7 @@ regGen({ id: 'h4_omzetten', cat: 'h4', niveau: 1, titel: 'Omzetten tussen wortel
     ];
     const delen = r.neemN(ITEMS, 3).map(f => f());
     return {
-        opgave: 'Zet om ($x > 0$). Typ een wortel als root(n, …), bv. root(5, x^3).',
+        opgave: 'Zet om ($x > 0$). Een wortel kies je met de knop ⁿ√, bv. ⁵√(x^3).',
         delen,
         hints: ['$a^{\\frac{m}{n}} = \\sqrt[n]{a^m}$: de noemer van de exponent wordt de wortelexponent.', '$a^{-p} = \\frac{1}{a^p}$ en $\\frac{1}{a^{-p}} = a^p$.'],
         stappen: delen.map(d => L`${d.vraag} $\;\to\; ${d.juistTex}$`),
@@ -3732,7 +3734,7 @@ regGen({ id: 'h4_transfo_vs', cat: 'h4', niveau: 2, titel: 'Voorschrift na trans
     const fouten = T.verschilt ? [{ txt: transTxt(B, std.a, std.c, std.d), msg: 'Je voerde de transformaties niet in de gegeven volgorde uit. Bij een verschuiving vóór de spiegeling of uitrekking wordt ook de verticale verschuiving gespiegeld/uitgerekt!', code: 'volgorde' }] : [];
     return {
         opgave: L`Gegeven is de functie $f(x) = ${B.naam}$. De grafiek van $g$ ontstaat door de grafiek van $f$ achtereenvolgens ${keuze.map(stapTekst).join(', daarna ')}. Noteer het voorschrift van $g$.`,
-        delen: [D.uitdr('Het voorschrift:', transTxt(B, res.a, res.c, res.d), transTex(B, res.a, res.c, res.d), { label: 'g(x) =', fouten, punten: 2, ph: 'bv. -5root(5, x - 4) of 3sqrt(x + 2) - 1', code: 'volgorde' })],
+        delen: [D.uitdr('Het voorschrift:', transTxt(B, res.a, res.c, res.d), transTex(B, res.a, res.c, res.d), { label: 'g(x) =', fouten, punten: 2, ph: 'bv. -5·⁵√(x - 4) of 3√(x + 2) - 1', code: 'volgorde' })],
         hints: ['Werk stap voor stap: $f_1(x)$, $f_2(x)$, … ', 'Spiegelen om de $x$-as: $-f(x)$; verticaal uitrekken met factor $k$: $k \\cdot f(x)$; verschuiven volgens $\\vec v(c, d)$: $f(x - c) + d$.'],
         stappen: [...st, L`!$g(x) = ${transTex(B, res.a, res.c, res.d)}$`],
     };
@@ -4626,9 +4628,9 @@ function stappenHtml(o) {
 }
 function juistHtml(d) { return d.juistTex ? kt(d.juistTex, true) : d.juistHtml; }
 const WB = {
-    uitdr: [['√', 'sqrt('], ['ⁿ√', 'root('], ['^', '^'], ['/', '/'], ['(', '('], [')', ')']],
-    getal: [['√', 'sqrt('], ['ⁿ√', 'root('], ['^', '^'], ['/', '/'], ['(', '('], [')', ')']],
-    lijst: [[';', ' ; '], ['±', '±'], ['√', 'sqrt('], ['ⁿ√', 'root('], ['/', '/'], ['geen', 'geen']],
+    uitdr: [['√', 'sqrt('], ['ⁿ√', 'ⁿ√'], ['^', '^'], ['/', '/'], ['(', '('], [')', ')']],
+    getal: [['√', 'sqrt('], ['ⁿ√', 'ⁿ√'], ['^', '^'], ['/', '/'], ['(', '('], [')', ')']],
+    lijst: [[';', ' ; '], ['±', '±'], ['√', 'sqrt('], ['ⁿ√', 'ⁿ√'], ['/', '/'], ['geen', 'geen']],
     verz: [[']', ']'], ['[', '['], ['∞', 'inf'], ['∪', ' U '], ['ℝ', 'R'], ['\\', ' \\ '], ['{', '{'], ['}', '}'], [';', ' ; ']],
 };
 // ---------- tekentabel / verloopschema als invultabel ----------
@@ -4739,8 +4741,8 @@ function typhulpHtml() {
     return `<details class="typhulp"><summary>⌨️ Hoe typ ik mijn antwoord?</summary><div class="inhoud"><table class="typtabel">
         ${rij('breuk', ['3/4', '-5/2'], L`\tfrac34,\ -\tfrac52`)}
         ${rij('macht', ['x^3', '(x+2)^2', 'x^(2/3)'], L`x^3,\ (x+2)^2,\ x^{\frac23}`)}
-        ${rij('vierkantswortel', ['sqrt(x - 3)', '2sqrt(5)'], L`\sqrt{x-3},\ 2\sqrt5`)}
-        ${rij('n-demachtswortel', ['root(3, x)', 'root(5, x^2)'], L`\sqrt[3]{x},\ \sqrt[5]{x^2}`)}
+        ${rij('vierkantswortel', ['√(x - 3)', '2√(5)'], L`\sqrt{x-3},\ 2\sqrt5`)}
+        ${rij('n-demachtswortel (knop ⁿ√)', ['³√(x)', '⁵√(x^2)'], L`\sqrt[3]{x},\ \sqrt[5]{x^2}`)}
         ${rij('voorschrift', ['(2x - 2)/(x + 4)', '-2(x-1)(x+3)'], L`\frac{2x-2}{x+4}`)}
         ${rij('nulwaarden', ['-2 ; 3', '±2', 'geen'], '')}
         ${rij('interval', [']-inf ; 2]', '[3 ; +inf[', ']1, 5['], L`]-\infty, 2],\ [3, +\infty[`)}
@@ -5412,6 +5414,7 @@ APP.addEventListener('click', e => {
             let inp = laatsteVeld && deel.contains(laatsteVeld) && !laatsteVeld.disabled ? laatsteVeld : deel.querySelector('input.invoer:not([disabled])');
             if (!inp) break;
             const t = b.dataset.t, a = inp.selectionStart ?? inp.value.length, z = inp.selectionEnd ?? inp.value.length;
+            if (t === 'ⁿ√') { if (window.WORTEL) WORTEL.kiesIndex(b, n => WORTEL.voegIn(inp, n)); break; }
             inp.value = inp.value.slice(0, a) + t + inp.value.slice(z);
             inp.focus(); inp.setSelectionRange(a + t.length, a + t.length);
             inp.dispatchEvent(new Event('input', { bubbles: true }));
@@ -5548,6 +5551,7 @@ const FU = (() => {
     return { zelftest, variaties };
 })();
 </script>
+<script src="wortel.js"></script>
 <script src="tracker.js"></script>
 <script>
   WiskundeTracker.init({ appId: "5doSW_semester_1" });
