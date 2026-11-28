@@ -10,6 +10,7 @@
 <script defer src="lib/jspdf-2.5.1.umd.min.js"></script>
 <script src="remediering/lijst.js"></script>
 <script src="rem-opdrachten.js"></script>
+<script src="wortel.js"></script>
 <style>
   :root { --blauw:#1e3a8a; --blauw2:#172554; --tekst:#1e293b; --grijs:#64748b; --rand:#e2e8f0; --achter:#f1f5f9;
           --goed:#15803d; --fout:#b91c1c; --half:#b45309; --tip:#a16207; --opl:#10309e; }
@@ -203,7 +204,10 @@ const W = (() => {
   };
   const TEXNAAM = { sin: '\\sin', cos: '\\cos', tan: '\\tan', cot: '\\cot', asin: '\\text{Bgsin}', arcsin: '\\text{Bgsin}', bgsin: '\\text{Bgsin}', acos: '\\text{Bgcos}', arccos: '\\text{Bgcos}', bgcos: '\\text{Bgcos}', atan: '\\text{Bgtan}', arctan: '\\text{Bgtan}', bgtan: '\\text{Bgtan}', bgcot: '\\text{Bgcot}', sinh: '\\sinh', cosh: '\\cosh', tanh: '\\tanh', exp: '\\exp', ln: '\\ln', log: '\\log' };
   function norm(s) {
-    return String(s).replace(/[−–—]/g, '-').replace(/[·×∙⋅]/g, '*').replace(/÷/g, '/').replace(/√/g, 'sqrt').replace(/π/g, 'pi')
+    // n-demachtswortels: ³√(x), ∛x, root(3, x) → interne notatie @3(x)
+    s = String(s).replace(/(?:root|wortel)\s*\(\s*(\d+)\s*[,;]/gi, '@$1(');
+    if (window.WORTEL) s = WORTEL.omzetten(s, (n, a) => n === 2 ? 'sqrt(' + a + ')' : '@' + n + '(' + a + ')');
+    return s.replace(/[−–—]/g, '-').replace(/[·×∙⋅]/g, '*').replace(/÷/g, '/').replace(/√/g, 'sqrt').replace(/π/g, 'pi')
       .replace(/∞/g, 'inf').replace(/²/g, '^2').replace(/³/g, '^3').replace(/⁴/g, '^4').replace(/\*\*/g, '^').replace(/,/g, '.')
       .replace(/[\[{]/g, '(').replace(/[\]}]/g, ')').replace(/\s+/g, '');
   }
@@ -222,6 +226,7 @@ const W = (() => {
         }
         i = j; continue;
       }
+      if (c === '@') { let j = i + 1; while (j < s.length && /[0-9]/.test(s[j])) j++; t.push({ t: 'root', n: parseInt(s.slice(i + 1, j), 10) }); i = j; continue; }
       if ('+-*/^()|_'.includes(c)) { t.push({ t: c }); i++; continue; }
       throw new Error('Onbekend teken: ' + c);
     }
@@ -232,7 +237,7 @@ const W = (() => {
     const T = tokens(str); let p = 0;
     if (!T.length) throw new Error('Leeg');
     const peek = () => T[p], eat = x => { if (T[p] && T[p].t === x) { p++; return true; } return false; };
-    const start = tk => tk && (tk.t === 'num' || tk.t === 'id' || tk.t === 'fn' || tk.t === '(');
+    const start = tk => tk && (tk.t === 'num' || tk.t === 'id' || tk.t === 'fn' || tk.t === 'root' || tk.t === '(');
     const startZonderFn = tk => tk && (tk.t === 'num' || tk.t === 'id');
     function expr() { let a = term(); while (peek() && (peek().t === '+' || peek().t === '-')) { const op = T[p++].t; const b = term(); a = { k: op === '+' ? 'add' : 'sub', a, b }; } return a; }
     function term() {
@@ -259,6 +264,12 @@ const W = (() => {
         return { k: 'var', v: tk.v };
       }
       if (tk.t === '(') { const a = expr(); if (!eat(')')) throw new Error('Er ontbreekt een haakje )'); return { k: 'par', a }; }
+      if (tk.t === 'root') {
+        if (!eat('(')) throw new Error('Na het wortelteken moet een getal of een haakje volgen');
+        if (peek() && peek().t === ')') throw new Error('Vul de wortel in: typ iets tussen de haakjes');
+        const a = expr(); if (!eat(')')) throw new Error('Er ontbreekt een haakje )');
+        return { k: 'root', n: tk.n, a };
+      }
       if (tk.t === '|') { const a = expr(); if (!eat('|')) throw new Error('Er ontbreekt een |'); return { k: 'fn', f: 'abs', a }; }
       if (tk.t === 'fn') {
         let base = null, macht = null;
@@ -293,6 +304,7 @@ const W = (() => {
       case 'mul': return ev(n.a, env) * ev(n.b, env);
       case 'div': return ev(n.a, env) / ev(n.b, env);
       case 'pow': return machtReeel(ev(n.a, env), ev(n.b, env));
+      case 'root': return WORTEL.waarde(n.n, ev(n.a, env));
       case 'fn': { const v = ev(n.a, env); if (n.f === 'log' && n.base) return Math.log(v) / Math.log(ev(n.base, env)); return F[n.f](v); }
     }
     return NaN;
@@ -313,6 +325,7 @@ const W = (() => {
         let B = tex(n.a); if (!['num', 'var', 'par'].includes(n.a.k) || (n.a.k === 'num' && n.a.v < 0)) B = '\\left(' + B + '\\right)';
         return '{' + B + '}^{' + tex(strip(n.b)) + '}';
       }
+      case 'root': return '\\sqrt[' + n.n + ']{' + tex(strip(n.a)) + '}';
       case 'fn': {
         if (n.f === 'sqrt') return '\\sqrt{' + tex(strip(n.a)) + '}';
         if (n.f === 'abs') return '\\left|' + tex(strip(n.a)) + '\\right|';
@@ -342,7 +355,7 @@ function leesLijst(s, aantalVerwacht) {
   }
   const uit = [];
   for (const l of lezingen) { try { uit.push(l.map(x => x.trim()).filter(x => x !== '').map(getalUit)); } catch (e) { /* lezing past niet */ } }
-  if (!uit.length) throw new Error('Schrijf de getallen gescheiden door ; (bv. -2 ; 3)');
+  if (!uit.length) throw new Error('Schrijf de getallen tussen accolades, gescheiden door ; (bv. {-2 ; 3})');
   return uit;
 }
 const R_INF = 1e300;
@@ -394,15 +407,15 @@ function texIntervallen(L) {
    VELDEN: elk type heeft maak (html), lees (waarde uit het scherm), nakijken, toon (LaTeX)
    ===================================================================== */
 const SYMBOLEN = {
-  expr: ['^', '√( )', 'π', 'e', 'ln( )', '( )'],
-  getal: ['√( )', '/', 'π', '^'],
-  verz: [';', '∅', '√( )', '/'],
+  expr: ['^', '√( )', 'ⁿ√', 'π', 'e', 'ln( )', '( )'],
+  getal: ['√( )', 'ⁿ√', '/', 'π', '^'],
+  verz: ['{ }', ';', '∅', '√( )', 'ⁿ√', '/'],
   interval: [']', '[', ';', '∞', '-∞', '∪', 'IR'],
 };
 const HULP = {
-  expr: 'Typ bv. 3x^2 - 2x, (x+1)/(x-2), sqrt(x), e^(2x), ln(x), sin(x). Machten met ^, maal mag weg.',
-  getal: 'Typ een getal of een exacte uitdrukking (bv. 50/13, -3/4, sqrt(2), 2pi). Decimale komma mag.',
-  verz: 'Typ de oplossingen gescheiden door ; (bv. -2 ; 3). Geen oplossingen: typ ∅ of "geen".',
+  expr: 'Typ bv. 3x^2 - 2x, (x+1)/(x-2), √(x), e^(2x), ln(x), sin(x). Machten met ^, maal mag weg. Een andere wortel (zoals ³√) kies je met de knop ⁿ√.',
+  getal: 'Typ een getal of een exacte uitdrukking (bv. 50/13, -3/4, √(2), 2pi). Decimale komma mag. Een andere wortel (zoals ³√) kies je met de knop ⁿ√.',
+  verz: 'Typ de oplossingen tussen accolades, gescheiden door ; (bv. {-2 ; 3}). Geen oplossingen: typ ∅ of "geen".',
   interval: 'Typ intervallen zoals in de les: ]-∞ ; -3[ ∪ ]1 ; +∞[ of IR of IR\\{2}. Geen oplossingen: ∅.'
 };
 function voorbeeldTex(veld, waarde) {
@@ -410,7 +423,13 @@ function voorbeeldTex(veld, waarde) {
   try {
     if (veld.type === 'expr') { const s = stripLinks(waarde); return kt(W.tex(W.parse(s, veld.vars || [veld.var || 'x']))); }
     if (veld.type === 'getal') return kt(W.tex(W.parse(waarde, [])));
-    if (veld.type === 'verz') { const l = leesLijst(waarde)[0]; return kt('V=' + (l.length ? '\\left\\{' + l.map(fmt).join('\\,;\\,') + '\\right\\}' : '\\varnothing')); }
+    if (veld.type === 'verz') {
+      const l = leesLijst(waarde)[0];
+      // toon wat de leerling typte (bv. ∛2), niet de afgeronde waarde
+      const t = String(waarde).trim().replace(/^V\s*=\s*/i, '').replace(/^\{|\}$/g, '').trim();
+      let d = null; try { const st = (t.includes(';') ? t.split(';') : [t]).map(x => x.trim()).filter(Boolean); if (st.length === l.length) d = st.map(x => W.tex(W.parse(x, []))); } catch (e) { d = null; }
+      return kt('V=' + (l.length ? '\\left\\{' + (d || l.map(fmt)).join('\\,;\\,') + '\\right\\}' : '\\varnothing'));
+    }
     if (veld.type === 'interval') return kt(texIntervallen(leesIntervallen(waarde)));
   } catch (e) { return '<span class="fout-melding">⚠ ' + esc(e.message) + '</span>'; }
   return '';
@@ -703,18 +722,20 @@ function veldHtml(v, f, i) {
     }
     return `<div class="veld-blok">${lab}<div style="overflow-x:auto"><table class="tt"><tr>${kop}</tr><tr>${rij}</tr></table></div><div class="hulp">Kies in elk vakje: + of − (of / als f daar niet bestaat) tussen de getallen, en 0 of / (bestaat niet) bij de getallen zelf.</div></div>`;
   }
-  const sym = (f.symbolen || SYMBOLEN[f.type] || []).map(sb => `<button type="button" onclick="voegIn('${v.id}_${i}','${sb.replace(/'/g, "\\'")}')">${esc(sb)}</button>`).join('');
+  const sym = (f.symbolen || SYMBOLEN[f.type] || []).map(sb => `<button type="button" onclick="voegIn('${v.id}_${i}','${sb.replace(/'/g, "\\'")}',this)">${esc(sb)}</button>`).join('');
   return `<div class="veld-blok">${lab}<input class="tekstveld" id="${v.id}_${i}" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(w || '')}" placeholder="${esc(f.placeholder || '')}" oninput="zetAntw('${v.id}',${i},this.value);document.getElementById('vb_${v.id}_${i}').innerHTML=voorbeeldTex(SET.vragen[${SET.vragen.indexOf(v)}].velden[${i}],this.value);tekenNav()">
     <div class="symbolen">${sym}</div>
     <div class="voorbeeld" id="vb_${v.id}_${i}">${voorbeeldTex(f, w || '')}</div>
     <div class="hulp">${esc(f.hulp || HULP[f.type] || '')}</div></div>`;
 }
-function voegIn(id, sb) {
+function voegIn(id, sb, knop) {
   const el = document.getElementById(id); if (!el) return;
+  if (sb === 'ⁿ√') { if (window.WORTEL) WORTEL.kiesIndex(knop, n => WORTEL.voegIn(el, n)); return; }
   const a = el.selectionStart ?? el.value.length, b = el.selectionEnd ?? el.value.length;
   let ins = sb, cur = sb.length;
   if (sb.endsWith('( )')) { ins = sb.replace('( )', '()'); cur = ins.length - 1; }
   else if (sb === '( )') { ins = '()'; cur = 1; }
+  else if (sb === '{ }') { ins = '{}'; cur = 1; }
   else if (sb === '-∞') { ins = '-∞'; cur = 2; }
   el.value = el.value.slice(0, a) + ins + el.value.slice(b);
   el.focus(); el.setSelectionRange(a + cur, a + cur);
