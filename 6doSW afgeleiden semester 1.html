@@ -511,6 +511,8 @@ const Expr = (() => {
     const NAMEN = ['sqrt', 'sin', 'cos', 'tan', 'cot', 'exp', 'abs', 'log', 'ln', 'pi', 'e'];
     const FN = new Set(['sqrt', 'sin', 'cos', 'tan', 'cot', 'exp', 'abs', 'log', 'ln']);
     function voorbereid(s) {
+        // n-demachtswortel zoals op papier: ³√(x), ∛x → interne notatie @3(x) (zie wortel.js)
+        if (window.WORTEL) s = WORTEL.omzetten(s, (n, a) => n === 2 ? `sqrt(${a})` : `@${n}(${a})`);
         return String(s)
             .replace(/[−–—]/g, '-').replace(/[·×∙⋅]/g, '*').replace(/÷/g, '/').replace(/π/g, 'pi').replace(/√/g, 'sqrt').replace(/[Δ∆]\s*x/g, 'dx')
             .replace(/²/g, '^2').replace(/³/g, '^3').replace(/⁴/g, '^4').replace(/⁵/g, '^5')
@@ -556,6 +558,7 @@ const Expr = (() => {
                 continue;
             }
             if ('+-*/^'.includes(c)) { T.push({ t: 'op', v: c }); i++; continue; }
+            if (c === '@') { const m = s.slice(i + 1).match(/^\d+/); T.push({ t: 'wortel', n: m ? +m[0] : 3 }); i += 1 + (m ? m[0].length : 0); continue; }
             if (c === '(') { T.push({ t: '(' }); i++; continue; }
             if (c === ')') { T.push({ t: ')' }); i++; continue; }
             if (c === '=') throw new LeesFout('Typ hier geen =-teken, enkel de uitdrukking.');
@@ -572,7 +575,7 @@ const Expr = (() => {
         let p = 0;
         const kijk = () => T[p], neem = () => T[p++];
         const isOp = (tk, v) => tk && tk.t === 'op' && tk.v === v;
-        const start = tk => tk && (tk.t === 'num' || tk.t === 'var' || tk.t === 'const' || tk.t === 'fn' || tk.t === '(');
+        const start = tk => tk && (tk.t === 'num' || tk.t === 'var' || tk.t === 'const' || tk.t === 'fn' || tk.t === 'wortel' || tk.t === '(');
         function som() {
             let a = term();
             while (isOp(kijk(), '+') || isOp(kijk(), '-')) { const o = neem().v; const b = term(); a = { t: o === '+' ? 'add' : 'sub', a, b }; }
@@ -618,6 +621,13 @@ const Expr = (() => {
             if (tk.t === 'var') return { t: 'var', n: tk.n };
             if (tk.t === 'const') return { t: 'const', n: tk.n };
             if (tk.t === '(') return haakjes();
+            if (tk.t === 'wortel') {   // n-demachtswortel = macht met exponent 1/n (onthoudt n voor de weergave)
+                if (!kijk() || kijk().t !== '(') throw new LeesFout('Na het wortelteken moet een haakje volgen, bv. ³√(x).');
+                neem();
+                if (kijk() && kijk().t === ')') throw new LeesFout('Vul de wortel in: typ iets tussen de haakjes.');
+                const a = haakjes();
+                return { t: 'pow', a, b: { t: 'div', a: { t: 'num', v: 1, s: '1' }, b: { t: 'num', v: tk.n, s: String(tk.n) } }, wortel: tk.n };
+            }
             if (tk.t === 'fn') {
                 let exp = null;
                 if (isOp(kijk(), '^') && tk.n !== 'sqrt' && tk.n !== 'exp' && tk.n !== 'abs') {   // sin^2(x)
@@ -692,7 +702,7 @@ const Expr = (() => {
             case 'neg': return 'neg';
             case 'div': return 'frac';
             case 'add': case 'sub': case 'mul': return eerste(n.a);
-            case 'pow': return n.a.t === 'fn' && n.a.n !== 'sqrt' && n.a.n !== 'abs' ? 'fn' : atomair(n.a) ? eerste(n.a) : 'par';
+            case 'pow': return n.wortel ? 'fn' : n.a.t === 'fn' && n.a.n !== 'sqrt' && n.a.n !== 'abs' ? 'fn' : atomair(n.a) ? eerste(n.a) : 'par';
         }
         return 'letter';
     }
@@ -728,6 +738,7 @@ const Expr = (() => {
             }
             case 'div': return L`\frac{${T(n.a)}}{${T(n.b)}}`;
             case 'pow': {
+                if (n.wortel) return `\\sqrt[${n.wortel}]{${T(n.a)}}`;
                 if (n.a.t === 'fn' && !['sqrt', 'abs', 'exp'].includes(n.a.n)) return fnTex(n.a, T(n.b));
                 return (atomair(n.a) ? T(n.a) : par(T(n.a))) + `^{${T(n.b)}}`;
             }
@@ -995,8 +1006,8 @@ function leesRechte(str) {
 const OK = (msg = 'Juist!', x = {}) => Object.assign({ ok: true, msg }, x);
 const NOK = (msg, code = 'onbekend', x = {}) => Object.assign({ ok: false, msg, code }, x);
 const KNOP = {
-    getal: [['√', 'sqrt('], ['/', '/'], ['(', '('], [')', ')'], ['π', 'π'], ['e', 'e'], ['ln', 'ln(']],
-    expr: [['√', 'sqrt('], ['x²', '^2'], ['^', '^'], ['/', '/'], ['(', '('], [')', ')']],
+    getal: [['√', 'sqrt('], ['ⁿ√', 'ⁿ√'], ['/', '/'], ['(', '('], [')', ')'], ['π', 'π'], ['e', 'e'], ['ln', 'ln(']],
+    expr: [['√', 'sqrt('], ['ⁿ√', 'ⁿ√'], ['x²', '^2'], ['^', '^'], ['/', '/'], ['(', '('], [')', ')']],
     explog: [['eˣ', 'e^('], ['ln', 'ln('], ['log', 'log('], ['logₐ', 'log_']],
     gonio: [['sin', 'sin('], ['cos', 'cos('], ['tan', 'tan('], ['π', 'π']],
     lim: [['+∞', '+∞'], ['−∞', '-∞'], ['±∞', '±∞'], ['bestaat niet', 'bestaat niet'], ['/', '/'], ['√', 'sqrt(']],
@@ -3103,7 +3114,7 @@ G('hb-graf', 'holbol', 2, 'Tekentabel van f″ uit een grafiek', r => herhaal(()
 function afg(fTexS, fTxt, dTxt, dTex, o = {}) {
     return D.expr(L`$${o.naam || 'f'}(x) = ${fTexS}$`, dTxt, { van: fTxt, juistTex: dTex, label: L`${o.naam || 'f'}'(x) =`, dom: o.dom || [0.3, 2.4], code: o.code || 'onbekend', fouten: o.fouten || [], punten: o.punten ?? 1, knoppen: o.knoppen, vereenvoudig: o.vereenvoudig });
 }
-const KN_EL = [...KNOP.explog, ['√', 'sqrt('], ['^', '^'], ['/', '/'], ['(', '('], [')', ')']];
+const KN_EL = [...KNOP.explog, ['√', 'sqrt('], ['ⁿ√', 'ⁿ√'], ['^', '^'], ['/', '/'], ['(', '('], [')', ')']];
 const KN_GO = [...KNOP.gonio, ['eˣ', 'e^('], ['ln', 'ln('], ['^', '^'], ['/', '/'], ['(', '('], [')', ')']];
 function deelPool(r, pool, n) { return r.schud(pool).slice(0, n).map(f => f()); }
 const lnT = a => L`\ln ${a}`;
@@ -3910,6 +3921,7 @@ function typhulpHtml() {
     return `<details class="typhulp"><summary>⌨️ Hoe typ ik mijn antwoord?</summary><div class="inhoud"><table class="typtabel">
         ${rij('breuk en decimaal getal', ['3/4', '-5/2', '2,5'], L`\tfrac34,\ -\tfrac52,\ 2{,}5`)}
         ${rij('macht en wortel', ['x^3', '(2x+1)^4', 'sqrt(x^2+1)'], L`x^3,\ (2x+1)^4,\ \sqrt{x^2+1}`)}
+        ${rij('n-demachtswortel (knop ⁿ√)', ['³√(x)', '⁵√(x^2)'], L`\sqrt[3]{x},\ \sqrt[5]{x^2}`)}
         ${rij('breuk met een functie', ['(3x-4)/(2x^2-6)^2'], L`\frac{3x-4}{(2x^2-6)^2}`)}
         ${rij('e en ln', ['e^(2x)', 'ln(x^2+1)', 'ln(x)^2'], L`e^{2x},\ \ln(x^2+1),\ \ln^2 x`)}
         ${rij('log met grondtal', ['log(x)', 'log_5(3x)'], L`\log x,\ \log_5(3x)`)}
@@ -4443,6 +4455,7 @@ APP.addEventListener('click', e => {
             let inp = laatsteVeld && deel.contains(laatsteVeld) && !laatsteVeld.disabled ? laatsteVeld : deel.querySelector('input.invoer:not([disabled])');
             if (!inp) break;
             const t = b.dataset.t, a = inp.selectionStart ?? inp.value.length, z = inp.selectionEnd ?? inp.value.length;
+            if (t === 'ⁿ√') { if (window.WORTEL) WORTEL.kiesIndex(b, n => WORTEL.voegIn(inp, n)); break; }
             inp.value = inp.value.slice(0, a) + t + inp.value.slice(z);
             inp.focus(); inp.setSelectionRange(a + t.length, a + t.length);
             inp.dispatchEvent(new Event('input', { bubbles: true }));
@@ -4576,6 +4589,7 @@ const AFG = (() => {
 })();
 
 </script>
+<script src="wortel.js"></script>
 <script src="tracker.js"></script>
 <script>
   WiskundeTracker.init({ appId: "6doSW_afgeleiden_sem1" });
