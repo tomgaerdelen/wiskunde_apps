@@ -457,6 +457,8 @@ const Ex = (() => {
     class LeesFout extends Error { constructor(m, onvolledig) { super(m); this.leesfout = true; this.onvolledig = !!onvolledig; } }
 
     function voorbereid(invoer) {
+        // n-demachtswortel zoals op papier: ³√(x), ∛x → ((x)^(1/3)) (zie wortel.js; tex toont het weer als wortel)
+        if (window.WORTEL && invoer != null) invoer = WORTEL.omzetten(invoer, (n, a) => n === 2 ? `sqrt(${a})` : `((${a})^(1/${n}))`);
         return String(invoer == null ? '' : invoer)
             .replace(/[−–—‒]/g, '-').replace(/[·×∙⋅•]/g, '*').replace(/÷/g, '/').replace(/π/g, 'pi').replace(/√/g, 'sqrt').replace(/∞/g, 'inf')
             .replace(/²/g, '^2').replace(/³/g, '^3').replace(/⁴/g, '^4').replace(/\*\*/g, '^').replace(/,/g, '.')
@@ -682,7 +684,7 @@ const Ex = (() => {
             case 'pow': {
                 if (n.a.t === 'fn' && !['sqrt', 'abs'].includes(n.a.v) && n.b.t === 'num' && Number.isInteger(n.b.v) && n.b.v > 0)
                     return fnNaam(n.a) + '^{' + getal(n.b.v) + '}' + fnArg(n.a.a);
-                if (n.b.t === 'div' && n.b.a.t === 'num' && n.b.a.v === 1 && n.b.b.t === 'num' && [3, 4, 5].includes(n.b.b.v))
+                if (n.b.t === 'div' && n.b.a.t === 'num' && n.b.a.v === 1 && n.b.b.t === 'num' && Number.isInteger(n.b.b.v) && n.b.b.v >= 3)
                     return L`\sqrt[${n.b.b.v}]{${tex(n.a)}}`;
                 const at = ['var', 'const'].includes(n.a.t) || (n.a.t === 'num' && Number.isInteger(n.a.v) && n.a.v >= 0) || (n.a.t === 'fn' && ['sqrt', 'abs'].includes(n.a.v));
                 return (at ? tex(n.a) : haak(tex(n.a))) + '^{' + tex(n.b) + '}';
@@ -3616,9 +3618,9 @@ function lkSamenvattingHtml({ pct, telling, zwak, naam, soort }) {
 // ---------- invoervelden ----------
 const KIND = v => v.getal ? 'getal' : v.lijst ? 'lijst' : v.punten ? 'punten' : v.rechte ? 'rechte' : v.rechten ? 'rechten' : v.interval ? 'interval' : 'uitdr';
 const WERKBALK = {
-    uitdr: [['√', 'sqrt('], ['^', '^'], ['eˣ', 'e^('], ['ln', 'ln('], ['sin', 'sin('], ['cos', 'cos('], ['tan', 'tan('], ['Bgsin', 'Bgsin('], ['Bgtan', 'Bgtan('], ['π', 'pi'], ['(', '('], [')', ')']],
-    getal: [['√', 'sqrt('], ['^', '^'], ['e', 'e'], ['ln', 'ln('], ['π', 'pi'], ['∞', 'inf'], ['(', '('], [')', ')']],
-    lijst: [[';', ' ; '], ['√', 'sqrt('], ['π', 'pi'], ['ln', 'ln('], ['(', '('], [')', ')']],
+    uitdr: [['√', 'sqrt('], ['ⁿ√', 'ⁿ√'], ['^', '^'], ['eˣ', 'e^('], ['ln', 'ln('], ['sin', 'sin('], ['cos', 'cos('], ['tan', 'tan('], ['Bgsin', 'Bgsin('], ['Bgtan', 'Bgtan('], ['π', 'pi'], ['(', '('], [')', ')']],
+    getal: [['√', 'sqrt('], ['ⁿ√', 'ⁿ√'], ['^', '^'], ['e', 'e'], ['ln', 'ln('], ['π', 'pi'], ['∞', 'inf'], ['(', '('], [')', ')']],
+    lijst: [[';', ' ; '], ['√', 'sqrt('], ['ⁿ√', 'ⁿ√'], ['π', 'pi'], ['ln', 'ln('], ['(', '('], [')', ')']],
     punten: [['( ; )', '( ; )'], [';', ' ; '], ['√', 'sqrt('], ['π', 'pi'], ['e', 'e'], ['ln', 'ln(']],
     rechte: [['y =', 'y = '], ['x', 'x'], ['√', 'sqrt('], ['π', 'pi'], ['e', 'e'], ['ln', 'ln(']],
     rechten: [['y =', 'y = '], [';', ' ; '], ['√', 'sqrt('], ['π', 'pi']],
@@ -3669,6 +3671,7 @@ function typhulpHtml() {
     return `<details class="typhulp"><summary>⌨️ Hoe typ ik mijn antwoord?</summary><div class="inhoud"><table class="typtabel">
         ${rij('breuk, macht', ['3/4', 'x^2', 'e^(2x)', 'x^(1/3)'], L`\tfrac34,\ x^2,\ e^{2x},\ \sqrt[3]{x}`)}
         ${rij('wortel, π, e', ['sqrt(3)', '2pi/3', 'e', '1/e^2'], L`\sqrt3,\ \tfrac{2\pi}{3},\ e,\ \tfrac{1}{e^2}`)}
+        ${rij('n-demachtswortel (knop ⁿ√)', ['³√(x)', '⁵√(x^2)'], L`\sqrt[3]{x},\ \sqrt[5]{x^2}`)}
         ${rij('ln, log', ['ln(x)', 'log(x)', 'log_2(x)', 'ln(x)^2'], L`\ln x,\ \log x,\ \log_2 x,\ \ln^2 x`)}
         ${rij('goniometrie', ['sin(2x)', 'cos(x)^2', 'tan(x)', 'cot(x)'], L`\sin 2x,\ \cos^2 x,\ \tan x,\ \cot x`)}
         ${rij('cyclometrie', ['Bgsin(x)', 'Bgcos(x)', 'Bgtan(x)', 'arctan(x)'], L`\operatorname{Bgsin} x,\ \operatorname{Bgtan} x`)}
@@ -4173,6 +4176,7 @@ APP.addEventListener('click', e => {
             let inp = laatsteVeld && deel.contains(laatsteVeld) && !laatsteVeld.disabled ? laatsteVeld : deel.querySelector('input.invoer:not([disabled])');
             if (!inp) break;
             const t = b.dataset.t, a = inp.selectionStart ?? inp.value.length, z = inp.selectionEnd ?? inp.value.length;
+            if (t === 'ⁿ√') { if (window.WORTEL) WORTEL.kiesIndex(b, n => WORTEL.voegIn(inp, n)); break; }
             inp.value = inp.value.slice(0, a) + t + inp.value.slice(z);
             inp.focus(); const pos = t === '( ; )' ? a + 1 : a + t.length; inp.setSelectionRange(pos, pos);
             inp.dispatchEvent(new Event('input', { bubbles: true }));
@@ -4297,6 +4301,7 @@ const APPTEST = (() => {
     return { zelftest };
 })();
 </script>
+<script src="wortel.js"></script>
 <script src="tracker.js"></script>
 <script>
   WiskundeTracker.init({ appId: "6doTW_afgeleiden_sem1" });
