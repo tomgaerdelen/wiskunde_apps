@@ -104,6 +104,8 @@
     .klavier-rij { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-bottom: 6px; }
     .klavier-rij:last-child { margin-bottom: 0; }
     .klavier-rij.bg { grid-template-columns: repeat(4, 1fr); }
+    .klavier-rij.r9 { grid-template-columns: repeat(9, 1fr); }
+    .klavier-rij.r9 > .breed { grid-column: span 2; }
     .toets-k { padding: 11px 2px; border-radius: 9px; border: 1px solid #cbd5e1; background: #fff; font-weight: 700; font-size: 1rem; color: #334155; min-width: 0; touch-action: manipulation; }
     .toets-k:hover { background: var(--blauw-licht); }
     .toets-k.fn { font-size: .9rem; color: #1d4ed8; }
@@ -1814,6 +1816,8 @@ const Wiskunde = (() => {
     function voorbereid(invoer) {
         let s = String(invoer == null ? '' : invoer);
         s = s.replace(/^\s*(f\s*['’′]\s*\(\s*x\s*\)|f\s*['’′]|y\s*['’′])\s*=\s*/i, '');
+        // n-demachtswortel zoals op papier: ³√(x), ∛x → ((x)^(1/3)) (zie wortel.js; tex toont het weer als wortel)
+        if (window.WORTEL) s = WORTEL.omzetten(s, (n, a) => n === 2 ? `sqrt(${a})` : `((${a})^(1/${n}))`);
         s = s.replace(/[−–—]/g, '-').replace(/[·×∙⋅]/g, '*').replace(/÷/g, '/').replace(/π/g, 'pi').replace(/√/g, 'sqrt')
              .replace(/²/g, '^2').replace(/³/g, '^3').replace(/\*\*/g, '^').replace(/,/g, '.')
              .replace(/[\[{]/g, '(').replace(/[\]}]/g, ')');
@@ -2057,6 +2061,8 @@ const Wiskunde = (() => {
             case 'pow': {
                 if (n.a.t === 'fn' && !['sqrt', 'abs'].includes(n.a.v) && n.b.t === 'num' && Number.isInteger(n.b.v) && n.b.v > 0)
                     return fnNaam(n.a) + '^{' + getal(n.b.v) + '}' + haak(tex(n.a.a));
+                if (n.b.t === 'div' && n.b.a.t === 'num' && n.b.a.v === 1 && n.b.b.t === 'num' && Number.isInteger(n.b.b.v) && n.b.b.v >= 3)
+                    return '\\sqrt[' + n.b.b.v + ']{' + tex(n.a) + '}';
                 const atoom = ['x', 'const'].includes(n.a.t) || (n.a.t === 'num' && Number.isInteger(n.a.v)) || (n.a.t === 'fn' && ['sqrt', 'abs'].includes(n.a.v));
                 return (atoom ? tex(n.a) : haak(tex(n.a))) + '^{' + tex(n.b) + '}';
             }
@@ -3162,14 +3168,14 @@ const Afgeleiden = (() => {
 
     // ---------- gedeelde stukken ----------
     function typHulpHTML() {
-        const voorbeelden = ['3x^2 - 5x + 1', '2x cos(x^2)', 'e^(2x)', 'sqrt(x^2+1)', 'ln(x^2+1)', 'log_2(x)', 'sin(x)^2', 'sin^2(x)', '1/(2x)', '1/2x', '-x^2'];
+        const voorbeelden = ['3x^2 - 5x + 1', '2x cos(x^2)', 'e^(2x)', 'sqrt(x^2+1)', '³√(x^2+1)', 'ln(x^2+1)', 'log_2(x)', 'sin(x)^2', 'sin^2(x)', '1/(2x)', '1/2x', '-x^2'];
         if (S.richting === 8) voorbeelden.push('Bgsin(2x)', 'Bgtan(x)^2');
         const rijen = voorbeelden.map(v => `<tr><td><code>${esc(v)}</code></td><td>${wiskunde(W.texVan(v))}</td></tr>`).join('');
         return `<details class="uitleg geen-print"><summary>❓ Hoe typ ik mijn antwoord?</summary><div class="inhoud">
             <p>Typ met het schermtoetsenbord of met je eigen toetsenbord. Onder het invoervak zie je meteen hoe de app je antwoord leest: kijk dat altijd even na.</p>
             <table class="typtabel"><tr><td class="grijs klein">Je typt</td><td class="grijs klein">De app leest</td></tr>${rijen}</table>
             <p>Een maalteken mag je weglaten: <code>2x</code>, <code>x sin(x)</code> en <code>(x+1)(x-1)</code> werken. Zet haakjes rond tellers en noemers: <code>1/(2x)</code> is iets anders dan <code>1/2x</code>.
-            Je antwoord hoeft niet vereenvoudigd te zijn: elke juiste vorm wordt goedgekeurd. Je mag ook een komma gebruiken (<code>0,5</code>).</p>
+            Je antwoord hoeft niet vereenvoudigd te zijn: elke juiste vorm wordt goedgekeurd. Je mag ook een komma gebruiken (<code>0,5</code>). Een derdemachtswortel of een andere wortel kies je met de toets <b>ⁿ√</b>.</p>
             </div></details>`;
     }
 
@@ -3187,10 +3193,11 @@ const Afgeleiden = (() => {
         const rijen = [
             [k('7', '7'), k('8', '8'), k('9', '9'), k('+', '+'), k('−', '-', '', 'min'), k('x', 'x'), k('(', '('), k(')', ')')],
             [k('4', '4'), k('5', '5'), k('6', '6'), k('·', '*', '', 'maal'), k('/', '/', '', 'gedeeld door'), k('^', '^', '', 'tot de macht'), k('x²', '^2', '', 'kwadraat'), k('eˣ', 'e^(', 'fn', 'e tot de macht')],
-            [k('1', '1'), k('2', '2'), k('3', '3'), k('√', 'sqrt(', 'fn', 'vierkantswortel'), k('ln', 'ln(', 'fn'), k('sin', 'sin(', 'fn'), k('cos', 'cos(', 'fn'), k('tan', 'tan(', 'fn')],
+            [k('1', '1'), k('2', '2'), k('3', '3'), k('√', 'sqrt(', 'fn', 'vierkantswortel'), a('ⁿ√', 'wortel', 'fn', 'n-demachtswortel: kies 3, 4, 5, …'), k('ln', 'ln(', 'fn'), k('sin', 'sin(', 'fn'), k('cos', 'cos(', 'fn'), k('tan', 'tan(', 'fn')],
             [k('0', '0'), k(',', ',', '', 'komma'), k('π', 'pi', '', 'pi'), a('←', 'links', 'nav', 'cursor naar links'), a('→', 'rechts', 'nav', 'cursor naar rechts'), a('⌫', 'wis', 'wis', 'wis het teken voor de cursor'), a('C', 'leeg', 'wis', 'alles wissen'), k('log', 'log(', 'fn')]
         ];
-        let html = rijen.map(r => `<div class="klavier-rij">${r.join('')}</div>`).join('');
+        // 9 kolommen (rij 3 heeft ook ⁿ√); in de andere rijen is de laatste toets dubbel zo breed
+        let html = rijen.map(r => `<div class="klavier-rij r9">${(r.length < 9 ? r.slice(0, -1).concat(r[r.length - 1].replace('class="toets-k ', 'class="toets-k breed ')) : r).join('')}</div>`).join('');
         if (S.richting === 8) html += `<div class="klavier-rij bg">${['Bgsin', 'Bgcos', 'Bgtan', 'Bgcot'].map(n => k(n, n + '(', 'fn bgk')).join('')}</div>`;
         const wissel = isAanraak ? `<button type="button" class="linkknop" data-actie="klavier-wissel">${S.eigenKlavier ? 'Schermtoetsenbord gebruiken' : '⌨ Eigen toetsenbord gebruiken'}</button>` : '';
         return `<div class="klavier geen-print" id="klavier">${html}<div class="klavier-voet"><span>Tip: met Enter controleer je je antwoord.</span>${wissel}</div></div>`;
@@ -3336,6 +3343,7 @@ const Afgeleiden = (() => {
             s = e = s + t.length;
         } else {
             switch (knop.dataset.k) {
+                case 'wortel': if (window.WORTEL) WORTEL.kiesIndex(knop, n => WORTEL.voegIn(inp, n)); return;
                 case 'links': s = e = Math.max(0, s === e ? s - 1 : s); break;
                 case 'rechts': s = e = Math.min(v.length, s === e ? e + 1 : e); break;
                 case 'leeg': inp.value = ''; s = e = 0; break;
@@ -3794,6 +3802,7 @@ const Afgeleiden = (() => {
              get scherm() { return scherm; }, get OEF() { return OEF; }, get TOETS() { return TOETS; } };
 })();
 </script>
+<script src="wortel.js"></script>
 <script src="tracker.js"></script>
 <script>
   WiskundeTracker.init({ appId: "6do_kettingregel" });
